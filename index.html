@@ -10,8 +10,8 @@ body{
 margin:0;
 font-family:Arial;
 color:white;
+background:radial-gradient(circle at 20% 30%, #142b6f,#030814);
 height:100vh;
-background:radial-gradient(circle at 20% 30%, #1b2f6b,#050b1a);
 overflow:hidden;
 }
 
@@ -25,15 +25,15 @@ z-index:0;
 .wrapper{
 display:flex;
 height:100vh;
-z-index:2;
 position:relative;
+z-index:2;
 }
 
 .panel{
 width:420px;
-background:rgba(10,20,40,0.92);
+background:rgba(8,16,32,0.92);
 padding:30px;
-box-shadow:0 0 40px rgba(0,0,0,0.6);
+box-shadow:0 0 40px rgba(0,0,0,0.7);
 }
 
 .title{
@@ -53,7 +53,7 @@ padding:12px;
 margin-bottom:10px;
 border:none;
 border-radius:6px;
-background:#0e1a30;
+background:#0c1a33;
 color:white;
 }
 
@@ -62,25 +62,43 @@ width:100%;
 padding:14px;
 border:none;
 border-radius:6px;
-background:linear-gradient(90deg,#5865f2,#7d83ff);
+background:linear-gradient(90deg,#5b6cff,#7d8cff);
 color:white;
 font-weight:bold;
 cursor:pointer;
 margin-top:10px;
 }
 
+.result{
+margin-top:15px;
+background:#0c1a33;
+padding:12px;
+border-radius:8px;
+display:none;
+}
+
+.reason{
+margin-top:15px;
+background:#0c1a33;
+padding:12px;
+border-radius:8px;
+font-size:13px;
+line-height:1.6;
+display:none;
+}
+
 .map{
 flex:1;
-position:relative;
 display:flex;
-justify-content:center;
 align-items:center;
+justify-content:center;
+position:relative;
 }
 
 .world{
-position:absolute;
-opacity:0.08;
+opacity:0.07;
 width:70%;
+position:absolute;
 }
 
 .dashboard{
@@ -107,26 +125,9 @@ width:0%;
 background:linear-gradient(90deg,#6ef2a5,#42aaff);
 }
 
-.reason{
-margin-top:15px;
-background:#0e1a30;
-padding:12px;
-border-radius:8px;
-font-size:13px;
-line-height:1.6;
-display:none;
-}
-
-.result{
-margin-top:15px;
-background:#0e1a30;
-padding:12px;
-border-radius:8px;
-display:none;
-}
-
 </style>
 </head>
+
 
 <body>
 
@@ -191,7 +192,7 @@ ONLINE
 
 <script>
 
-/* PARTICLES */
+/* PARTICLE BACKGROUND */
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
@@ -205,8 +206,8 @@ for(let i=0;i<80;i++){
 particles.push({
 x:Math.random()*canvas.width,
 y:Math.random()*canvas.height,
-vx:(Math.random()-0.5)*0.5,
-vy:(Math.random()-0.5)*0.5
+vx:(Math.random()-0.5)*0.4,
+vy:(Math.random()-0.5)*0.4
 })
 }
 
@@ -230,13 +231,13 @@ ctx.fill()
 })
 
 requestAnimationFrame(animate)
+
 }
 
 animate()
 
 
-
-/* ANALYZE */
+/* AI ANALYSIS */
 
 async function analyze(){
 
@@ -254,22 +255,11 @@ const reasonText=document.getElementById("reasonText")
 resultBox.style.display="block"
 resultText.innerHTML="Analyzing strategic state..."
 
-const url="https://king-diadem.onrender.com/decision"
+const url=`https://king-diadem.onrender.com/decision?location=${encodeURIComponent(location)}&food=${encodeURIComponent(food)}&money=${encodeURIComponent(money)}&risk=${encodeURIComponent(risk)}`
 
 try{
 
-const res=await fetch(url,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-location:location,
-food:food,
-money:money,
-risk:risk
-})
-})
+const res=await fetch(url,{method:"POST"})
 
 if(!res.ok){
 throw new Error("API error")
