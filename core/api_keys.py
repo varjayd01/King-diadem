@@ -22,7 +22,6 @@ def save_keys(keys):
 
 
 def create_api_key(user="public"):
-
     keys = load_keys()
 
     key = str(uuid.uuid4())
@@ -38,7 +37,6 @@ def create_api_key(user="public"):
 
 
 def validate_api_key(key):
-
     keys = load_keys()
 
     if key in keys:
