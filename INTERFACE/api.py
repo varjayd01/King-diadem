@@ -10,7 +10,11 @@ app = FastAPI(
     docs_url="/docs"
 )
 
+
+# -------------------
 # CORS
+# -------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,21 +24,45 @@ app.add_middleware(
 )
 
 
+# -------------------
+# INPUT MODEL
+# -------------------
+
 class DecisionInput(BaseModel):
     location: str
     food: str
-    money: str
+    money: int
     risk: str
 
 
-# หน้าเว็บหลัก
+# -------------------
+# HOMEPAGE
+# -------------------
+
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
+
     with open("INTERFACE/index.html") as f:
         return f.read()
 
 
-# API ตัดสินใจ
+# -------------------
+# SYSTEM STATUS
+# -------------------
+
+@app.get("/system")
+def system():
+
+    return {
+        "system": "KING DIADEM",
+        "status": "online"
+    }
+
+
+# -------------------
+# DECISION ENGINE
+# -------------------
+
 @app.post("/decision")
 def decision(data: DecisionInput):
 
@@ -46,9 +74,3 @@ def decision(data: DecisionInput):
     )
 
     return result
-
-
-# เช็คระบบ
-@app.get("/system")
-def system():
-    return {"system": "KING DIADEM Decision Engine"}
