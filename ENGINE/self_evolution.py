@@ -1,5 +1,5 @@
 # KING DIADEM Self Evolution Layer
-# Allows system adaptation when new data is available
+# Adaptive stability correction
 
 import random
 
@@ -11,10 +11,9 @@ def evolve_system(system_state):
     entropy = system_state.get("entropy", 50)
     stability = system_state.get("stability", 50)
 
-    # small adaptive correction
-    adjustment = random.randint(-2, 2)
+    adjustment = random.randint(-3, 3)
 
-    stability += adjustment
+    stability = stability + adjustment
 
     if stability < 0:
         stability = 0
