@@ -299,3 +299,61 @@ if event["type"] == "checkout.session.completed":
     print("NEW API KEY:", api_key)
 
 return {"status": "ok"}
+
+---------------------------
+
+DASHBOARD
+
+---------------------------
+
+PRICE_PER_REQUEST = 0.01
+
+--- USAGE ---
+
+@app.get("/dashboard/usage")
+def dashboard_usage(api_key: str = Header(...)):
+
+check_api_key(api_key)
+
+usage = load_json(API_USAGE)
+
+requests_used = usage.get(api_key, 0)
+
+return {
+    "api_key": api_key,
+    "requests_used": requests_used,
+    "limit": 100
+}
+
+--- LIST KEYS ---
+
+@app.get("/dashboard/keys")
+def dashboard_keys(api_key: str = Header(...)):
+
+check_api_key(api_key)
+
+keys = load_json(API_KEYS)
+
+return {
+    "total_keys": len(keys),
+    "keys": keys
+}
+
+--- BILLING ---
+
+@app.get("/dashboard/billing")
+def dashboard_billing(api_key: str = Header(...)):
+
+check_api_key(api_key)
+
+usage = load_json(API_USAGE)
+
+requests_used = usage.get(api_key, 0)
+
+cost = requests_used * PRICE_PER_REQUEST
+
+return {
+    "requests": requests_used,
+    "price_per_request": PRICE_PER_REQUEST,
+    "total_cost": cost
+}
