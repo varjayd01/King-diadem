@@ -12,20 +12,35 @@ margin:0;
 font-family:Arial;
 color:white;
 height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-
-background:
-radial-gradient(circle at 30% 20%,#1b2f6b,#050b1a);
+background:radial-gradient(circle at 20% 30%,#1b2f6b,#050b1a);
+overflow:hidden;
 }
 
-.container{
+/* particle canvas */
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
+
+/* main layout */
+
+.wrapper{
+display:flex;
+height:100vh;
+z-index:2;
+position:relative;
+}
+
+/* left control panel */
+
+.panel{
 width:420px;
-background:rgba(10,20,40,0.9);
-border-radius:12px;
+background:rgba(10,20,40,0.92);
 padding:30px;
-box-shadow:0 20px 60px rgba(0,0,0,0.7);
+box-shadow:0 0 40px rgba(0,0,0,0.6);
 }
 
 .title{
@@ -36,7 +51,7 @@ font-weight:bold;
 .subtitle{
 font-size:13px;
 opacity:0.6;
-margin-bottom:25px;
+margin-bottom:20px;
 }
 
 input{
@@ -61,14 +76,66 @@ cursor:pointer;
 margin-top:10px;
 }
 
-button:hover{
-transform:scale(1.02);
+/* map area */
+
+.map{
+flex:1;
+position:relative;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.world{
+position:absolute;
+opacity:0.08;
+width:70%;
+}
+
+/* dashboard */
+
+.dashboard{
+position:absolute;
+top:20px;
+right:20px;
+background:rgba(0,0,0,0.6);
+padding:15px;
+border-radius:10px;
+font-size:13px;
+}
+
+/* survival meter */
+
+.meter{
+height:10px;
+background:#111;
+border-radius:6px;
+margin-top:5px;
+overflow:hidden;
+}
+
+.meter-bar{
+height:10px;
+width:0%;
+background:linear-gradient(90deg,#6ef2a5,#42aaff);
+}
+
+/* reasoning tree */
+
+.reason{
+margin-top:15px;
+background:#0e1a30;
+padding:12px;
+border-radius:8px;
+font-size:13px;
+line-height:1.6;
+display:none;
 }
 
 .result{
-margin-top:20px;
+margin-top:15px;
 background:#0e1a30;
-padding:15px;
+padding:12px;
 border-radius:8px;
 display:none;
 }
@@ -79,7 +146,13 @@ display:none;
 
 <body>
 
-<div class="container">
+<canvas id="particles"></canvas>
+
+<div class="wrapper">
+
+<!-- CONTROL PANEL -->
+
+<div class="panel">
 
 <div class="title">KING DIADEM</div>
 <div class="subtitle">Global Decision Engine</div>
@@ -95,29 +168,115 @@ display:none;
 <div id="resultText"></div>
 </div>
 
+<div class="reason" id="reasonBox">
+<b>🧠 Reasoning Tree</b>
+<div id="reasonText"></div>
+</div>
+
+</div>
+
+<!-- MAP AREA -->
+
+<div class="map">
+
+<img class="world"
+src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg">
+
+<div class="dashboard">
+
+📊 Decision Dashboard
+
+<br><br>
+
+Survival Probability
+
+<div class="meter">
+<div class="meter-bar" id="probBar"></div>
+</div>
+
+<div id="probText">0%</div>
+
+<br>
+
+🌍 Global Node
+ONLINE
+
+</div>
+
+</div>
+
 </div>
 
 <script>
 
+/* PARTICLES */
+
+const canvas=document.getElementById("particles")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let particles=[]
+
+for(let i=0;i<80;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+vx:(Math.random()-0.5)*0.5,
+vy:(Math.random()-0.5)*0.5
+})
+}
+
+function animate(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+particles.forEach(p=>{
+
+p.x+=p.vx
+p.y+=p.vy
+
+if(p.x<0||p.x>canvas.width)p.vx*=-1
+if(p.y<0||p.y>canvas.height)p.vy*=-1
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,2,0,Math.PI*2)
+ctx.fillStyle="#6e7cff"
+ctx.fill()
+
+})
+
+requestAnimationFrame(animate)
+
+}
+
+animate()
+
+/* ANALYZE */
+
 async function analyze(){
 
-let location=document.getElementById("location").value
-let food=document.getElementById("food").value
-let money=document.getElementById("money").value
-let risk=document.getElementById("risk").value
+const location=document.getElementById("location").value
+const food=document.getElementById("food").value
+const money=document.getElementById("money").value
+const risk=document.getElementById("risk").value
 
-let box=document.getElementById("resultBox")
-let text=document.getElementById("resultText")
+const resultBox=document.getElementById("resultBox")
+const resultText=document.getElementById("resultText")
 
-box.style.display="block"
-text.innerHTML="Analyzing..."
+const reasonBox=document.getElementById("reasonBox")
+const reasonText=document.getElementById("reasonText")
 
-let url=`https://king-diadem.onrender.com/decision?location=${location}&food=${food}&money=${money}&risk=${risk}`
+resultBox.style.display="block"
+resultText.innerHTML="Analyzing..."
+
+const url=`https://king-diadem.onrender.com/decision?location=${encodeURIComponent(location)}&food=${encodeURIComponent(food)}&money=${encodeURIComponent(money)}&risk=${encodeURIComponent(risk)}`
 
 try{
 
-let res=await fetch(url,{method:"POST"})
-let data=await res.json()
+const res=await fetch(url,{method:"POST"})
+const data=await res.json()
 
 let output=""
 
@@ -125,11 +284,28 @@ data.choices.forEach(c=>{
 output+="• "+c+"<br><br>"
 })
 
-text.innerHTML=output
+resultText.innerHTML=output
+
+/* reasoning */
+
+reasonBox.style.display="block"
+
+reasonText.innerHTML=
+"1. Evaluate survival resources<br>"+
+"2. Analyze risk exposure<br>"+
+"3. Determine minimal viable action<br>"+
+"4. Generate strategic options"
+
+/* survival probability */
+
+let prob=Math.min(95,Math.max(10,(money/10)+(food.length*5)))
+
+document.getElementById("probBar").style.width=prob+"%"
+document.getElementById("probText").innerHTML=prob+"%"
 
 }catch(e){
 
-text.innerHTML="System error"
+resultText.innerHTML="System error"
 
 }
 
