@@ -1,12 +1,9 @@
-# Silent Canon Kernel
+# KING DIADEM Silent Canon
+# Core invariant principle of the system
 
-def silent_canon(choice_count):
-
-    if choice_count > 1:
-        return "observe"
-
-    if choice_count == 1:
-        return "preserve_last_option"
-
-    if choice_count == 0:
-        return "emergency_intervention"
+SILENT_CANON = {
+    "law": "Preserve human choice",
+    "mode": "non-interference",
+    "intervention_rule": "Only act when choice approaches zero",
+    "status": "active"
+}
