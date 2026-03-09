@@ -13,33 +13,46 @@ def run_kernel(system_state):
 
     report = {}
 
+    # -------------------------
     # Step 1 — Reality Drift
+    # -------------------------
     next_state = dependent_cycle(system_state)
-
     report["next_state"] = next_state
 
+    # -------------------------
     # Step 2 — Entropy Detection
-    entropy_status = entropy_check(system_state)
-
+    # -------------------------
+    entropy_status = entropy_check(next_state)
     report["entropy_status"] = entropy_status
 
+    # -------------------------
     # Step 3 — Vigilance Protocol
-    vigilance = vigilance_check(system_state)
-
+    # -------------------------
+    vigilance = vigilance_check(next_state)
     report["vigilance"] = vigilance
 
+    # -------------------------
     # Step 4 — Choice Preservation
-    choice_count = system_state.get("choices", 1)
+    # -------------------------
+    choice_count = next_state.get("choices", 1)
 
     canon_state = silent_canon(choice_count)
-
     report["silent_canon"] = canon_state
 
+    # -------------------------
     # Step 5 — System Axioms
+    # -------------------------
     report["axioms"] = AXIOMS
 
+    # -------------------------
     # Step 6 — Reality Laws
+    # -------------------------
     report["reality_laws"] = REALITY_LAWS
+
+    # -------------------------
+    # Kernel Status
+    # -------------------------
+    report["kernel_status"] = "active"
 
     return report
 
@@ -47,12 +60,10 @@ def run_kernel(system_state):
 def kernel_demo():
 
     system_state = {
-
         "stability": 60,
         "entropy": 45,
         "choices": 3,
         "resources": 70
-
     }
 
     result = run_kernel(system_state)
@@ -60,7 +71,6 @@ def kernel_demo():
     print("\nKING DIADEM Kernel Runtime\n")
 
     for k, v in result.items():
-
         print(k, ":", v)
 
 
