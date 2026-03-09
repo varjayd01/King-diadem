@@ -1,27 +1,12 @@
-# KING DIADEM Global Node Sync
-# Allows multiple instances to exchange system states
+from GLOBAL_NODE.node_model import GlobalNode
 
-import json
-import time
+global_node = GlobalNode()
 
 
-def sync_state(system_state, node_id="local_node"):
+def sync_node(location, data):
 
-    packet = {
-        "node": node_id,
-        "state": system_state,
-        "timestamp": time.time()
-    }
+    global_node.register_node(location, data)
 
-    print("\nBroadcasting system state")
+    world = global_node.update_world_state()
 
-    print(json.dumps(packet, indent=2))
-
-    return packet
-
-
-def receive_state(packet):
-
-    print("\nReceived state from node:", packet["node"])
-
-    return packet["state"]
+    return world
