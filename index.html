@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="UTF-8">
@@ -12,7 +11,7 @@ margin:0;
 font-family:Arial;
 color:white;
 height:100vh;
-background:radial-gradient(circle at 20% 30%,#1b2f6b,#050b1a);
+background:radial-gradient(circle at 20% 30%, #1b2f6b,#050b1a);
 overflow:hidden;
 }
 
@@ -127,7 +126,6 @@ display:none;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -159,6 +157,7 @@ display:none;
 
 </div>
 
+
 <div class="map">
 
 <img class="world"
@@ -180,7 +179,7 @@ Survival Probability
 
 <br>
 
-🌍 Global Node
+🌍 Global Node  
 ONLINE
 
 </div>
@@ -188,6 +187,7 @@ ONLINE
 </div>
 
 </div>
+
 
 <script>
 
@@ -230,10 +230,11 @@ ctx.fill()
 })
 
 requestAnimationFrame(animate)
-
 }
 
 animate()
+
+
 
 /* ANALYZE */
 
@@ -251,13 +252,24 @@ const reasonBox=document.getElementById("reasonBox")
 const reasonText=document.getElementById("reasonText")
 
 resultBox.style.display="block"
-resultText.innerHTML="Analyzing..."
+resultText.innerHTML="Analyzing strategic state..."
 
-const url=`https://king-diadem.onrender.com/decision?location=${encodeURIComponent(location)}&food=${encodeURIComponent(food)}&money=${encodeURIComponent(money)}&risk=${encodeURIComponent(risk)}`
+const url="https://king-diadem.onrender.com/decision"
 
 try{
 
-const res=await fetch(url)   // 🔧 FIXED: ใช้ GET
+const res=await fetch(url,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+location:location,
+food:food,
+money:money,
+risk:risk
+})
+})
 
 if(!res.ok){
 throw new Error("API error")
@@ -265,18 +277,14 @@ throw new Error("API error")
 
 const data=await res.json()
 
-let output=""
+let output="<b>AI Strategic Output</b><br><br>"
 
 if(data.choices){
-
 data.choices.forEach(c=>{
-output+="• "+c+"<br><br>"
+output+="• "+c+"<br>"
 })
-
 }else{
-
-output="No strategy returned"
-
+output+="No strategic recommendations returned."
 }
 
 resultText.innerHTML=output
@@ -287,18 +295,25 @@ reasonText.innerHTML=
 "1. Evaluate survival resources<br>"+
 "2. Analyze risk exposure<br>"+
 "3. Determine minimal viable action<br>"+
-"4. Generate strategic options"
+"4. Generate strategic options<br>"+
+"5. Preserve human choice pathways"
 
-/* probability */
 
-let prob=Math.min(95,Math.max(10,(money/10)+(food.length*5)))
+let prob=Math.min(
+95,
+Math.max(
+10,
+(Number(money)/10)+(food.length*5)-(risk.length*2)
+)
+)
 
 document.getElementById("probBar").style.width=prob+"%"
 document.getElementById("probText").innerHTML=prob+"%"
 
-}catch(e){
+}
+catch(e){
 
-resultText.innerHTML="System error"
+resultText.innerHTML="System error. Node reconnecting..."
 
 }
 
