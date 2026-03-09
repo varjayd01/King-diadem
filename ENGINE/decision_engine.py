@@ -1,9 +1,13 @@
 # KING DIADEM Decision Engine
 # Evaluates survival conditions and produces system decisions
 
-import random
 from core.silent_canon import SILENT_CANON
+from GLOBAL_NODE.network_sync import sync_node
 
+
+# -------------------------
+# RESOURCE EVALUATION
+# -------------------------
 
 def evaluate_resources(food, money):
 
@@ -20,8 +24,14 @@ def evaluate_resources(food, money):
     except:
         money_score = 30
 
-    return food_score + money_score * 0.5
+    resource_score = food_score + money_score * 0.5
 
+    return resource_score, food_score
+
+
+# -------------------------
+# RISK EVALUATION
+# -------------------------
 
 def evaluate_risk(risk):
 
@@ -31,8 +41,14 @@ def evaluate_risk(risk):
         "high": 80
     }
 
-    return risk_map.get(risk.lower(), 40)
+    risk_score = risk_map.get(risk.lower(), 40)
 
+    return risk_score
+
+
+# -------------------------
+# OPTION GENERATION
+# -------------------------
 
 def generate_options(resource_score, risk_score):
 
@@ -41,20 +57,28 @@ def generate_options(resource_score, risk_score):
     if resource_score < 60:
         options.append("Find local food or community resources")
 
+    if resource_score >= 60:
+        options.append("Stabilize resources and avoid waste")
+
     if risk_score >= 60:
         options.append("Reduce movement and secure safe location")
 
-    if resource_score >= 60:
-        options.append("Stabilize resources and avoid waste")
+    if risk_score < 60:
+        options.append("Explore small income opportunities")
 
     options.append("Preserve human choice")
 
     return options
 
 
+# -------------------------
+# MAIN DECISION ENGINE
+# -------------------------
+
 def decision(location, food, money, risk):
 
-    resource_score = evaluate_resources(food, money)
+    resource_score, food_score = evaluate_resources(food, money)
+
     risk_score = evaluate_risk(risk)
 
     survival_score = max(
@@ -67,26 +91,36 @@ def decision(location, food, money, risk):
 
     options = generate_options(resource_score, risk_score)
 
-    canon_action = SILENT_CANON
+    # -------------------------
+    # GLOBAL NODE SYNC
+    # -------------------------
+
+    world_state = sync_node(location, {
+        "food_score": food_score,
+        "risk_score": risk_score
+    })
+
+    # -------------------------
+    # CANON STATE
+    # -------------------------
+
+    canon_state = SILENT_CANON
 
     result = {
         "location": location,
         "survival_score": survival_score,
         "options": options,
-        "canon_state": canon_action
+        "canon_state": canon_state,
+        "world_state": world_state
     }
-
-    print("\nDecision Engine Output:", result)
 
     return result
 
 
-# wrapper สำหรับระบบ runtime
+# -------------------------
+# WRAPPER FOR API
+# -------------------------
+
 def decision_engine(location, food, money, risk):
 
     return decision(location, food, money, risk)
-
-# compatibility function for older modules
-def generate_choices(resource_score, risk_score):
-
-    return generate_options(resource_score, risk_score)
