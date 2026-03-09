@@ -1,7 +1,7 @@
 # KING DIADEM Decision Engine
 # Evaluates survival conditions and produces system decisions
 
-from core.silent_canon import SILENT_CANON
+from ENGINE.kernel_runtime import run_kernel
 from GLOBAL_NODE.network_sync import sync_node
 
 
@@ -17,14 +17,14 @@ def evaluate_resources(food, money):
         "high": 80
     }
 
-    food_score = food_map.get(food.lower(), 40)
+    food_score = food_map.get(str(food).lower(), 40)
 
     try:
         money_score = max(0, int(money))
     except:
         money_score = 30
 
-    resource_score = food_score + money_score * 0.5
+    resource_score = food_score + (money_score * 0.5)
 
     return resource_score, food_score
 
@@ -41,7 +41,7 @@ def evaluate_risk(risk):
         "high": 80
     }
 
-    risk_score = risk_map.get(risk.lower(), 40)
+    risk_score = risk_map.get(str(risk).lower(), 40)
 
     return risk_score
 
@@ -77,10 +77,13 @@ def generate_options(resource_score, risk_score):
 
 def decision(location, food, money, risk):
 
+    # Resource calculation
     resource_score, food_score = evaluate_resources(food, money)
 
+    # Risk calculation
     risk_score = evaluate_risk(risk)
 
+    # Survival score formula
     survival_score = max(
         5,
         min(
@@ -89,10 +92,24 @@ def decision(location, food, money, risk):
         )
     )
 
+    # Generate action options
     options = generate_options(resource_score, risk_score)
 
     # -------------------------
-    # GLOBAL NODE SYNC
+    # Kernel Runtime
+    # -------------------------
+
+    system_state = {
+        "stability": survival_score,
+        "entropy": risk_score,
+        "choices": len(options),
+        "resources": resource_score
+    }
+
+    kernel_report = run_kernel(system_state)
+
+    # -------------------------
+    # Global Node Sync
     # -------------------------
 
     world_state = sync_node(location, {
@@ -101,16 +118,14 @@ def decision(location, food, money, risk):
     })
 
     # -------------------------
-    # CANON STATE
+    # Final Result
     # -------------------------
-
-    canon_state = SILENT_CANON
 
     result = {
         "location": location,
         "survival_score": survival_score,
         "options": options,
-        "canon_state": canon_state,
+        "kernel": kernel_report,
         "world_state": world_state
     }
 
