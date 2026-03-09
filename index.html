@@ -10,8 +10,8 @@ body{
 margin:0;
 font-family:Arial;
 color:white;
-background:radial-gradient(circle at 20% 30%, #142b6f,#030814);
 height:100vh;
+background:radial-gradient(circle at 20% 30%, #142b6f,#030814);
 overflow:hidden;
 }
 
@@ -24,7 +24,7 @@ z-index:0;
 
 .wrapper{
 display:flex;
-height:100vh;
+height:100%;
 position:relative;
 z-index:2;
 }
@@ -53,7 +53,7 @@ padding:12px;
 margin-bottom:10px;
 border:none;
 border-radius:6px;
-background:#0c1a33;
+background:#0c1333;
 color:white;
 }
 
@@ -71,7 +71,7 @@ margin-top:10px;
 
 .result{
 margin-top:15px;
-background:#0c1a33;
+background:#0c1333;
 padding:12px;
 border-radius:8px;
 display:none;
@@ -79,12 +79,12 @@ display:none;
 
 .reason{
 margin-top:15px;
-background:#0c1a33;
+background:#0c1333;
 padding:12px;
 border-radius:8px;
+display:none;
 font-size:13px;
 line-height:1.6;
-display:none;
 }
 
 .map{
@@ -128,7 +128,6 @@ background:linear-gradient(90deg,#6ef2a5,#42aaff);
 </style>
 </head>
 
-
 <body>
 
 <canvas id="particles"></canvas>
@@ -152,12 +151,11 @@ background:linear-gradient(90deg,#6ef2a5,#42aaff);
 </div>
 
 <div class="reason" id="reasonBox">
-<b>🧠 Reasoning Tree</b>
+<b>Reasoning Tree</b>
 <div id="reasonText"></div>
 </div>
 
 </div>
-
 
 <div class="map">
 
@@ -180,19 +178,17 @@ Survival Probability
 
 <br>
 
-🌍 Global Node  
-ONLINE
+🌍 Global Node ONLINE
 
 </div>
 
 </div>
 
 </div>
-
 
 <script>
 
-/* PARTICLE BACKGROUND */
+/* PARTICLES */
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
@@ -225,7 +221,7 @@ if(p.y<0||p.y>canvas.height)p.vy*=-1
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,2,0,Math.PI*2)
-ctx.fillStyle="#6e7cff"
+ctx.fillStyle="#6ec7ff"
 ctx.fill()
 
 })
@@ -237,7 +233,7 @@ requestAnimationFrame(animate)
 animate()
 
 
-/* AI ANALYSIS */
+/* ANALYZE */
 
 async function analyze(){
 
@@ -255,15 +251,23 @@ const reasonText=document.getElementById("reasonText")
 resultBox.style.display="block"
 resultText.innerHTML="Analyzing strategic state..."
 
-const url=`https://king-diadem.onrender.com/decision?location=${encodeURIComponent(location)}&food=${encodeURIComponent(food)}&money=${encodeURIComponent(money)}&risk=${encodeURIComponent(risk)}`
-
 try{
 
-const res=await fetch(url,{method:"POST"})
-
-if(!res.ok){
-throw new Error("API error")
+const res=await fetch(
+"https://king-diadem.onrender.com/decision",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+location:location,
+food:food,
+money:money,
+risk:risk
+})
 }
+)
 
 const data=await res.json()
 
@@ -274,7 +278,7 @@ data.choices.forEach(c=>{
 output+="• "+c+"<br>"
 })
 }else{
-output+="No strategic recommendations returned."
+output+="No strategy returned"
 }
 
 resultText.innerHTML=output
@@ -288,7 +292,6 @@ reasonText.innerHTML=
 "4. Generate strategic options<br>"+
 "5. Preserve human choice pathways"
 
-
 let prob=Math.min(
 95,
 Math.max(
@@ -300,8 +303,7 @@ Math.max(
 document.getElementById("probBar").style.width=prob+"%"
 document.getElementById("probText").innerHTML=prob+"%"
 
-}
-catch(e){
+}catch(e){
 
 resultText.innerHTML="System error. Node reconnecting..."
 
