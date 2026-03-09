@@ -16,8 +16,6 @@ background:radial-gradient(circle at 20% 30%,#1b2f6b,#050b1a);
 overflow:hidden;
 }
 
-/* particle canvas */
-
 canvas{
 position:fixed;
 top:0;
@@ -25,16 +23,12 @@ left:0;
 z-index:0;
 }
 
-/* main layout */
-
 .wrapper{
 display:flex;
 height:100vh;
 z-index:2;
 position:relative;
 }
-
-/* left control panel */
 
 .panel{
 width:420px;
@@ -76,8 +70,6 @@ cursor:pointer;
 margin-top:10px;
 }
 
-/* map area */
-
 .map{
 flex:1;
 position:relative;
@@ -92,8 +84,6 @@ opacity:0.08;
 width:70%;
 }
 
-/* dashboard */
-
 .dashboard{
 position:absolute;
 top:20px;
@@ -103,8 +93,6 @@ padding:15px;
 border-radius:10px;
 font-size:13px;
 }
-
-/* survival meter */
 
 .meter{
 height:10px;
@@ -119,8 +107,6 @@ height:10px;
 width:0%;
 background:linear-gradient(90deg,#6ef2a5,#42aaff);
 }
-
-/* reasoning tree */
 
 .reason{
 margin-top:15px;
@@ -150,8 +136,6 @@ display:none;
 
 <div class="wrapper">
 
-<!-- CONTROL PANEL -->
-
 <div class="panel">
 
 <div class="title">KING DIADEM</div>
@@ -174,8 +158,6 @@ display:none;
 </div>
 
 </div>
-
-<!-- MAP AREA -->
 
 <div class="map">
 
@@ -275,18 +257,29 @@ const url=`https://king-diadem.onrender.com/decision?location=${encodeURICompone
 
 try{
 
-const res=await fetch(url,{method:"POST"})
+const res=await fetch(url)   // 🔧 FIXED: ใช้ GET
+
+if(!res.ok){
+throw new Error("API error")
+}
+
 const data=await res.json()
 
 let output=""
+
+if(data.choices){
 
 data.choices.forEach(c=>{
 output+="• "+c+"<br><br>"
 })
 
-resultText.innerHTML=output
+}else{
 
-/* reasoning */
+output="No strategy returned"
+
+}
+
+resultText.innerHTML=output
 
 reasonBox.style.display="block"
 
@@ -296,7 +289,7 @@ reasonText.innerHTML=
 "3. Determine minimal viable action<br>"+
 "4. Generate strategic options"
 
-/* survival probability */
+/* probability */
 
 let prob=Math.min(95,Math.max(10,(money/10)+(food.length*5)))
 
