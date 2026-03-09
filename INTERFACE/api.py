@@ -5,10 +5,12 @@ from pydantic import BaseModel
 
 from ENGINE.decision_engine import decision_engine
 
-app = FastAPI()
+app = FastAPI(
+    title="KING DIADEM",
+    docs_url="/docs"
+)
 
-
-# ---- CORS ----
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,7 +20,6 @@ app.add_middleware(
 )
 
 
-# ---- INPUT MODEL ----
 class DecisionInput(BaseModel):
     location: str
     food: str
@@ -26,21 +27,14 @@ class DecisionInput(BaseModel):
     risk: str
 
 
-# ---- HOMEPAGE ----
+# หน้าเว็บหลัก
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
-
     with open("INTERFACE/index.html") as f:
         return f.read()
 
 
-# ---- SYSTEM CHECK ----
-@app.get("/system")
-def system():
-    return {"system": "KING DIADEM Decision Engine"}
-
-
-# ---- DECISION ENGINE API ----
+# API ตัดสินใจ
 @app.post("/decision")
 def decision(data: DecisionInput):
 
@@ -52,3 +46,9 @@ def decision(data: DecisionInput):
     )
 
     return result
+
+
+# เช็คระบบ
+@app.get("/system")
+def system():
+    return {"system": "KING DIADEM Decision Engine"}
