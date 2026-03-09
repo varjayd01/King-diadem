@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KING DIADEM</title>
+
+<style>
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:#1e293b;
+padding:30px;
+border-radius:10px;
+width:400px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:5px;
+border:none;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#6366f1;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+#result{
+margin-top:20px;
+white-space:pre-line;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>KING DIADEM</h2>
+
+<input id="location" placeholder="Location">
+
+<input id="food" placeholder="Food level">
+
+<input id="money" placeholder="Money">
+
+<input id="risk" placeholder="Risk">
+
+<button onclick="analyze()">Analyze</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+async function analyze(){
+
+let location=document.getElementById("location").value
+let food=document.getElementById("food").value
+let money=document.getElementById("money").value
+let risk=document.getElementById("risk").value
+
+let url=`https://king-diadem.onrender.com/decision?location=${location}&food=${food}&money=${money}&risk=${risk}`
+
+let res=await fetch(url,{
+method:"POST"
+})
+
+let data=await res.json()
+
+document.getElementById("result").innerText=
+data.choices.join("\n")
+
+}
+
+</script>
+
+</body>
+</html>
