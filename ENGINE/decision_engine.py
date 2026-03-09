@@ -1,13 +1,17 @@
 # KING DIADEM Decision Engine
-# Evaluates survival conditions and produces system decisions
+# Reality Optimization Core
 
-from ENGINE.kernel_runtime import run_kernel
+from core.silent_canon import SILENT_CANON
 from GLOBAL_NODE.network_sync import sync_node
 
+from core.memory_store import log_decision, log_world_state
 
-# -------------------------
+from SIMULATIONS.future_simulator import simulate_future
+
+
+# ----------------------------
 # RESOURCE EVALUATION
-# -------------------------
+# ----------------------------
 
 def evaluate_resources(food, money):
 
@@ -17,21 +21,21 @@ def evaluate_resources(food, money):
         "high": 80
     }
 
-    food_score = food_map.get(str(food).lower(), 40)
+    food_score = food_map.get(food.lower(), 40)
 
     try:
         money_score = max(0, int(money))
     except:
         money_score = 30
 
-    resource_score = food_score + (money_score * 0.5)
+    resource_score = food_score + money_score * 0.5
 
     return resource_score, food_score
 
 
-# -------------------------
+# ----------------------------
 # RISK EVALUATION
-# -------------------------
+# ----------------------------
 
 def evaluate_risk(risk):
 
@@ -41,14 +45,12 @@ def evaluate_risk(risk):
         "high": 80
     }
 
-    risk_score = risk_map.get(str(risk).lower(), 40)
-
-    return risk_score
+    return risk_map.get(risk.lower(), 40)
 
 
-# -------------------------
+# ----------------------------
 # OPTION GENERATION
-# -------------------------
+# ----------------------------
 
 def generate_options(resource_score, risk_score):
 
@@ -71,19 +73,16 @@ def generate_options(resource_score, risk_score):
     return options
 
 
-# -------------------------
+# ----------------------------
 # MAIN DECISION ENGINE
-# -------------------------
+# ----------------------------
 
 def decision(location, food, money, risk):
 
-    # Resource calculation
     resource_score, food_score = evaluate_resources(food, money)
 
-    # Risk calculation
     risk_score = evaluate_risk(risk)
 
-    # Survival score formula
     survival_score = max(
         5,
         min(
@@ -92,50 +91,47 @@ def decision(location, food, money, risk):
         )
     )
 
-    # Generate action options
     options = generate_options(resource_score, risk_score)
 
-    # -------------------------
-    # Kernel Runtime
-    # -------------------------
-
-    system_state = {
-        "stability": survival_score,
-        "entropy": risk_score,
-        "choices": len(options),
-        "resources": resource_score
-    }
-
-    kernel_report = run_kernel(system_state)
-
-    # -------------------------
-    # Global Node Sync
-    # -------------------------
-
-    world_state = sync_node(location, {
+    # GLOBAL NODE UPDATE
+    world = sync_node(location, {
         "food_score": food_score,
         "risk_score": risk_score
     })
 
-    # -------------------------
-    # Final Result
-    # -------------------------
+    # SILENT CANON GOVERNANCE
+    canon_state = SILENT_CANON()
+
+    # FUTURE SIMULATION
+    future = simulate_future(world, steps=10)
 
     result = {
         "location": location,
         "survival_score": survival_score,
         "options": options,
-        "kernel": kernel_report,
-        "world_state": world_state
+        "canon_state": canon_state,
+        "world_state": world,
+        "future_simulation": future
     }
+
+    # MEMORY LOGGING
+    log_decision(result)
+    log_world_state(world)
 
     return result
 
 
-# -------------------------
-# WRAPPER FOR API
-# -------------------------
+# ----------------------------
+# PUBLIC ENGINE
+# ----------------------------
 
-def decision_engine(location, food, money, risk):
+def decision_engine():
 
-    return decision(location, food, money, risk)
+    result = decision(
+        location="earth",
+        food="medium",
+        money=50,
+        risk="low"
+    )
+
+    return result
