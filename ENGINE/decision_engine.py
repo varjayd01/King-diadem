@@ -1,41 +1,70 @@
-# KING DIADEM Decision Engine Prototype
+import random
+from core.silent_canon import silent_canon
 
-def generate_choices(location, food, money, risk):
+def evaluate_resources(food,money):
 
-    choices = []
+    food_map = {"low":20,"medium":50,"high":80}
 
-    # Resource balancing
-    if "food shortage" in risk:
-        choices.append("Reduce food consumption cycle and prioritize high nutrition food")
+    food_score = food_map.get(food.lower(),40)
 
-    # Local sourcing
-    choices.append("Search for local food sources or community sharing")
+    try:
+        money_score = max(0,int(money))
+    except:
+        money_score = 30
 
-    # Micro production
-    choices.append("Start micro food production (home garden or simple crops)")
-
-    # Risk reduction
-    choices.append("Reduce unnecessary movement and maintain health stability")
-
-    return choices
+    return food_score + money_score * 0.5
 
 
-def main():
+def evaluate_risk(risk):
 
-    print("KING DIADEM Survival Decision Engine\n")
+    risk_map = {"low":20,"medium":50,"high":80}
 
-    location = input("Location: ")
-    food = input("Available food: ")
-    money = input("Money available: ")
-    risk = input("Current risk: ")
-
-    choices = generate_choices(location, food, money, risk)
-
-    print("\nRecommended Survival Choices:\n")
-
-    for i, choice in enumerate(choices):
-        print(f"{i+1}. {choice}")
+    return risk_map.get(risk.lower(),40)
 
 
-if __name__ == "__main__":
-    main()
+def generate_options(resource_score,risk_score):
+
+    options = []
+
+    if resource_score < 60:
+        options.append("Find local food or community resources")
+
+    if risk_score > 60:
+        options.append("Reduce movement and secure safe location")
+
+    if resource_score >= 60:
+        options.append("Stabilize resources and avoid waste")
+
+    options.append("Preserve human choice")
+
+    return options
+
+
+def decision(location,food,money,risk):
+
+    resource_score = evaluate_resources(food,money)
+
+    risk_score = evaluate_risk(risk)
+
+    survival_score = max(
+        5,
+        min(
+            95,
+            int(resource_score * 0.7 - risk_score * 0.6 + 40)
+        )
+    )
+
+    options = generate_options(resource_score,risk_score)
+
+    canon_action = silent_canon(len(options))
+
+    return {
+
+        "location":location,
+
+        "survival_score":survival_score,
+
+        "options":options,
+
+        "canon_state":canon_action
+    }
