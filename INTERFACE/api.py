@@ -220,3 +220,46 @@ session = stripe.checkout.Session.create(
 return {
     "checkout_url": session.url
 }
+import secrets
+from fastapi import Request
+
+WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+@app.post("/stripe/webhook")
+async def stripe_webhook(request: Request):
+
+payload = await request.body()
+sig_header = request.headers.get("stripe-signature")
+
+try:
+    event = stripe.Webhook.construct_event(
+        payload,
+        sig_header,
+        WEBHOOK_SECRET
+    )
+except Exception:
+    return {"status": "invalid"}
+
+if event["type"] == "checkout.session.completed":
+
+    api_key = "kd_" + secrets.token_hex(16)
+
+    path = "data/api_keys.json"
+
+    keys = {}
+
+    if os.path.exists(path):
+        with open(path) as f:
+            keys = json.load(f)
+
+    keys[api_key] = {
+        "created": time.time(),
+        "plan": "pro"
+    }
+
+    with open(path, "w") as f:
+        json.dump(keys, f, indent=2)
+
+    print("NEW API KEY:", api_key)
+
+return {"status": "ok"}
