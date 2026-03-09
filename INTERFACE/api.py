@@ -10,13 +10,14 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from ENGINE.decision_engine import decision_engine
+from ENGINE.simulation_engine import run_simulation
 from INTERFACE.mobile_node import mobile_report
 from core.api_keys import validate_api_key
 
 
-# ---------------------------
+# -----------------------------
 # CONFIG
-# ---------------------------
+# -----------------------------
 
 DATA_DIR = "data"
 
@@ -33,9 +34,9 @@ stripe.api_key = STRIPE_SECRET_KEY
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
-# ---------------------------
+# -----------------------------
 # FASTAPI
-# ---------------------------
+# -----------------------------
 
 app = FastAPI(
     title="KING DIADEM",
@@ -43,9 +44,9 @@ app = FastAPI(
 )
 
 
-# ---------------------------
+# -----------------------------
 # CORS
-# ---------------------------
+# -----------------------------
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,9 +57,9 @@ app.add_middleware(
 )
 
 
-# ---------------------------
+# -----------------------------
 # MODELS
-# ---------------------------
+# -----------------------------
 
 class DecisionInput(BaseModel):
     location: str
@@ -73,9 +74,9 @@ class NodeInput(BaseModel):
     risk: str | None = None
 
 
-# ---------------------------
+# -----------------------------
 # UTILS
-# ---------------------------
+# -----------------------------
 
 def load_json(path):
     if os.path.exists(path):
@@ -89,9 +90,9 @@ def save_json(path, data):
         json.dump(data, f, indent=2)
 
 
-# ---------------------------
+# -----------------------------
 # API KEY CHECK
-# ---------------------------
+# -----------------------------
 
 def check_api_key(api_key: str):
 
@@ -102,9 +103,9 @@ def check_api_key(api_key: str):
         )
 
 
-# ---------------------------
+# -----------------------------
 # RATE LIMIT
-# ---------------------------
+# -----------------------------
 
 def check_rate_limit(api_key):
 
@@ -115,6 +116,7 @@ def check_rate_limit(api_key):
     count = usage.get(api_key, 0)
 
     if count >= limit:
+
         raise HTTPException(
             status_code=429,
             detail="Rate limit exceeded"
@@ -125,9 +127,9 @@ def check_rate_limit(api_key):
     save_json(API_USAGE, usage)
 
 
-# ---------------------------
+# -----------------------------
 # DECISION LOG
-# ---------------------------
+# -----------------------------
 
 def log_decision(input_data, result):
 
@@ -141,9 +143,9 @@ def log_decision(input_data, result):
         f.write(json.dumps(entry) + "\n")
 
 
-# ---------------------------
+# -----------------------------
 # HOMEPAGE
-# ---------------------------
+# -----------------------------
 
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
@@ -157,9 +159,9 @@ async def homepage():
     return "<h1>KING DIADEM API</h1>"
 
 
-# ---------------------------
+# -----------------------------
 # SYSTEM STATUS
-# ---------------------------
+# -----------------------------
 
 @app.get("/system")
 def system():
@@ -168,13 +170,13 @@ def system():
         "system": "KING DIADEM",
         "status": "online",
         "engine": "active",
-        "version": "1.0"
+        "version": "1.1"
     }
 
 
-# ---------------------------
+# -----------------------------
 # DECISION ENGINE
-# ---------------------------
+# -----------------------------
 
 @app.post("/decision")
 def decision(
@@ -197,9 +199,34 @@ def decision(
     return result
 
 
-# ---------------------------
+# -----------------------------
+# FUTURE SIMULATION
+# -----------------------------
+
+@app.post("/simulate")
+def simulate(
+    data: DecisionInput,
+    api_key: str = Header(...)
+):
+
+    check_api_key(api_key)
+    check_rate_limit(api_key)
+
+    result = run_simulation(
+        data.location,
+        data.food,
+        data.money,
+        data.risk
+    )
+
+    log_decision(data.dict(), result)
+
+    return result
+
+
+# -----------------------------
 # MOBILE NODE
-# ---------------------------
+# -----------------------------
 
 @app.post("/mobile/node")
 def mobile_node(
@@ -222,9 +249,9 @@ def mobile_node(
     }
 
 
-# ---------------------------
+# -----------------------------
 # STRIPE CHECKOUT
-# ---------------------------
+# -----------------------------
 
 @app.post("/payment/checkout")
 def create_checkout(api_key: str = Header(...)):
@@ -232,21 +259,25 @@ def create_checkout(api_key: str = Header(...)):
     check_api_key(api_key)
 
     if not STRIPE_PRICE_ID:
+
         raise HTTPException(
             status_code=500,
             detail="Stripe price not configured"
         )
 
     session = stripe.checkout.Session.create(
+
         payment_method_types=["card"],
+
         mode="subscription",
-        line_items=[
-            {
-                "price": STRIPE_PRICE_ID,
-                "quantity": 1
-            }
-        ],
+
+        line_items=[{
+            "price": STRIPE_PRICE_ID,
+            "quantity": 1
+        }],
+
         success_url="https://king-diadem.onrender.com/success",
+
         cancel_url="https://king-diadem.onrender.com/cancel"
     )
 
@@ -255,23 +286,27 @@ def create_checkout(api_key: str = Header(...)):
     }
 
 
-# ---------------------------
+# -----------------------------
 # STRIPE WEBHOOK
-# ---------------------------
+# -----------------------------
 
 @app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
 
     payload = await request.body()
+
     sig_header = request.headers.get("stripe-signature")
 
     try:
+
         event = stripe.Webhook.construct_event(
             payload,
             sig_header,
             STRIPE_WEBHOOK_SECRET
         )
+
     except Exception:
+
         return {"status": "invalid"}
 
     if event["type"] == "checkout.session.completed":
@@ -292,9 +327,9 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-# ---------------------------
+# -----------------------------
 # DASHBOARD
-# ---------------------------
+# -----------------------------
 
 PRICE_PER_REQUEST = 0.01
 
