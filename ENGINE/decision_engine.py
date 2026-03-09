@@ -85,3 +85,8 @@ def decision(location, food, money, risk):
 def decision_engine(location, food, money, risk):
 
     return decision(location, food, money, risk)
+
+# compatibility function for older modules
+def generate_choices(resource_score, risk_score):
+
+    return generate_options(resource_score, risk_score)
