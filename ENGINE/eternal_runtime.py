@@ -1,5 +1,5 @@
 # KING DIADEM Eternal Runtime
-# System designed to persist and monitor reality drift
+# Autonomous strategic runtime loop
 
 import time
 
@@ -9,6 +9,8 @@ from core.entropy_guard import entropy_guard
 from core.vigilance_protocol import vigilance_check
 
 from ENGINE.self_evolution import evolve_system
+from SIMULATIONS.future_simulator import simulate_future
+from GLOBAL_NODE.network_sync import sync_state
 
 
 def eternal_runtime(system_state):
@@ -21,25 +23,35 @@ def eternal_runtime(system_state):
 
         cycle += 1
 
-        print(f"\n--- Runtime Cycle {cycle} ---")
+        print(f"\n===== Runtime Cycle {cycle} =====")
 
-        # dependent cycle evolution
+        # 1 dependent cycle evolution
         system_state = dependent_cycle(system_state)
 
-        # evolution
+        # 2 self evolution
         system_state = evolve_system(system_state)
 
-        # drift detection
-        drift = detect_drift(system_state)
-        print("Drift status:", drift)
+        # 3 simulate possible futures
+        future = simulate_future(system_state, 3)
 
-        # entropy protection
+        print("\nChosen future:", future)
+
+        # 4 network synchronization
+        sync_state(system_state)
+
+        # 5 drift detection
+        drift = detect_drift(system_state)
+        print("\nDrift status:", drift)
+
+        # 6 entropy protection
         guard = entropy_guard(system_state)
         print("Entropy guard:", guard)
 
-        # vigilance
+        # 7 vigilance protocol
         vigilance = vigilance_check()
         print("Vigilance:", vigilance)
 
-        # pause cycle
+        # 8 sleep cycle
+        print("\nCycle complete — waiting...\n")
+
         time.sleep(10)
