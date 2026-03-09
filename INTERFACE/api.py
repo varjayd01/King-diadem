@@ -195,3 +195,28 @@ def mobile_node(
         "status": "node registered",
         "world": world
     }
+import stripe
+
+@app.post("/payment/checkout")
+def create_checkout(api_key: str = Header(...)):
+
+check_api_key(api_key)
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+session = stripe.checkout.Session.create(
+    payment_method_types=["card"],
+    mode="subscription",
+    line_items=[
+        {
+            "price": os.getenv("STRIPE_PRICE_ID"),
+            "quantity": 1
+        }
+    ],
+    success_url="https://king-diadem.onrender.com/success",
+    cancel_url="https://king-diadem.onrender.com/cancel"
+)
+
+return {
+    "checkout_url": session.url
+}
