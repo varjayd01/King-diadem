@@ -8,6 +8,8 @@ from core.dependency_cycle import dependent_cycle
 from core.entropy_guard import entropy_guard
 from core.vigilance_protocol import vigilance_check
 
+from ENGINE.self_evolution import evolve_system
+
 
 def eternal_runtime(system_state):
 
@@ -23,6 +25,9 @@ def eternal_runtime(system_state):
 
         # dependent cycle evolution
         system_state = dependent_cycle(system_state)
+
+        # evolution
+        system_state = evolve_system(system_state)
 
         # drift detection
         drift = detect_drift(system_state)
