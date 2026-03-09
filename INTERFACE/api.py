@@ -74,3 +74,17 @@ def decision(data: DecisionInput):
     )
 
     return result
+@app.post("/mobile/node")
+
+def mobile_node(data: dict):
+
+    location = data.get("location")
+    food = data.get("food")
+    risk = data.get("risk")
+
+    world = mobile_report(location, food, risk)
+
+    return {
+        "status": "node registered",
+        "world": world
+    }
