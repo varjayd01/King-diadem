@@ -1,4 +1,23 @@
+import json
+import os
+
+TRUST_FILE = "data/node_trust.json"
+
 node_trust = {}
+
+def load_trust():
+
+    global node_trust
+
+    if os.path.exists(TRUST_FILE):
+        with open(TRUST_FILE,"r") as f:
+            node_trust = json.load(f)
+
+
+def save_trust():
+
+    with open(TRUST_FILE,"w") as f:
+        json.dump(node_trust,f)
 
 
 def get_trust(node_id):
@@ -18,5 +37,7 @@ def update_trust(node_id, valid=True):
     score = max(0.0, min(1.0, score))
 
     node_trust[node_id] = score
+
+    save_trust()
 
     return score
