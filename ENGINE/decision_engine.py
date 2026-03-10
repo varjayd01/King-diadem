@@ -79,10 +79,11 @@ def generate_options(resource_score, risk_score):
 
 def decision(location, food, money, risk):
 
+    # RESOURCE + RISK
     resource_score, food_score = evaluate_resources(food, money)
-
     risk_score = evaluate_risk(risk)
 
+    # SURVIVAL SCORE
     survival_score = max(
         5,
         min(
@@ -91,6 +92,7 @@ def decision(location, food, money, risk):
         )
     )
 
+    # OPTIONS
     options = generate_options(resource_score, risk_score)
 
     # -----------------------------
