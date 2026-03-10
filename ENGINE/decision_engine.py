@@ -7,6 +7,7 @@ from core.memory_store import log_decision, log_world_state
 
 from ENGINE.future_simulator import simulate_future
 from ENGINE.strategy_planner import plan_strategy
+from ENGINE.self_learning import record_decision
 
 
 # -----------------------------
@@ -137,11 +138,14 @@ def decision(location, food, money, risk):
     }
 
     # -----------------------------
-    # MEMORY LOGGING
+    # MEMORY + LEARNING
     # -----------------------------
 
     log_decision(result)
     log_world_state(world)
+
+    # self learning
+    record_decision(result)
 
     return result
 
