@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>King Diadem Survival AI</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+text-align:center;
+padding:40px
+}
+
+.box{
+background:#1e293b;
+padding:30px;
+border-radius:10px;
+max-width:500px;
+margin:auto
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:10px 0;
+border-radius:6px;
+border:none
+}
+
+button{
+background:#22c55e;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+border-radius:6px;
+font-size:16px;
+cursor:pointer
+}
+
+.result{
+margin-top:20px;
+text-align:left;
+background:#020617;
+padding:15px;
+border-radius:6px
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>King Diadem AI</h1>
+<p>Strategic Survival Intelligence</p>
+
+<div class="box">
+
+<input id="location" placeholder="Location (Bangkok)">
+
+<select id="food">
+<option>low</option>
+<option>medium</option>
+<option>high</option>
+</select>
+
+<input id="money" type="number" placeholder="Money">
+
+<select id="risk">
+<option>low</option>
+<option>medium</option>
+<option>high</option>
+</select>
+
+<button onclick="askAI()">Ask AI</button>
+
+<div class="result" id="result"></div>
+
+</div>
+
+<script>
+
+async function askAI(){
+
+const location=document.getElementById("location").value
+const food=document.getElementById("food").value
+const money=parseInt(document.getElementById("money").value)
+const risk=document.getElementById("risk").value
+
+const res=await fetch("/decision",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"api-key":"kd_test"
+},
+
+body:JSON.stringify({
+location:location,
+food:food,
+money:money,
+risk:risk
+})
+
+})
+
+const data=await res.json()
+
+document.getElementById("result").innerHTML=
+
+"<b>Best Strategy</b><br>"+data.strategy+
+"<br><br><b>Options</b><br>"+data.options.join("<br>")
+
+}
+
+</script>
+
+</body>
+</html>
