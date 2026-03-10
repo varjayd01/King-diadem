@@ -2,12 +2,11 @@
 # Reality Optimization Core
 
 from core.silent_canon import SILENT_CANON
-
 from GLOBAL_NODE.network_sync import sync_node
-
 from core.memory_store import log_decision, log_world_state
 
 from ENGINE.future_simulator import simulate_future
+from ENGINE.strategy_planner import plan_strategy
 
 
 # -----------------------------
@@ -94,28 +93,51 @@ def decision(location, food, money, risk):
 
     options = generate_options(resource_score, risk_score)
 
+    # -----------------------------
     # GLOBAL NODE UPDATE
+    # -----------------------------
+
     world = sync_node(location, {
         "food_score": food_score,
         "risk_score": risk_score
     })
 
+    # -----------------------------
     # SILENT CANON STATE
+    # -----------------------------
+
     canon_state = SILENT_CANON()
 
+    # -----------------------------
     # FUTURE SIMULATION
+    # -----------------------------
+
     future = simulate_future(world, steps=10)
+
+    # -----------------------------
+    # STRATEGY PLANNER
+    # -----------------------------
+
+    strategy = plan_strategy()
+
+    # -----------------------------
+    # RESULT
+    # -----------------------------
 
     result = {
         "location": location,
         "survival_score": survival_score,
         "options": options,
+        "strategy": strategy,
         "canon_state": canon_state,
         "world_state": world,
         "future_simulation": future
     }
 
+    # -----------------------------
     # MEMORY LOGGING
+    # -----------------------------
+
     log_decision(result)
     log_world_state(world)
 
