@@ -1,52 +1,89 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>King Diadem Survival AI</title>
+<title>KING DIADEM</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#0f172a;
+background:#0b132b;
 color:white;
 text-align:center;
-padding:40px
+padding:40px;
+}
+
+h1{
+font-size:42px;
+letter-spacing:3px;
+margin-bottom:5px;
+}
+
+.subtitle{
+color:#cbd5e1;
+margin-bottom:40px;
 }
 
 .box{
-background:#1e293b;
+background:#1c2541;
 padding:30px;
-border-radius:10px;
-max-width:500px;
-margin:auto
+border-radius:12px;
+max-width:520px;
+margin:auto;
 }
 
 input,select{
+
 width:100%;
-padding:10px;
+padding:12px;
 margin:10px 0;
-border-radius:6px;
-border:none
+border-radius:8px;
+border:none;
+font-size:16px;
+
 }
 
 button{
+
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+
+}
+
+.primary{
 background:#22c55e;
 color:white;
-border:none;
-padding:12px;
-width:100%;
-border-radius:6px;
-font-size:16px;
-cursor:pointer
+}
+
+.secondary{
+background:#3b82f6;
+color:white;
+}
+
+.third{
+background:#f59e0b;
+color:black;
 }
 
 .result{
-margin-top:20px;
-text-align:left;
+margin-top:25px;
 background:#020617;
 padding:15px;
-border-radius:6px
+border-radius:8px;
+text-align:left;
+}
+
+.note{
+font-size:14px;
+color:#cbd5e1;
+margin-top:15px;
 }
 
 </style>
@@ -55,36 +92,64 @@ border-radius:6px
 
 <body>
 
-<h1>King Diadem AI</h1>
-<p>Strategic Survival Intelligence</p>
+<h1>KING DIADEM</h1>
+
+<div class="subtitle">
+Strategic Civilization Engine
+</div>
+
 
 <div class="box">
 
-<input id="location" placeholder="Location (Bangkok)">
+<input id="location" placeholder="Location">
 
 <select id="food">
-<option>low</option>
-<option>medium</option>
-<option>high</option>
+<option value="low">food low</option>
+<option value="medium">food medium</option>
+<option value="high">food high</option>
 </select>
 
 <input id="money" type="number" placeholder="Money">
 
 <select id="risk">
-<option>low</option>
-<option>medium</option>
-<option>high</option>
+<option value="low">risk low</option>
+<option value="medium">risk medium</option>
+<option value="high">risk high</option>
 </select>
 
-<button onclick="askAI()">Ask AI</button>
+
+<button class="primary" onclick="askSystem()">
+Strategic Decision
+</button>
+
+
+<button class="secondary" onclick="openMap()">
+Global Survival Map
+</button>
+
+
+<button class="third" onclick="healthTool()">
+Food & Health Balance
+</button>
+
 
 <div class="result" id="result"></div>
 
+<div class="note">
+
+People come in different shapes and sizes.  
+Your body is part of your identity.  
+If you wish to change weight or improve health,  
+this system can suggest balanced options.
+
 </div>
+
+</div>
+
 
 <script>
 
-async function askAI(){
+async function askSystem(){
 
 const location=document.getElementById("location").value
 const food=document.getElementById("food").value
@@ -113,12 +178,29 @@ const data=await res.json()
 
 document.getElementById("result").innerHTML=
 
-"<b>Best Strategy</b><br>"+data.strategy+
-"<br><br><b>Options</b><br>"+data.options.join("<br>")
+"<b>Best Strategy</b><br>"+data.strategy.best_action+
+"<br><br><b>Score</b><br>"+data.strategy.score
+
+}
+
+function openMap(){
+
+window.location.href="/world"
+
+}
+
+function healthTool(){
+
+document.getElementById("result").innerHTML=
+
+"Food & Health Balance Tool<br><br>"+
+"Take a photo of your meal and the system will estimate calories, sodium and activity needed.<br><br>"+
+"It can suggest walking steps, water intake, or gym exercises based on your body."
 
 }
 
 </script>
 
 </body>
+
 </html>
