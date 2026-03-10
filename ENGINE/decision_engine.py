@@ -1,5 +1,5 @@
 # KING DIADEM Decision Engine
-# Reality Optimization Core
+# Unified Intelligence Core
 
 from core.silent_canon import SILENT_CANON
 from GLOBAL_NODE.network_sync import sync_node
@@ -8,6 +8,10 @@ from core.memory_store import log_decision, log_world_state
 from ENGINE.future_simulator import simulate_future
 from ENGINE.strategy_planner import plan_strategy
 from ENGINE.self_learning import record_decision
+
+from ENGINE.world_intelligence import update_world
+from ENGINE.world_intelligence import build_risk_map
+from ENGINE.world_intelligence import build_resource_map
 
 
 # -----------------------------
@@ -75,6 +79,37 @@ def generate_options(resource_score, risk_score):
 
 
 # -----------------------------
+# GLOBAL SURVIVAL MAP
+# -----------------------------
+
+def build_survival_map():
+
+    risk_map = build_risk_map()
+    resource_map = build_resource_map()
+
+    survival_map = {}
+
+    locations = set(risk_map) | set(resource_map)
+
+    for loc in locations:
+
+        risk = risk_map.get(loc, 50)
+        resource = resource_map.get(loc, 50)
+
+        survival = max(
+            0,
+            min(
+                100,
+                int(resource * 0.7 - risk * 0.6 + 50)
+            )
+        )
+
+        survival_map[loc] = survival
+
+    return survival_map
+
+
+# -----------------------------
 # MAIN DECISION ENGINE
 # -----------------------------
 
@@ -106,6 +141,12 @@ def decision(location, food, money, risk):
     })
 
     # -----------------------------
+    # WORLD INTELLIGENCE UPDATE
+    # -----------------------------
+
+    update_world(location, food_score, risk_score)
+
+    # -----------------------------
     # SILENT CANON STATE
     # -----------------------------
 
@@ -124,6 +165,12 @@ def decision(location, food, money, risk):
     strategy = plan_strategy()
 
     # -----------------------------
+    # GLOBAL SURVIVAL MAP
+    # -----------------------------
+
+    survival_map = build_survival_map()
+
+    # -----------------------------
     # RESULT
     # -----------------------------
 
@@ -134,7 +181,8 @@ def decision(location, food, money, risk):
         "strategy": strategy,
         "canon_state": canon_state,
         "world_state": world,
-        "future_simulation": future
+        "future_simulation": future,
+        "global_survival_map": survival_map
     }
 
     # -----------------------------
@@ -144,7 +192,6 @@ def decision(location, food, money, risk):
     log_decision(result)
     log_world_state(world)
 
-    # self learning
     record_decision(result)
 
     return result
