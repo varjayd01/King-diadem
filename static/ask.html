@@ -1,206 +1,62 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<title>KING DIADEM</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#0b132b;
-color:white;
-text-align:center;
-padding:40px;
-}
-
-h1{
-font-size:42px;
-letter-spacing:3px;
-margin-bottom:5px;
-}
-
-.subtitle{
-color:#cbd5e1;
-margin-bottom:40px;
-}
-
-.box{
-background:#1c2541;
-padding:30px;
-border-radius:12px;
-max-width:520px;
-margin:auto;
-}
-
-input,select{
-
-width:100%;
-padding:12px;
-margin:10px 0;
-border-radius:8px;
-border:none;
-font-size:16px;
-
-}
-
-button{
-
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:8px;
-font-size:16px;
-cursor:pointer;
-
-}
-
-.primary{
-background:#22c55e;
-color:white;
-}
-
-.secondary{
-background:#3b82f6;
-color:white;
-}
-
-.third{
-background:#f59e0b;
-color:black;
-}
-
-.result{
-margin-top:25px;
-background:#020617;
-padding:15px;
-border-radius:8px;
-text-align:left;
-}
-
-.note{
-font-size:14px;
-color:#cbd5e1;
-margin-top:15px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>KING DIADEM</h1>
-
-<div class="subtitle">
-Strategic Civilization Engine
-</div>
-
-
-<div class="box">
-
-<input id="location" placeholder="Location">
-
-<select id="food">
-<option value="low">food low</option>
-<option value="medium">food medium</option>
-<option value="high">food high</option>
-</select>
-
-<input id="money" type="number" placeholder="Money">
-
-<select id="risk">
-<option value="low">risk low</option>
-<option value="medium">risk medium</option>
-<option value="high">risk high</option>
-</select>
-
-
-<button class="primary" onclick="askSystem()">
-Strategic Decision
-</button>
-
-
-<button class="secondary" onclick="openMap()">
-Global Survival Map
-</button>
-
-
-<button class="third" onclick="healthTool()">
-Food & Health Balance
-</button>
-
-
-<div class="result" id="result"></div>
-
-<div class="note">
-
-People come in different shapes and sizes.  
-Your body is part of your identity.  
-If you wish to change weight or improve health,  
-this system can suggest balanced options.
-
-</div>
-
-</div>
-
-
 <script>
 
-async function askSystem(){
+async function askDecision(){
 
 const location=document.getElementById("location").value
 const food=document.getElementById("food").value
 const money=parseInt(document.getElementById("money").value)
 const risk=document.getElementById("risk").value
 
-const res=await fetch("/decision",{
-
+const res=await fetch("/simulate",{
 method:"POST",
-
 headers:{
 "Content-Type":"application/json",
 "api-key":"kd_test"
 },
-
 body:JSON.stringify({
 location:location,
 food:food,
 money:money,
 risk:risk
 })
-
 })
 
 const data=await res.json()
 
 document.getElementById("result").innerHTML=
 
-"<b>Best Strategy</b><br>"+data.strategy.best_action+
-"<br><br><b>Score</b><br>"+data.strategy.score
+"<b>Best Action</b><br>"+data.best_action+
+
+"<br><br><b>Score</b><br>"+data.score+
+
+"<br><br><b>Alternatives</b><br>"+
+
+data.alternatives.map(a=>a.action+" ("+a.expected_score+")").join("<br>")
 
 }
 
-function openMap(){
 
-window.location.href="/world"
+
+async function loadMap(){
+
+const res=await fetch("/world")
+const data=await res.json()
+
+document.getElementById("result").innerHTML=
+"<pre>"+JSON.stringify(data,null,2)+"</pre>"
 
 }
 
-function healthTool(){
+
+
+function foodBalance(){
 
 document.getElementById("result").innerHTML=
 
-"Food & Health Balance Tool<br><br>"+
-"Take a photo of your meal and the system will estimate calories, sodium and activity needed.<br><br>"+
-"It can suggest walking steps, water intake, or gym exercises based on your body."
+"Upload meal photo coming soon.<br><br>"+
+
+"System will estimate calories, sodium and suggest steps or water intake."
 
 }
 
 </script>
-
-</body>
-
-</html>
