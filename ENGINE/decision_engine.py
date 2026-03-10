@@ -2,16 +2,17 @@
 # Reality Optimization Core
 
 from core.silent_canon import SILENT_CANON
+
 from GLOBAL_NODE.network_sync import sync_node
 
 from core.memory_store import log_decision, log_world_state
 
-from SIMULATIONS.future_simulator import simulate_future
+from ENGINE.future_simulator import simulate_future
 
 
-# ----------------------------
+# -----------------------------
 # RESOURCE EVALUATION
-# ----------------------------
+# -----------------------------
 
 def evaluate_resources(food, money):
 
@@ -21,7 +22,7 @@ def evaluate_resources(food, money):
         "high": 80
     }
 
-    food_score = food_map.get(food.lower(), 40)
+    food_score = food_map.get(str(food).lower(), 40)
 
     try:
         money_score = max(0, int(money))
@@ -33,9 +34,9 @@ def evaluate_resources(food, money):
     return resource_score, food_score
 
 
-# ----------------------------
+# -----------------------------
 # RISK EVALUATION
-# ----------------------------
+# -----------------------------
 
 def evaluate_risk(risk):
 
@@ -45,12 +46,12 @@ def evaluate_risk(risk):
         "high": 80
     }
 
-    return risk_map.get(risk.lower(), 40)
+    return risk_map.get(str(risk).lower(), 40)
 
 
-# ----------------------------
+# -----------------------------
 # OPTION GENERATION
-# ----------------------------
+# -----------------------------
 
 def generate_options(resource_score, risk_score):
 
@@ -73,9 +74,9 @@ def generate_options(resource_score, risk_score):
     return options
 
 
-# ----------------------------
+# -----------------------------
 # MAIN DECISION ENGINE
-# ----------------------------
+# -----------------------------
 
 def decision(location, food, money, risk):
 
@@ -99,7 +100,7 @@ def decision(location, food, money, risk):
         "risk_score": risk_score
     })
 
-    # SILENT CANON GOVERNANCE
+    # SILENT CANON STATE
     canon_state = SILENT_CANON()
 
     # FUTURE SIMULATION
@@ -121,17 +122,15 @@ def decision(location, food, money, risk):
     return result
 
 
-# ----------------------------
+# -----------------------------
 # PUBLIC ENGINE
-# ----------------------------
+# -----------------------------
 
-def decision_engine():
+def decision_engine(location, food, money, risk):
 
-    result = decision(
-        location="earth",
-        food="medium",
-        money=50,
-        risk="low"
+    return decision(
+        location,
+        food,
+        money,
+        risk
     )
-
-    return result
