@@ -37,7 +37,7 @@ box-shadow:0 0 40px rgba(0,0,0,0.7);
 }
 
 .title{
-font-size:26px;
+font-size:28px;
 font-weight:bold;
 }
 
@@ -62,7 +62,7 @@ width:100%;
 padding:14px;
 border:none;
 border-radius:6px;
-background:linear-gradient(90deg,#5b6cff,#7d8cff);
+background:linear-gradient(90deg,#39d06a,#2bbcff);
 color:white;
 font-weight:bold;
 cursor:pointer;
@@ -96,7 +96,7 @@ position:relative;
 }
 
 .world{
-opacity:0.07;
+opacity:0.08;
 width:70%;
 position:absolute;
 }
@@ -137,7 +137,7 @@ background:linear-gradient(90deg,#6ef2a5,#42aaff);
 <div class="panel">
 
 <div class="title">KING DIADEM</div>
-<div class="subtitle">Global Decision Engine</div>
+<div class="subtitle">Strategic Civilization Engine</div>
 
 <input id="location" placeholder="Location">
 <input id="food" placeholder="Food Level">
@@ -199,12 +199,16 @@ canvas.height=window.innerHeight
 let particles=[]
 
 for(let i=0;i<80;i++){
+
 particles.push({
+
 x:Math.random()*canvas.width,
 y:Math.random()*canvas.height,
 vx:(Math.random()-0.5)*0.4,
 vy:(Math.random()-0.5)*0.4
+
 })
+
 }
 
 function animate(){
@@ -232,7 +236,6 @@ requestAnimationFrame(animate)
 
 animate()
 
-
 /* ANALYZE */
 
 async function analyze(){
@@ -254,11 +257,12 @@ resultText.innerHTML="Analyzing strategic state..."
 try{
 
 const res=await fetch(
-"https://king-diadem.onrender.com/decision",
+"https://king-diadem.onrender.com/simulate",
 {
 method:"POST",
 headers:{
-"Content-Type":"application/json"
+"Content-Type":"application/json",
+"api-key":"kd_test"
 },
 body:JSON.stringify({
 location:location,
@@ -273,12 +277,15 @@ const data=await res.json()
 
 let output="<b>AI Strategic Output</b><br><br>"
 
-if(data.choices){
-data.choices.forEach(c=>{
-output+="• "+c+"<br>"
+output+="Best Action: "+data.best_action+"<br>"
+output+="Score: "+data.score+"<br><br>"
+
+if(data.alternatives){
+
+data.alternatives.forEach(a=>{
+output+=a.action+" ("+a.expected_score+")<br>"
 })
-}else{
-output+="No strategy returned"
+
 }
 
 resultText.innerHTML=output
@@ -303,7 +310,9 @@ Math.max(
 document.getElementById("probBar").style.width=prob+"%"
 document.getElementById("probText").innerHTML=prob+"%"
 
-}catch(e){
+}
+
+catch(e){
 
 resultText.innerHTML="System error. Node reconnecting..."
 
