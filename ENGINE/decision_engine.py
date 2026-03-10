@@ -150,7 +150,7 @@ def decision(location, food, money, risk):
     # SILENT CANON STATE
     # -----------------------------
 
-    canon_state = SILENT_CANON()
+    canon_state = SILENT_CANON
 
     # -----------------------------
     # FUTURE SIMULATION
