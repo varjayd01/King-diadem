@@ -81,3 +81,41 @@ def login(data: dict):
         "message": "Login success",
         "api_key": users[email]["api_key"]
     }
+
+@app.post("/decision")
+def decision(data: dict):
+
+    api_key = data.get("api_key")
+    question = data.get("question")
+
+    users = load_users()
+
+    user_email = None
+
+    for email in users:
+        if users[email]["api_key"] == api_key:
+            user_email = email
+            break
+
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    if users[user_email]["credits"] <= 0:
+        return {
+            "message": "Creditsหมดแล้ว",
+            "next": "เติมเงิน 5 บาทเพื่อถามต่อ"
+        }
+
+    users[user_email]["credits"] -= 1
+    save_users(users)
+
+    return {
+        "king": "ผมกำลังวิเคราะห์ทางเลือกให้ครับ",
+        "question": question,
+        "choices": [
+            "ทางเลือก A",
+            "ทางเลือก B",
+            "ทางเลือก C"
+        ],
+        "credits_left": users[user_email]["credits"]
+    }
