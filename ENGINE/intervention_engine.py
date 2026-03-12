@@ -1,14 +1,11 @@
-def intervention(paths):
+# KING DIADEM Intervention Engine
 
-    advice = []
+def intervention(risk_state):
 
-    if "safe_exit_plan" in paths:
-        advice.append("prepare safe location and trusted contact")
+    if risk_state == "critical":
+        return "immediate relocation"
 
-    if "start_small_income" in paths:
-        advice.append("build independent income source")
+    if risk_state == "unstable":
+        return "stabilize resources"
 
-    if "mental_support" in paths:
-        advice.append("seek emotional support network")
-
-    return advice
+    return "maintain current strategy"
