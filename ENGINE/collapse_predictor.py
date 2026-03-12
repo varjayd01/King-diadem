@@ -1,14 +1,11 @@
-def predict_collapse(state):
+# KING DIADEM Collapse Predictor
 
-    score = 0
+def predict_collapse(risk_score):
 
-    if state["depression"]:
-        score += 25
+    if risk_score > 80:
+        return "high collapse probability"
 
-    if state["dependency"]:
-        score += 40
+    if risk_score > 60:
+        return "moderate collapse probability"
 
-    if state["violence_risk"]:
-        score += 80
-
-    return min(score,100)
+    return "low collapse probability"
