@@ -5,15 +5,17 @@ from core.silent_canon import SILENT_CANON
 from GLOBAL_NODE.network_sync import sync_node
 from core.memory_store import log_decision, log_world_state
 
-from ENGINE.future_simulator import simulate_future
+from ENGINE.resource_estimator import estimate
+from ENGINE.learning_engine import predict_risk, predict_food
 from ENGINE.strategy_planner import plan_strategy
-from ENGINE.self_learning import record_decision
-
+from ENGINE.future_simulator import simulate_future
 from ENGINE.world_intelligence import update_world
-from ENGINE.world_intelligence import build_risk_map
-from ENGINE.world_intelligence import build_resource_map
-
-from ENGINE.praticecasmuppada_engine import suffering_infrastructure
+from ENGINE.world_model import build_world_state
+from ENGINE.paticcasamuppada_engine import suffering_infrastructure
+from ENGINE.intervention_engine import intervention
+from ENGINE.survival_map_engine import build_survival_map
+from ENGINE.survival_advisor import survival_advice
+from ENGINE.human_state_engine import analyze_human_state
 
 
 # -------------------------
@@ -22,22 +24,21 @@ from ENGINE.praticecasmuppada_engine import suffering_infrastructure
 
 def evaluate_resources(food, money):
 
-    food_map = {
-        "low": 20,
-        "medium": 50,
-        "high": 80
-    }
-
-    food_score = food_map.get(str(food).lower(), 40)
+    estimation = estimate(food, money)
 
     try:
-        money_score = max(0, int(money))
+        money_value = float(money)
     except:
-        money_score = 30
+        money_value = 0
 
-    resource_score = food_score + money_score * 0.5
+    food_units = estimation.get("food_units", 0)
 
-    return resource_score, food_score
+    resource_score = min(
+        100,
+        int(food_units * 10 + money_value * 0.5)
+    )
+
+    return resource_score, estimation
 
 
 # -------------------------
@@ -49,10 +50,15 @@ def evaluate_risk(risk):
     risk_map = {
         "low": 20,
         "medium": 50,
-        "high": 80
+        "high": 80,
+        "critical": 95
     }
 
-    return risk_map.get(str(risk).lower(), 40)
+    risk_score = risk_map.get(str(risk).lower(), 40)
+
+    learned_adjustment = predict_risk(risk)
+
+    return min(100, risk_score + learned_adjustment)
 
 
 # -------------------------
@@ -63,65 +69,51 @@ def generate_options(resource_score, risk_score):
 
     options = []
 
-    if resource_score < 60:
-        options.append("Find local food or community resources")
+    if resource_score < 40:
+        options.append("search for food or local resources")
 
-    if resource_score >= 60:
-        options.append("Stabilize resources and avoid waste")
+    if resource_score >= 40:
+        options.append("stabilize resources")
 
-    if risk_score >= 60:
-        options.append("Reduce movement and secure safe location")
+    if risk_score > 70:
+        options.append("reduce exposure and move to safer location")
 
-    if risk_score < 60:
-        options.append("Explore small income opportunities")
+    if risk_score < 50:
+        options.append("explore income or cooperation opportunities")
 
-    options.append("Preserve human choice")
+    options.append("preserve human choice")
 
     return options
 
 
 # -------------------------
-# SURVIVAL MAP
+# MAIN DECISION ENGINE
 # -------------------------
 
-def build_survival_map():
+def decision_engine(location, lat, lng, food, money, risk, text):
 
-    risk_map = build_risk_map()
-    resource_map = build_resource_map()
+    # --------------------------------
+    # HUMAN STATE ANALYSIS
+    # --------------------------------
 
-    survival_map = {}
+    human_state = analyze_human_state(text)
 
-    locations = set(risk_map) | set(resource_map)
+    # --------------------------------
+    # RESOURCE ANALYSIS
+    # --------------------------------
 
-    for loc in locations:
+    resource_score, resource_estimation = evaluate_resources(food, money)
 
-        risk = risk_map.get(loc, 50)
-        resource = resource_map.get(loc, 50)
+    # --------------------------------
+    # RISK ANALYSIS
+    # --------------------------------
 
-        survival = max(
-            0,
-            min(
-                100,
-                int(resource * 0.7 - risk * 0.6 + 50)
-            )
-        )
-
-        survival_map[loc] = survival
-
-    return survival_map
-
-
-# -------------------------
-# DECISION PIPELINE
-# -------------------------
-
-def decision_engine(location, food, money, risk):
-
-    # resource + risk
-    resource_score, food_score = evaluate_resources(food, money)
     risk_score = evaluate_risk(risk)
 
-    # survival score
+    # --------------------------------
+    # SURVIVAL SCORE
+    # --------------------------------
+
     survival_score = max(
         5,
         min(
@@ -130,49 +122,116 @@ def decision_engine(location, food, money, risk):
         )
     )
 
-    # options
+    # --------------------------------
+    # DECISION OPTIONS
+    # --------------------------------
+
     options = generate_options(resource_score, risk_score)
 
-    # world sync
-    world = sync_node(location, {
-        "food_score": food_score,
-        "risk_score": risk_score
+    # --------------------------------
+    # INTERVENTION SYSTEM
+    # --------------------------------
+
+    intervention_action = intervention(risk)
+
+    # --------------------------------
+    # WORLD STATE
+    # --------------------------------
+
+    world = build_world_state()
+
+    sync_node(location, {
+        "food": food,
+        "risk": risk
     })
 
-    # world intelligence update
-    update_world(location, food_score, risk_score)
+    update_world(location, food, risk)
 
-    # silent canon
-    canon_state = SILENT_CANON
+    # --------------------------------
+    # FUTURE SIMULATION
+    # --------------------------------
 
-    # future simulation
     future = simulate_future(world, steps=10)
 
-    # strategy planning
+    # --------------------------------
+    # STRATEGY PLANNING
+    # --------------------------------
+
     strategy = plan_strategy()
 
-    # survival map
-    survival_map = build_survival_map()
+    # --------------------------------
+    # SURVIVAL MAP
+    # --------------------------------
 
-    # causal analysis
-    context = f"{location} food:{food} money:{money} risk:{risk}"
-    causal = suffering_infrastructure(context)
+    survival_map = build_survival_map(lat, lng)
+
+    # --------------------------------
+    # SURVIVAL ADVICE
+    # --------------------------------
+
+    advice = survival_advice(
+        survival_score,
+        resource_score,
+        risk_score
+    )
+
+    # --------------------------------
+    # CAUSAL ANALYSIS
+    # --------------------------------
+
+    context = f"location:{location} food:{food} money:{money} risk:{risk}"
+
+    causal_chain = suffering_infrastructure(context)
+
+    # --------------------------------
+    # SILENT CANON STATE
+    # --------------------------------
+
+    canon_state = SILENT_CANON
+
+    # --------------------------------
+    # FINAL RESULT
+    # --------------------------------
 
     result = {
+
         "location": location,
+
+        "human_state": human_state,
+
+        "resource_estimation": resource_estimation,
+
+        "resource_score": resource_score,
+
+        "risk_score": risk_score,
+
         "survival_score": survival_score,
+
         "options": options,
+
+        "intervention": intervention_action,
+
         "strategy": strategy,
-        "canon_state": canon_state,
+
         "world_state": world,
+
         "future_simulation": future,
-        "global_survival_map": survival_map,
-        "causal_chain": causal
+
+        "survival_map": survival_map,
+
+        "survival_advice": advice,
+
+        "causal_chain": causal_chain,
+
+        "canon_state": canon_state
     }
 
-    # learning
+    # --------------------------------
+    # LEARNING SYSTEM
+    # --------------------------------
+
     log_decision(result)
+
     log_world_state(world)
-    record_decision(result)
 
     return result
