@@ -1,16 +1,17 @@
-def generate_paths(state):
+# KING DIADEM Path Generator
 
-    paths = []
+def generate_paths(lat, lng):
 
-    if state["dependency"]:
-        paths.append("start_small_income")
+    routes = []
 
-    if state["depression"]:
-        paths.append("mental_support")
+    routes.append({
+        "type":"escape",
+        "target":f"{lat+0.01},{lng+0.01}"
+    })
 
-    if state["violence_risk"]:
-        paths.append("safe_exit_plan")
+    routes.append({
+        "type":"resource",
+        "target":f"{lat+0.02},{lng+0.02}"
+    })
 
-    paths.append("restore_personal_choice")
-
-    return paths
+    return routes
