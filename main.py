@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 import json
 import os
 import uuid
@@ -6,12 +7,19 @@ import hashlib
 
 app = FastAPI()
 
+# -----------------------------
+# Static Web Interface
+# -----------------------------
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# -----------------------------
+# Database
+# -----------------------------
+
 USERS_FILE = "data/users.json"
 
-
-# ---------------------------
-# Database helpers
-# ---------------------------
 
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -37,18 +45,23 @@ def find_user_by_api(api_key, users):
     return None
 
 
-# ---------------------------
+# -----------------------------
 # Root
-# ---------------------------
+# -----------------------------
 
 @app.get("/")
 def root():
-    return {"message": "KING DIADEM online"}
+    return {
+        "system": "KING DIADEM",
+        "status": "online",
+        "engine": "active",
+        "version": "1.1"
+    }
 
 
-# ---------------------------
+# -----------------------------
 # Signup
-# ---------------------------
+# -----------------------------
 
 @app.post("/signup")
 def signup(data: dict):
@@ -57,7 +70,7 @@ def signup(data: dict):
     password = data.get("password")
 
     if not email or not password:
-        raise HTTPException(status_code=400, detail="Email and password required")
+        raise HTTPException(status_code=400, detail="Missing email or password")
 
     users = load_users()
 
@@ -81,9 +94,9 @@ def signup(data: dict):
     }
 
 
-# ---------------------------
+# -----------------------------
 # Login
-# ---------------------------
+# -----------------------------
 
 @app.post("/login")
 def login(data: dict):
@@ -106,9 +119,9 @@ def login(data: dict):
     }
 
 
-# ---------------------------
+# -----------------------------
 # Decision Engine
-# ---------------------------
+# -----------------------------
 
 @app.post("/decision")
 def decision(data: dict):
@@ -125,29 +138,33 @@ def decision(data: dict):
 
     if users[user_email]["credits"] <= 0:
         return {
-            "message": "Credits หมดแล้ว",
-            "next": "เติม 5 บาทเพื่อใช้งานต่อ"
+            "message": "Credits หมด",
+            "next": "เติมเครดิตก่อนใช้งานต่อ"
         }
 
     # ใช้เครดิต
     users[user_email]["credits"] -= 1
     save_users(users)
 
+    # Placeholder Decision Engine
+    choices = [
+        "ทางเลือก A",
+        "ทางเลือก B",
+        "ทางเลือก C"
+    ]
+
     return {
-        "king": "ระบบกำลังวิเคราะห์สถานการณ์",
+        "system": "KING DIADEM",
         "question": question,
-        "choices": [
-            "ทางเลือก A",
-            "ทางเลือก B",
-            "ทางเลือก C"
-        ],
+        "analysis": "กำลังประเมินทางเลือกที่ปลอดภัยที่สุด",
+        "choices": choices,
         "credits_left": users[user_email]["credits"]
     }
 
 
-# ---------------------------
-# Topup credits
-# ---------------------------
+# -----------------------------
+# Topup Credits
+# -----------------------------
 
 @app.post("/topup")
 def topup(data: dict):
@@ -163,7 +180,6 @@ def topup(data: dict):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
     users[user_email]["credits"] += amount
-
     save_users(users)
 
     return {
@@ -172,9 +188,9 @@ def topup(data: dict):
     }
 
 
-# ---------------------------
-# Emergency mode
-# ---------------------------
+# -----------------------------
+# Emergency Mode
+# -----------------------------
 
 @app.post("/emergency")
 def emergency(data: dict):
@@ -183,12 +199,26 @@ def emergency(data: dict):
 
     return {
         "mode": "EMERGENCY",
-        "message": "หยุดก่อน 3 นาที หายใจลึก ๆ ระบบกำลังวิเคราะห์ทางเลือก",
+        "message": "หยุดก่อน 3 นาที แล้วค่อยคิด",
         "situation": situation,
         "steps": [
-            "หยุดการกระทำทันที",
+            "หยุดการตัดสินใจทันที",
             "หายใจลึก 5 ครั้ง",
-            "ประเมินความเสี่ยง",
-            "เลือกทางที่ไม่ทำร้ายใคร"
+            "มองหาทางเลือกที่ไม่ทำร้ายใคร"
         ]
+    }
+
+
+# -----------------------------
+# Future Expansion Hook
+# -----------------------------
+
+@app.get("/system/roadmap")
+def roadmap():
+
+    return {
+        "phase_1": "Decision engine",
+        "phase_2": "AI advisory layer",
+        "phase_3": "Global node network",
+        "phase_4": "DriftZero governance system"
     }
