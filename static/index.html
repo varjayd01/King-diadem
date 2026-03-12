@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KING DIADEM</title>
+<style>
+
+body{
+background:#0b0f1a;
+color:white;
+font-family:Arial;
+text-align:center;
+padding-top:80px;
+}
+
+input{
+padding:10px;
+width:300px;
+margin:10px;
+border-radius:6px;
+border:none;
+}
+
+button{
+padding:10px 20px;
+background:#00ffd5;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+background:#00c8a8;
+}
+
+.box{
+background:#11182b;
+padding:30px;
+width:400px;
+margin:auto;
+border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>KING DIADEM</h2>
+
+<p>พิมพ์สิ่งที่ท่านติดปัญหาและต้องการทางเลือก</p>
+
+<input id="apikey" placeholder="API KEY"><br>
+
+<input id="question" placeholder="Your situation..."><br>
+
+<button onclick="ask()">Analyze</button>
+
+<p id="result"></p>
+
+</div>
+
+<script>
+
+async function ask(){
+
+const api = document.getElementById("apikey").value
+const question = document.getElementById("question").value
+
+const response = await fetch("/decision",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+api_key:api,
+question:question
+})
+})
+
+const data = await response.json()
+
+document.getElementById("result").innerText =
+JSON.stringify(data,null,2)
+
+}
+
+</script>
+
+</body>
+</html>
