@@ -13,6 +13,8 @@ from ENGINE.world_intelligence import update_world
 from ENGINE.world_intelligence import build_risk_map
 from ENGINE.world_intelligence import build_resource_map
 
+from ENGINE.paticcasamuppada_engine import suffering_infrastructure
+
 
 # -----------------------------
 # RESOURCE EVALUATION
@@ -45,7 +47,7 @@ def evaluate_resources(food, money):
 def evaluate_risk(risk):
 
     risk_map = {
-        "low": 20,
+        "low": 0,
         "medium": 50,
         "high": 80
     }
@@ -131,49 +133,36 @@ def decision(location, food, money, risk):
     # OPTIONS
     options = generate_options(resource_score, risk_score)
 
-    # -----------------------------
     # GLOBAL NODE UPDATE
-    # -----------------------------
-
     world = sync_node(location, {
         "food_score": food_score,
         "risk_score": risk_score
     })
 
-    # -----------------------------
     # WORLD INTELLIGENCE UPDATE
-    # -----------------------------
-
     update_world(location, food_score, risk_score)
 
-    # -----------------------------
     # SILENT CANON STATE
-    # -----------------------------
-
     canon_state = SILENT_CANON
 
-    # -----------------------------
     # FUTURE SIMULATION
-    # -----------------------------
-
     future = simulate_future(world, steps=10)
 
-    # -----------------------------
     # STRATEGY PLANNER
-    # -----------------------------
-
     strategy = plan_strategy()
 
-    # -----------------------------
     # GLOBAL SURVIVAL MAP
-    # -----------------------------
-
     survival_map = build_survival_map()
 
     # -----------------------------
-    # RESULT
+    # CAUSAL ANALYSIS
     # -----------------------------
 
+    context = f"{location} food:{food} money:{money} risk:{risk}"
+
+    causal = suffering_infrastructure(context)
+
+    # RESULT
     result = {
         "location": location,
         "survival_score": survival_score,
@@ -182,13 +171,11 @@ def decision(location, food, money, risk):
         "canon_state": canon_state,
         "world_state": world,
         "future_simulation": future,
-        "global_survival_map": survival_map
+        "global_survival_map": survival_map,
+        "causal_chain": causal
     }
 
-    # -----------------------------
     # MEMORY + LEARNING
-    # -----------------------------
-
     log_decision(result)
     log_world_state(world)
 
