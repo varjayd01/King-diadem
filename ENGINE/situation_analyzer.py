@@ -1,29 +1,22 @@
-def analyze(food, money, risk):
+# KING DIADEM Situation Analyzer
 
-    result = {}
+def analyze_situation(food_score, risk_score):
 
-    # food
-    if food.lower() in ["none", "0", "no"]:
-        result["food"] = "critical"
+    if risk_score > 70:
+        state = "critical"
+
+    elif risk_score > 40:
+        state = "unstable"
+
     else:
-        result["food"] = "available"
+        state = "stable"
 
-    # money
-    try:
-        m = float(money)
-        if m <= 0:
-            result["money"] = "critical"
-        elif m < 100:
-            result["money"] = "low"
-        else:
-            result["money"] = "stable"
-    except:
-        result["money"] = "unknown"
-
-    # risk
-    if risk:
-        result["risk"] = "alert"
+    if food_score < 30:
+        resource_state = "scarcity"
     else:
-        result["risk"] = "normal"
+        resource_state = "sufficient"
 
-    return result
+    return {
+        "risk_state": state,
+        "resource_state": resource_state
+    }
