@@ -2,8 +2,13 @@ import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-# KING DIADEM CORE
-from king_diadem_core import king_diadem
+# KING DIADEM ENGINE
+from ENGINE.decision_engine import decision_engine
+
+
+# --------------------------------------------------
+# FASTAPI INITIALIZATION
+# --------------------------------------------------
 
 app = FastAPI(
     title="KING DIADEM",
@@ -12,20 +17,31 @@ app = FastAPI(
 )
 
 
-# -----------------------------
-# Request Model
-# -----------------------------
+# --------------------------------------------------
+# REQUEST MODEL
+# --------------------------------------------------
+
+class DecisionRequest(BaseModel):
+    location: str
+    lat: float
+    lng: float
+    food: str
+    money: float
+    risk: str
+    text: str
+
 
 class QuestionRequest(BaseModel):
     question: str
 
 
-# -----------------------------
-# Health Check
-# -----------------------------
+# --------------------------------------------------
+# ROOT HEALTH CHECK
+# --------------------------------------------------
 
 @app.get("/")
 def root():
+
     return {
         "system": "KING DIADEM",
         "status": "running",
@@ -33,37 +49,74 @@ def root():
     }
 
 
-# -----------------------------
-# Decision Endpoint
-# -----------------------------
+# --------------------------------------------------
+# MAIN DECISION ENDPOINT
+# --------------------------------------------------
 
 @app.post("/decision")
-def decision(request: QuestionRequest):
+def decision(request: DecisionRequest):
 
-    result = king_diadem(request.question)
+    result = decision_engine(
+        request.location,
+        request.lat,
+        request.lng,
+        request.food,
+        request.money,
+        request.risk,
+        request.text
+    )
 
     return result
 
 
-# -----------------------------
-# Emergency Mode
-# -----------------------------
+# --------------------------------------------------
+# SIMPLE QUESTION MODE
+# --------------------------------------------------
+
+@app.post("/ask")
+def ask(request: QuestionRequest):
+
+    result = decision_engine(
+        location="unknown",
+        lat=0,
+        lng=0,
+        food="unknown",
+        money=0,
+        risk="medium",
+        text=request.question
+    )
+
+    return result
+
+
+# --------------------------------------------------
+# EMERGENCY MODE
+# --------------------------------------------------
 
 @app.post("/emergency")
-def emergency(request: QuestionRequest):
+def emergency(request: DecisionRequest):
 
-    result = king_diadem(request.question)
+    result = decision_engine(
+        request.location,
+        request.lat,
+        request.lng,
+        request.food,
+        request.money,
+        request.risk,
+        request.text
+    )
 
     result["mode"] = "emergency"
 
     return result
 
 
-# -----------------------------
-# Server Launch
-# -----------------------------
+# --------------------------------------------------
+# SERVER START
+# --------------------------------------------------
 
 if __name__ == "__main__":
+
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
