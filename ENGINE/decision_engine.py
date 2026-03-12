@@ -1,7 +1,7 @@
-# KING DIADEM Decision Engine
-# Unified Intelligence Core
+# KING DIADEM Unified Decision Engine
 
 from core.silent_canon import SILENT_CANON
+
 from GLOBAL_NODE.network_sync import sync_node
 from core.memory_store import log_decision, log_world_state
 
@@ -13,12 +13,12 @@ from ENGINE.world_intelligence import update_world
 from ENGINE.world_intelligence import build_risk_map
 from ENGINE.world_intelligence import build_resource_map
 
-from ENGINE.paticcasamuppada_engine import suffering_infrastructure
+from ENGINE.praticecasmuppada_engine import suffering_infrastructure
 
 
-# -----------------------------
+# -------------------------
 # RESOURCE EVALUATION
-# -----------------------------
+# -------------------------
 
 def evaluate_resources(food, money):
 
@@ -40,14 +40,14 @@ def evaluate_resources(food, money):
     return resource_score, food_score
 
 
-# -----------------------------
+# -------------------------
 # RISK EVALUATION
-# -----------------------------
+# -------------------------
 
 def evaluate_risk(risk):
 
     risk_map = {
-        "low": 0,
+        "low": 20,
         "medium": 50,
         "high": 80
     }
@@ -55,9 +55,9 @@ def evaluate_risk(risk):
     return risk_map.get(str(risk).lower(), 40)
 
 
-# -----------------------------
+# -------------------------
 # OPTION GENERATION
-# -----------------------------
+# -------------------------
 
 def generate_options(resource_score, risk_score):
 
@@ -80,9 +80,9 @@ def generate_options(resource_score, risk_score):
     return options
 
 
-# -----------------------------
-# GLOBAL SURVIVAL MAP
-# -----------------------------
+# -------------------------
+# SURVIVAL MAP
+# -------------------------
 
 def build_survival_map():
 
@@ -111,17 +111,17 @@ def build_survival_map():
     return survival_map
 
 
-# -----------------------------
-# MAIN DECISION ENGINE
-# -----------------------------
+# -------------------------
+# DECISION PIPELINE
+# -------------------------
 
-def decision(location, food, money, risk):
+def decision_engine(location, food, money, risk):
 
-    # RESOURCE + RISK
+    # resource + risk
     resource_score, food_score = evaluate_resources(food, money)
     risk_score = evaluate_risk(risk)
 
-    # SURVIVAL SCORE
+    # survival score
     survival_score = max(
         5,
         min(
@@ -130,39 +130,34 @@ def decision(location, food, money, risk):
         )
     )
 
-    # OPTIONS
+    # options
     options = generate_options(resource_score, risk_score)
 
-    # GLOBAL NODE UPDATE
+    # world sync
     world = sync_node(location, {
         "food_score": food_score,
         "risk_score": risk_score
     })
 
-    # WORLD INTELLIGENCE UPDATE
+    # world intelligence update
     update_world(location, food_score, risk_score)
 
-    # SILENT CANON STATE
+    # silent canon
     canon_state = SILENT_CANON
 
-    # FUTURE SIMULATION
+    # future simulation
     future = simulate_future(world, steps=10)
 
-    # STRATEGY PLANNER
+    # strategy planning
     strategy = plan_strategy()
 
-    # GLOBAL SURVIVAL MAP
+    # survival map
     survival_map = build_survival_map()
 
-    # -----------------------------
-    # CAUSAL ANALYSIS
-    # -----------------------------
-
+    # causal analysis
     context = f"{location} food:{food} money:{money} risk:{risk}"
-
     causal = suffering_infrastructure(context)
 
-    # RESULT
     result = {
         "location": location,
         "survival_score": survival_score,
@@ -175,24 +170,9 @@ def decision(location, food, money, risk):
         "causal_chain": causal
     }
 
-    # MEMORY + LEARNING
+    # learning
     log_decision(result)
     log_world_state(world)
-
     record_decision(result)
 
     return result
-
-
-# -----------------------------
-# PUBLIC ENGINE
-# -----------------------------
-
-def decision_engine(location, food, money, risk):
-
-    return decision(
-        location,
-        food,
-        money,
-        risk
-    )
