@@ -1,25 +1,25 @@
 # KING DIADEM Simulation Engine
 
-def simulate_future(current_state):
+def simulate_future(state):
 
     scenarios = []
 
     scenarios.append({
-        "scenario": "stable",
+        "future": "stable",
         "risk": 2,
-        "outcome": "maintain_position"
+        "action": "maintain"
     })
 
     scenarios.append({
-        "scenario": "resource_drop",
+        "future": "resource_drop",
         "risk": 5,
-        "outcome": "seek_resources"
+        "action": "secure_resources"
     })
 
     scenarios.append({
-        "scenario": "high_risk_event",
+        "future": "high_risk",
         "risk": 8,
-        "outcome": "escape_route"
+        "action": "escape"
     })
 
     return scenarios
