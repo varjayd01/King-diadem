@@ -1,17 +1,21 @@
-# KING DIADEM Resource Estimator
+def estimate_resources(food, money):
 
-def estimate(food, money):
+    resources = {
+        "food_level": food,
+        "money_level": money,
+        "survival_days": 0
+    }
 
-    estimation = {}
+    if food >= 5:
+        resources["survival_days"] += 5
+    elif food >= 2:
+        resources["survival_days"] += 2
+    else:
+        resources["survival_days"] += 1
 
-    try:
-        money_value = float(money)
-        estimation["days_survival"] = money_value / 50
-    except:
-        estimation["days_survival"] = "unknown"
+    if money >= 1000:
+        resources["survival_days"] += 5
+    elif money >= 200:
+        resources["survival_days"] += 2
 
-    food_units = len(food.split())
-
-    estimation["food_units"] = food_units
-
-    return estimation
+    return resources
