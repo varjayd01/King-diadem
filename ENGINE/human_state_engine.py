@@ -22,3 +22,19 @@ def analyze_human_state(text):
         state["violence_risk"] = True
 
     return state
+
+
+def evaluate_human_state(food, money, risk):
+
+    score = 50
+
+    if food < 2:
+        score -= 20
+
+    if money < 100:
+        score -= 10
+
+    if risk > 5:
+        score -= 20
+
+    return score
