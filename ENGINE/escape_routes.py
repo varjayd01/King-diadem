@@ -1,11 +1,35 @@
 # KING DIADEM Escape Route Generator
 
-from ENGINE.map_bridge import open_google_maps
+def generate_escape_routes(location, risk):
 
-def generate_escape_route(lat, lng):
+    routes = []
 
-    safe_point = f"{lat+0.01},{lng+0.01}"
+    if risk > 7:
+        routes.append({
+            "route": "leave_area",
+            "priority": 1
+        })
 
-    route = f"https://www.google.com/maps/dir/{lat},{lng}/{safe_point}"
+        routes.append({
+            "route": "seek_safe_zone",
+            "priority": 2
+        })
 
-    return route
+    elif risk > 4:
+        routes.append({
+            "route": "reduce_visibility",
+            "priority": 1
+        })
+
+        routes.append({
+            "route": "prepare_exit",
+            "priority": 2
+        })
+
+    else:
+        routes.append({
+            "route": "maintain_position",
+            "priority": 1
+        })
+
+    return routes
