@@ -1,20 +1,28 @@
 # KING DIADEM Survival Advisor
 
-from ENGINE.survival_map_engine import build_survival_map
-from ENGINE.resource_estimator import estimate_resources
-from ENGINE.strategy_planner import plan_strategy
+def survival_advisor(food, money, risk):
 
+    survival_score = 50
+    recommended_actions = []
 
-def survival_advice(lat, lng, food, money, risk):
+    if food < 2:
+        survival_score -= 20
+        recommended_actions.append("find_food")
 
-    survival_map = build_survival_map(lat, lng)
+    if money < 100:
+        survival_score -= 10
+        recommended_actions.append("secure_income")
 
-    resources = estimate_resources(food, money)
+    if risk > 5:
+        survival_score -= 20
+        recommended_actions.append("reduce_risk")
 
-    strategy = plan_strategy()
+    if survival_score >= 60:
+        recommended_actions.append("expand_options")
+    else:
+        recommended_actions.append("stabilize")
 
     return {
-        "survival_map": survival_map,
-        "resources": resources,
-        "strategy": strategy
+        "survival_score": survival_score,
+        "recommended_actions": recommended_actions
     }
