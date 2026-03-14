@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KING DIADEM</title>
+<style>
+body{
+background:#0b0f19;
+color:white;
+font-family:monospace;
+padding:40px;
+}
+button{
+padding:10px 20px;
+background:#00ffcc;
+border:none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>KING DIADEM</h1>
+
+<p>Location</p>
+<input id="location">
+
+<p>Money</p>
+<input id="money">
+
+<p>Food</p>
+<input id="food">
+
+<p>Risk</p>
+<input id="risk">
+
+<br><br>
+
+<button onclick="askAI()">DECIDE</button>
+
+<pre id="result"></pre>
+
+<script>
+
+async function askAI(){
+
+const res = await fetch("/decision",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"api-key":"demo"
+},
+body:JSON.stringify({
+location:document.getElementById("location").value,
+money:parseInt(document.getElementById("money").value),
+food:parseInt(document.getElementById("food").value),
+risk:document.getElementById("risk").value
+})
+})
+
+const data = await res.json()
+
+document.getElementById("result").innerText =
+JSON.stringify(data,null,2)
+
+}
+
+</script>
+
+</body>
+</html>
