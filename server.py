@@ -10,9 +10,9 @@ from ENGINE.decision_engine import decision_engine
 from AUTH.api_key_manager import validate_api_key, use_credit, add_credit
 
 
-# ==========================================
+# ================================
 # STRIPE CONFIG
-# ==========================================
+# ================================
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
@@ -23,9 +23,9 @@ if not STRIPE_SECRET_KEY:
 stripe.api_key = STRIPE_SECRET_KEY
 
 
-# ==========================================
+# ================================
 # FASTAPI INIT
-# ==========================================
+# ================================
 
 app = FastAPI(
     title="KING DIADEM",
@@ -33,9 +33,9 @@ app = FastAPI(
 )
 
 
-# ==========================================
+# ================================
 # REQUEST MODEL
-# ==========================================
+# ================================
 
 class DecisionRequest(BaseModel):
     location: str
@@ -44,9 +44,9 @@ class DecisionRequest(BaseModel):
     risk: str
 
 
-# ==========================================
+# ================================
 # ROOT
-# ==========================================
+# ================================
 
 @app.get("/")
 def root():
@@ -56,9 +56,9 @@ def root():
     }
 
 
-# ==========================================
+# ================================
 # STATUS
-# ==========================================
+# ================================
 
 @app.get("/status")
 def status():
@@ -69,27 +69,27 @@ def status():
     }
 
 
-# ==========================================
+# ================================
 # HEALTH
-# ==========================================
+# ================================
 
 @app.get("/health")
 def health():
     return {"health": "ok"}
 
 
-# ==========================================
+# ================================
 # DASHBOARD
-# ==========================================
+# ================================
 
 @app.get("/dashboard")
 def dashboard():
     return FileResponse("INTERFACE/dashboard.html")
 
 
-# ==========================================
+# ================================
 # DECISION API
-# ==========================================
+# ================================
 
 @app.post("/decision")
 async def decision(req: DecisionRequest, api_key: str = Header(...)):
@@ -113,6 +113,7 @@ async def decision(req: DecisionRequest, api_key: str = Header(...)):
 
         return {
             "system": "KING DIADEM",
+            "engine": "decision-core",
             "decision": result
         }
 
@@ -120,9 +121,9 @@ async def decision(req: DecisionRequest, api_key: str = Header(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ==========================================
+# ================================
 # BUY CREDITS
-# ==========================================
+# ================================
 
 @app.get("/buy-credits")
 def buy_credits(api_key: str):
@@ -159,9 +160,9 @@ def buy_credits(api_key: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ==========================================
+# ================================
 # STRIPE WEBHOOK
-# ==========================================
+# ================================
 
 @app.post("/stripe-webhook")
 async def stripe_webhook(request: Request):
@@ -192,27 +193,27 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-# ==========================================
+# ================================
 # PAYMENT SUCCESS
-# ==========================================
+# ================================
 
 @app.get("/success")
 def payment_success():
     return {"status": "payment success"}
 
 
-# ==========================================
+# ================================
 # PAYMENT CANCEL
-# ==========================================
+# ================================
 
 @app.get("/cancel")
 def payment_cancel():
     return {"status": "payment cancelled"}
 
 
-# ==========================================
+# ================================
 # START SERVER
-# ==========================================
+# ================================
 
 if __name__ == "__main__":
 
