@@ -1,39 +1,45 @@
 import random
 
-# dialogue layer
-from ENGINE.dialogue_engine import generate_reply
-
-# ai council
-from ENGINE.ai_council import ai_council
-
-
 def run_decision(data):
 
-    """
-    Core decision engine
-    """
+    if not isinstance(data, dict):
+        return {
+            "error": "invalid input"
+        }
 
-    location = data.get("location")
-    food = data.get("food")
-    money = data.get("money")
-    risk = data.get("risk")
+    prompt = data.get("prompt")
 
-    votes = ai_council(location, food, money, risk)
+    if not prompt:
+        return {
+            "decision": "No prompt provided"
+        }
 
-    decision = random.choice(votes)
+    prompt = prompt.lower()
 
-    return decision
+    # simple logic layer
+    if "money" in prompt:
+        return {
+            "decision": "Focus on stability before scaling."
+        }
 
+    if "relationship" in prompt:
+        return {
+            "decision": "Clarity first. Emotion second."
+        }
 
-def dialogue_layer(user_text):
+    if "risk" in prompt:
+        return {
+            "decision": "Reduce downside before upside."
+        }
 
-    """
-    Human ↔ AI conversation layer
-    """
-
-    reply = generate_reply(user_text)
+    # fallback AI-style decision
+    responses = [
+        "Gather more information before deciding.",
+        "Move slowly and preserve options.",
+        "Stability first, expansion later.",
+        "Protect resources before action."
+    ]
 
     return {
-        "type": "dialogue",
-        "reply": reply
+        "decision": random.choice(responses)
     }
