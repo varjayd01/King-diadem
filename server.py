@@ -50,3 +50,9 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=10000
     )
+from PAYMENT.stripe_payment import create_payment_session
+
+@app.get("/buy-credits")
+def buy_credits():
+    url = create_payment_session()
+    return {"payment_url": url}
