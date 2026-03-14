@@ -2,15 +2,22 @@ import stripe
 import os
 from DATABASE.credit_store import add_credits
 
-stripe.api_key = os.getenv("STRIPE_SECRET")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 processed_events = set()
 
-def handle_webhook(event):
+def handle_webhook(payload, sig_header):
+
+    event = stripe.Webhook.construct_event(
+        payload,
+        sig_header,
+        WEBHOOK_SECRET
+    )
 
     event_id = event["id"]
 
-    # กัน webhook ซ้ำ
     if event_id in processed_events:
         return "duplicate"
 
