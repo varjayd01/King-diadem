@@ -9,25 +9,30 @@ from pydantic import BaseModel
 from ENGINE.decision_engine import decision_engine
 from AUTH.api_key_manager import validate_api_key, use_credit, add_credit
 
-# ==============================
-# STRIPE CONFIG
-# ==============================
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# =========================
+# STRIPE CONFIG
+# =========================
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
-# ==============================
+stripe.api_key = STRIPE_SECRET_KEY
+
+
+# =========================
 # FASTAPI INIT
-# ==============================
+# =========================
 
 app = FastAPI(
     title="KING DIADEM",
-    version="1.0",
+    version="1.0"
 )
 
-# ==============================
+
+# =========================
 # REQUEST MODEL
-# ==============================
+# =========================
 
 class DecisionRequest(BaseModel):
     location: str
@@ -35,9 +40,10 @@ class DecisionRequest(BaseModel):
     money: int
     risk: str
 
-# ==============================
+
+# =========================
 # ROOT
-# ==============================
+# =========================
 
 @app.get("/")
 def root():
@@ -46,9 +52,10 @@ def root():
         "status": "running"
     }
 
-# ==============================
+
+# =========================
 # SYSTEM STATUS
-# ==============================
+# =========================
 
 @app.get("/status")
 def status():
@@ -58,27 +65,28 @@ def status():
         "engine": "decision-core"
     }
 
-# ==============================
+
+# =========================
 # HEALTH CHECK
-# ==============================
+# =========================
 
 @app.get("/health")
 def health():
-    return {
-        "health": "ok"
-    }
+    return {"health": "ok"}
 
-# ==============================
-# DASHBOARD UI
-# ==============================
+
+# =========================
+# DASHBOARD
+# =========================
 
 @app.get("/dashboard")
 def dashboard():
     return FileResponse("INTERFACE/dashboard.html")
 
-# ==============================
+
+# =========================
 # DECISION API
-# ==============================
+# =========================
 
 @app.post("/decision")
 def decision(req: DecisionRequest, api_key: str = Header(...)):
@@ -100,35 +108,47 @@ def decision(req: DecisionRequest, api_key: str = Header(...)):
 
     return result
 
-# ==============================
+
+# =========================
 # BUY CREDITS
-# ==============================
+# =========================
 
 @app.get("/buy-credits")
-def buy_credits():
+def buy_credits(api_key: str):
 
-    session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        line_items=[{
-            "price_data":{
-                "currency":"usd",
-                "product_data":{
-                    "name":"KING DIADEM CREDITS"
+    try:
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+
+            client_reference_id=api_key,
+
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "KING DIADEM CREDITS"
+                    },
+                    "unit_amount": 500
                 },
-                "unit_amount":500
-            },
-            "quantity":1
-        }],
-        mode="payment",
-        success_url="https://king-diadem.onrender.com/success",
-        cancel_url="https://king-diadem.onrender.com/cancel"
-    )
+                "quantity": 1
+            }],
 
-    return {"payment_url": session.url}
+            mode="payment",
 
-# ==============================
+            success_url="https://king-diadem.onrender.com/success",
+            cancel_url="https://king-diadem.onrender.com/cancel"
+        )
+
+        return {"payment_url": session.url}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================
 # STRIPE WEBHOOK
-# ==============================
+# =========================
 
 @app.post("/stripe-webhook")
 async def stripe_webhook(request: Request):
@@ -137,6 +157,7 @@ async def stripe_webhook(request: Request):
     sig_header = request.headers.get("stripe-signature")
 
     try:
+
         event = stripe.Webhook.construct_event(
             payload,
             sig_header,
@@ -146,7 +167,6 @@ async def stripe_webhook(request: Request):
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    # PAYMENT SUCCESS
     if event["type"] == "checkout.session.completed":
 
         session = event["data"]["object"]
@@ -158,11 +178,13 @@ async def stripe_webhook(request: Request):
 
     return {"status": "ok"}
 
-# ==============================
+
+# =========================
 # START SERVER
-# ==============================
+# =========================
 
 if __name__ == "__main__":
+
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
