@@ -1,6 +1,7 @@
 import stripe
+import os
 
-stripe.api_key = "STRIPE_SECRET_KEY"
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 def create_payment_session():
     session = stripe.checkout.Session.create(
