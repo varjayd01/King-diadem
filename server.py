@@ -1,4 +1,6 @@
 import os
+import uvicorn
+
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,23 +16,20 @@ from PAYMENTS.create_checkout import create_checkout
 from PAYMENTS.stripe_webhook import handle_webhook
 
 
-# -------------------------
-# APP
-# -------------------------
-
 app = FastAPI(title="KING DIADEM")
 
-# -------------------------
+
+# =========================
 # STATIC
-# -------------------------
+# =========================
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# -------------------------
+# =========================
 # HOME
-# -------------------------
+# =========================
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -44,9 +43,9 @@ async def home():
     return "<h1>KING DIADEM</h1>"
 
 
-# -------------------------
+# =========================
 # SYSTEM STATUS
-# -------------------------
+# =========================
 
 @app.get("/system")
 async def system():
@@ -59,12 +58,15 @@ async def system():
     }
 
 
-# -------------------------
+# =========================
 # DECISION ENGINE
-# -------------------------
+# =========================
 
 @app.post("/decision")
-async def decision(request: Request, api_key: str = Header(...)):
+async def decision(
+    request: Request,
+    api_key: str = Header(...)
+):
 
     body = await request.json()
 
@@ -86,12 +88,12 @@ async def decision(request: Request, api_key: str = Header(...)):
     }
 
 
-# -------------------------
+# =========================
 # BUY CREDITS
-# -------------------------
+# =========================
 
 @app.get("/buy")
-async def buy(api_key: str):
+async def buy(api_key: str = Header(...)):
 
     url = create_checkout(api_key)
 
@@ -100,9 +102,9 @@ async def buy(api_key: str):
     }
 
 
-# -------------------------
+# =========================
 # STRIPE WEBHOOK
-# -------------------------
+# =========================
 
 @app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
@@ -119,4 +121,19 @@ async def stripe_webhook(request: Request):
 
     result = handle_webhook(payload, sig_header)
 
-    return {"status": result}
+    return {
+        "status": result
+    }
+
+
+# =========================
+# SERVER START
+# =========================
+
+if __name__ == "__main__":
+
+    uvicorn.run(
+        "server:app",
+        host="0.0.0.0",
+        port=10000
+    )
