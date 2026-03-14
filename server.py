@@ -5,24 +5,30 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+# =========================
 # ENGINE
+# =========================
 from ENGINE.decision_engine import run_decision
 
+# =========================
 # DATABASE
+# =========================
 from DATABASE.credit_store import use_credit, get_credits
 
-# PAYMENTS
-from PAYMENTS.create_checkout import create_checkout
-from PAYMENTS.stripe_webhook import handle_webhook
+# =========================
+# PAYMENT
+# =========================
+from PAYMENT.create_checkout import create_checkout
+from PAYMENT.stripe_webhook import handle_webhook
 
-
+# =========================
+# APP INIT
+# =========================
 app = FastAPI(title="KING DIADEM")
-
 
 # =========================
 # STATIC
 # =========================
-
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -30,7 +36,6 @@ if os.path.exists("static"):
 # =========================
 # HOME
 # =========================
-
 @app.get("/", response_class=HTMLResponse)
 async def home():
 
@@ -46,7 +51,6 @@ async def home():
 # =========================
 # SYSTEM STATUS
 # =========================
-
 @app.get("/system")
 async def system():
 
@@ -61,7 +65,6 @@ async def system():
 # =========================
 # DECISION ENGINE
 # =========================
-
 @app.post("/decision")
 async def decision(
     request: Request,
@@ -91,21 +94,17 @@ async def decision(
 # =========================
 # BUY CREDITS
 # =========================
-
 @app.get("/buy")
 async def buy(api_key: str = Header(...)):
 
-    url = create_checkout(api_key)
+    checkout = create_checkout(api_key)
 
-    return {
-        "checkout_url": url
-    }
+    return checkout
 
 
 # =========================
 # STRIPE WEBHOOK
 # =========================
-
 @app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
 
@@ -129,7 +128,6 @@ async def stripe_webhook(request: Request):
 # =========================
 # SERVER START
 # =========================
-
 if __name__ == "__main__":
 
     uvicorn.run(
