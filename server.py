@@ -5,6 +5,7 @@ import uvicorn
 
 # ENGINE
 from ENGINE.decision_engine import run_decision
+from ENGINE.dialogue_engine import generate_reply
 
 # DATABASE
 from DATABASE.credit_store import use_credit, get_credits
@@ -12,6 +13,7 @@ from DATABASE.credit_store import use_credit, get_credits
 # PAYMENTS
 from PAYMENTS.create_checkout import create_checkout
 from PAYMENTS.stripe_webhook import handle_webhook
+
 
 app = FastAPI()
 
@@ -70,6 +72,24 @@ async def decision(request: Request, api_key: str = Header(...)):
     return {
         "decision": result,
         "credits_left": credits - 1
+    }
+
+
+# -----------------------------
+# CHAT / DIALOGUE
+# -----------------------------
+
+@app.post("/chat")
+async def chat(request: Request):
+
+    body = await request.json()
+
+    text = body.get("message", "")
+
+    reply = generate_reply(text)
+
+    return {
+        "reply": reply
     }
 
 
