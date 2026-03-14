@@ -1,36 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>KING DIADEM</title>
+
+<link rel="manifest" href="/manifest.json">
 
 <style>
 
 body{
-background:#0b0f19;
-color:white;
-font-family:monospace;
-padding:40px;
+font-family:Arial;
+background:#f2f2f2;
+margin:0;
+padding:0;
+text-align:center;
 }
 
-input{
-padding:8px;
-margin:5px;
-width:200px;
+header{
+background:#000;
+color:white;
+padding:20px;
+font-size:28px;
+font-weight:bold;
+}
+
+.container{
+margin-top:30px;
+}
+
+textarea{
+width:90%;
+height:120px;
+font-size:16px;
+padding:10px;
 }
 
 button{
-padding:10px 20px;
-background:#00ffcc;
-border:none;
+padding:12px 20px;
+font-size:16px;
+margin-top:10px;
 cursor:pointer;
 }
 
-pre{
-background:#111;
-padding:20px;
+.result{
 margin-top:20px;
+background:white;
+padding:20px;
+width:90%;
+margin-left:auto;
+margin-right:auto;
+border-radius:6px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
 </style>
@@ -39,73 +62,71 @@ margin-top:20px;
 
 <body>
 
-<h1>KING DIADEM</h1>
+<header>
+KING DIADEM
+</header>
 
-<p>Location</p>
-<input id="location" placeholder="Bangkok">
+<div class="container">
 
-<p>Money</p>
-<input id="money" type="number">
+<h2>Reality Optimization System</h2>
 
-<p>Food</p>
-<input id="food" type="number">
+<textarea id="input"
+placeholder="Describe your situation..."></textarea>
 
-<p>Risk</p>
-<input id="risk" placeholder="low / medium / high">
+<br>
 
-<br><br>
+<button onclick="runDecision()">
+Run Decision Engine
+</button>
 
-<button onclick="askAI()">DECIDE</button>
+<div class="result" id="output">
 
-<pre id="result">Waiting...</pre>
+System Ready
+
+</div>
+
+</div>
 
 <script>
 
-async function askAI(){
+async function runDecision(){
 
-try{
+let text=document.getElementById("input").value
 
-const location =
-document.getElementById("location").value
-
-const money =
-parseInt(document.getElementById("money").value)
-
-const food =
-parseInt(document.getElementById("food").value)
-
-const risk =
-document.getElementById("risk").value
-
-const res = await fetch("/decision",{
+let response=await fetch("/decision",{
 
 method:"POST",
 
 headers:{
 "Content-Type":"application/json",
-"api-key":"demo"
+"api-key":"demo-key"
 },
 
 body:JSON.stringify({
-location,
-money,
-food,
-risk
-})
+
+location:"global",
+food:text,
+money:0,
+risk:"unknown"
 
 })
 
-const data = await res.json()
+})
 
-document.getElementById("result").innerText =
+let data=await response.json()
+
+document.getElementById("output").innerText=
 JSON.stringify(data,null,2)
 
-}catch(e){
-
-document.getElementById("result").innerText =
-"ERROR: "+e
-
 }
+
+</script>
+
+<script>
+
+if('serviceWorker' in navigator){
+
+navigator.serviceWorker.register('/service_worker.js')
 
 }
 
