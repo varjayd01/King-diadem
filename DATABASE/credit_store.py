@@ -29,3 +29,27 @@ def add_credits(api_key, amount):
     """,(api_key,amount,amount))
 
     conn.commit()
+    conn.close()
+
+
+def use_credit(api_key):
+
+    conn = get_conn()
+    c = conn.cursor()
+
+    c.execute("SELECT credits FROM users WHERE api_key=?", (api_key,))
+    row = c.fetchone()
+
+    if not row or row[0] <= 0:
+        conn.close()
+        return False
+
+    c.execute(
+        "UPDATE users SET credits=credits-1 WHERE api_key=?",
+        (api_key,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return True
