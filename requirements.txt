@@ -4,3 +4,4 @@ pydantic
 stripe
 deep-translator
 numpy
+python-multipart
