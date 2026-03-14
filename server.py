@@ -1,8 +1,8 @@
-import uvicorn
 import os
 import stripe
+import uvicorn
 
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -10,19 +10,22 @@ from ENGINE.decision_engine import decision_engine
 from AUTH.api_key_manager import validate_api_key, use_credit, add_credit
 
 
-# =========================
+# ==========================================
 # STRIPE CONFIG
-# =========================
+# ==========================================
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
+if not STRIPE_SECRET_KEY:
+    raise Exception("STRIPE_SECRET_KEY missing")
+
 stripe.api_key = STRIPE_SECRET_KEY
 
 
-# =========================
+# ==========================================
 # FASTAPI INIT
-# =========================
+# ==========================================
 
 app = FastAPI(
     title="KING DIADEM",
@@ -30,9 +33,9 @@ app = FastAPI(
 )
 
 
-# =========================
+# ==========================================
 # REQUEST MODEL
-# =========================
+# ==========================================
 
 class DecisionRequest(BaseModel):
     location: str
@@ -41,9 +44,9 @@ class DecisionRequest(BaseModel):
     risk: str
 
 
-# =========================
+# ==========================================
 # ROOT
-# =========================
+# ==========================================
 
 @app.get("/")
 def root():
@@ -53,9 +56,9 @@ def root():
     }
 
 
-# =========================
-# SYSTEM STATUS
-# =========================
+# ==========================================
+# STATUS
+# ==========================================
 
 @app.get("/status")
 def status():
@@ -66,33 +69,33 @@ def status():
     }
 
 
-# =========================
-# HEALTH CHECK
-# =========================
+# ==========================================
+# HEALTH
+# ==========================================
 
 @app.get("/health")
 def health():
     return {"health": "ok"}
 
 
-# =========================
+# ==========================================
 # DASHBOARD
-# =========================
+# ==========================================
 
 @app.get("/dashboard")
 def dashboard():
     return FileResponse("INTERFACE/dashboard.html")
 
 
-# =========================
+# ==========================================
 # DECISION API
-# =========================
+# ==========================================
 
 @app.post("/decision")
 def decision(req: DecisionRequest, api_key: str = Header(...)):
 
     if not validate_api_key(api_key):
-        raise HTTPException(status_code=403, detail="Invalid API KEY")
+        raise HTTPException(status_code=403, detail="Invalid API key")
 
     if not use_credit(api_key):
         raise HTTPException(status_code=402, detail="No credits")
@@ -109,9 +112,9 @@ def decision(req: DecisionRequest, api_key: str = Header(...)):
     return result
 
 
-# =========================
+# ==========================================
 # BUY CREDITS
-# =========================
+# ==========================================
 
 @app.get("/buy-credits")
 def buy_credits(api_key: str):
@@ -119,6 +122,7 @@ def buy_credits(api_key: str):
     try:
 
         session = stripe.checkout.Session.create(
+
             payment_method_types=["card"],
 
             client_reference_id=api_key,
@@ -138,6 +142,7 @@ def buy_credits(api_key: str):
 
             success_url="https://king-diadem.onrender.com/success",
             cancel_url="https://king-diadem.onrender.com/cancel"
+
         )
 
         return {"payment_url": session.url}
@@ -146,9 +151,9 @@ def buy_credits(api_key: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# =========================
+# ==========================================
 # STRIPE WEBHOOK
-# =========================
+# ==========================================
 
 @app.post("/stripe-webhook")
 async def stripe_webhook(request: Request):
@@ -179,9 +184,27 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-# =========================
+# ==========================================
+# PAYMENT SUCCESS
+# ==========================================
+
+@app.get("/success")
+def payment_success():
+    return {"status": "payment success"}
+
+
+# ==========================================
+# PAYMENT CANCEL
+# ==========================================
+
+@app.get("/cancel")
+def payment_cancel():
+    return {"status": "payment cancelled"}
+
+
+# ==========================================
 # START SERVER
-# =========================
+# ==========================================
 
 if __name__ == "__main__":
 
