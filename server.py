@@ -7,35 +7,35 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from ENGINE.decision_engine import decision_engine
+from ENGINE.ai_council import ai_council
+
 from AUTH.api_key_manager import validate_api_key, use_credit, add_credit
 
 
-# ================================
+# ==============================
 # STRIPE CONFIG
-# ================================
+# ==============================
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
-if not STRIPE_SECRET_KEY:
-    raise Exception("STRIPE_SECRET_KEY missing")
-
-stripe.api_key = STRIPE_SECRET_KEY
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
 
 
-# ================================
+# ==============================
 # FASTAPI INIT
-# ================================
+# ==============================
 
 app = FastAPI(
     title="KING DIADEM",
-    version="1.0"
+    version="1.1"
 )
 
 
-# ================================
+# ==============================
 # REQUEST MODEL
-# ================================
+# ==============================
 
 class DecisionRequest(BaseModel):
     location: str
@@ -44,9 +44,9 @@ class DecisionRequest(BaseModel):
     risk: str
 
 
-# ================================
+# ==============================
 # ROOT
-# ================================
+# ==============================
 
 @app.get("/")
 def root():
@@ -56,64 +56,78 @@ def root():
     }
 
 
-# ================================
-# STATUS
-# ================================
+# ==============================
+# SYSTEM STATUS
+# ==============================
 
-@app.get("/status")
-def status():
+@app.get("/system")
+def system():
+
     return {
         "system": "KING DIADEM",
         "status": "online",
-        "engine": "decision-core"
+        "engine": "active",
+        "version": "1.1"
     }
 
 
-# ================================
+# ==============================
 # HEALTH
-# ================================
+# ==============================
 
 @app.get("/health")
 def health():
     return {"health": "ok"}
 
 
-# ================================
+# ==============================
 # DASHBOARD
-# ================================
+# ==============================
 
 @app.get("/dashboard")
 def dashboard():
     return FileResponse("INTERFACE/dashboard.html")
 
 
-# ================================
-# DECISION API
-# ================================
+# ==============================
+# DECISION ENDPOINT
+# ==============================
 
 @app.post("/decision")
 async def decision(req: DecisionRequest, api_key: str = Header(...)):
 
     try:
 
+        # validate API key
         if not validate_api_key(api_key):
             raise HTTPException(status_code=403, detail="Invalid API key")
 
+        # consume credit
         if not use_credit(api_key):
             raise HTTPException(status_code=402, detail="No credits")
 
+        # AI Council
+        votes = ai_council(
+            req.location,
+            req.food,
+            req.money,
+            req.risk
+        )
+
+        # main decision engine
         result = decision_engine(
             req.location,
             13.7,
             100.5,
-            int(req.food),
-            int(req.money),
+            req.food,
+            req.money,
             req.risk
         )
 
         return {
             "system": "KING DIADEM",
             "engine": "decision-core",
+            "ai_council": votes,
             "decision": result
         }
 
@@ -121,12 +135,38 @@ async def decision(req: DecisionRequest, api_key: str = Header(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ================================
-# BUY CREDITS
-# ================================
+# ==============================
+# SIMULATION
+# ==============================
 
-@app.get("/buy-credits")
-def buy_credits(api_key: str):
+@app.post("/simulate")
+def simulate(data: dict):
+
+    return {
+        "simulation": "running",
+        "input": data
+    }
+
+
+# ==============================
+# MOBILE NODE
+# ==============================
+
+@app.post("/mobile/node")
+def mobile_node(data: dict):
+
+    return {
+        "node_status": "connected",
+        "data": data
+    }
+
+
+# ==============================
+# PAYMENT CHECKOUT
+# ==============================
+
+@app.post("/payment/checkout")
+def payment_checkout(api_key: str):
 
     try:
 
@@ -154,17 +194,19 @@ def buy_credits(api_key: str):
 
         )
 
-        return {"payment_url": session.url}
+        return {
+            "payment_url": session.url
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ================================
+# ==============================
 # STRIPE WEBHOOK
-# ================================
+# ==============================
 
-@app.post("/stripe-webhook")
+@app.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
 
     payload = await request.body()
@@ -193,27 +235,33 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
-# ================================
+# ==============================
 # PAYMENT SUCCESS
-# ================================
+# ==============================
 
 @app.get("/success")
 def payment_success():
-    return {"status": "payment success"}
+
+    return {
+        "status": "payment success"
+    }
 
 
-# ================================
+# ==============================
 # PAYMENT CANCEL
-# ================================
+# ==============================
 
 @app.get("/cancel")
 def payment_cancel():
-    return {"status": "payment cancelled"}
+
+    return {
+        "status": "payment cancelled"
+    }
 
 
-# ================================
+# ==============================
 # START SERVER
-# ================================
+# ==============================
 
 if __name__ == "__main__":
 
