@@ -1,55 +1,104 @@
-from DATABASE.db import get_conn
+import os
+import json
+import threading
+from pathlib import Path
+
+DATA_DIR = Path("data")
+DATA_FILE = DATA_DIR / "credits.json"
+
+# thread lock ป้องกัน race condition
+lock = threading.Lock()
+
+
+# =========================
+# INIT STORAGE
+# =========================
+
+def init_storage():
+
+    DATA_DIR.mkdir(exist_ok=True)
+
+    if not DATA_FILE.exists():
+        with open(DATA_FILE, "w") as f:
+            json.dump({}, f)
+
+
+# =========================
+# LOAD DATA
+# =========================
+
+def load_data():
+
+    init_storage()
+
+    with open(DATA_FILE, "r") as f:
+        try:
+            return json.load(f)
+        except:
+            return {}
+
+
+# =========================
+# SAFE SAVE
+# =========================
+
+def save_data(data):
+
+    temp = DATA_FILE.with_suffix(".tmp")
+
+    with open(temp, "w") as f:
+        json.dump(data, f)
+
+    os.replace(temp, DATA_FILE)
+
+
+# =========================
+# GET CREDITS
+# =========================
 
 def get_credits(api_key):
 
-    conn = get_conn()
-    c = conn.cursor()
+    with lock:
 
-    c.execute("SELECT credits FROM users WHERE api_key=?", (api_key,))
-    row = c.fetchone()
+        data = load_data()
 
-    conn.close()
+        return data.get(api_key, 0)
 
-    if not row:
-        return 0
 
-    return row[0]
-
+# =========================
+# ADD CREDITS
+# =========================
 
 def add_credits(api_key, amount):
 
-    conn = get_conn()
-    c = conn.cursor()
+    with lock:
 
-    c.execute("""
-    INSERT INTO users(api_key,credits)
-    VALUES(?,?)
-    ON CONFLICT(api_key)
-    DO UPDATE SET credits=credits+?
-    """,(api_key,amount,amount))
+        data = load_data()
 
-    conn.commit()
-    conn.close()
+        current = data.get(api_key, 0)
 
+        data[api_key] = current + amount
+
+        save_data(data)
+
+
+# =========================
+# USE CREDIT
+# =========================
 
 def use_credit(api_key):
 
-    conn = get_conn()
-    c = conn.cursor()
+    with lock:
 
-    c.execute("SELECT credits FROM users WHERE api_key=?", (api_key,))
-    row = c.fetchone()
+        data = load_data()
 
-    if not row or row[0] <= 0:
-        conn.close()
-        return False
+        current = data.get(api_key, 0)
 
-    c.execute(
-        "UPDATE users SET credits=credits-1 WHERE api_key=?",
-        (api_key,)
-    )
+        if current <= 0:
+            return False
 
-    conn.commit()
-    conn.close()
+        data[api_key] = current - 1
 
-    return True
+        save_data(data)
+
+        return True
