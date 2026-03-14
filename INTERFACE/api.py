@@ -99,7 +99,7 @@ def check_api_key(api_key: str):
     if not validate_api_key(api_key):
         raise HTTPException(
             status_code=401,
-            detail="Invalid API Key"
+            detail="Invalid API key"
         )
 
 
@@ -112,7 +112,6 @@ def check_rate_limit(api_key):
     limit = 100
 
     usage = load_json(API_USAGE)
-
     count = usage.get(api_key, 0)
 
     if count >= limit:
@@ -127,7 +126,7 @@ def check_rate_limit(api_key):
 
 
 # -------------------------
-# DECISION LOG
+# LOG
 # -------------------------
 
 def log_decision(input_data, result):
@@ -159,7 +158,7 @@ async def homepage():
 
 
 # -------------------------
-# PUBLIC UI (FOR NORMAL USERS)
+# PUBLIC UI
 # -------------------------
 
 @app.get("/ask")
@@ -189,8 +188,8 @@ def system():
 
 @app.post("/decision")
 def decision(
-        data: DecisionInput,
-        api_key: str = Header(...)
+    data: DecisionInput,
+    api_key: str = Header(...)
 ):
 
     check_api_key(api_key)
@@ -209,13 +208,13 @@ def decision(
 
 
 # -------------------------
-# FUTURE SIMULATION
+# SIMULATION
 # -------------------------
 
 @app.post("/simulate")
 def simulate(
-        data: DecisionInput,
-        api_key: str = Header(...)
+    data: DecisionInput,
+    api_key: str = Header(...)
 ):
 
     check_api_key(api_key)
@@ -239,8 +238,8 @@ def simulate(
 
 @app.post("/mobile/node")
 def mobile_node(
-        data: NodeInput,
-        api_key: str = Header(...)
+    data: NodeInput,
+    api_key: str = Header(...)
 ):
 
     check_api_key(api_key)
@@ -286,6 +285,7 @@ def create_checkout(api_key: str = Header(...)):
 
         success_url="https://king-diadem.onrender.com/success",
         cancel_url="https://king-diadem.onrender.com/cancel"
+
     )
 
     return {
@@ -332,57 +332,3 @@ async def stripe_webhook(request: Request):
         print("NEW API KEY:", api_key)
 
     return {"status": "ok"}
-
-
-# -------------------------
-# DASHBOARD
-# -------------------------
-
-PRICE_PER_REQUEST = 0.01
-
-
-@app.get("/dashboard/usage")
-def dashboard_usage(api_key: str = Header(...)):
-
-    check_api_key(api_key)
-
-    usage = load_json(API_USAGE)
-
-    requests_used = usage.get(api_key, 0)
-
-    return {
-        "api_key": api_key,
-        "requests_used": requests_used,
-        "limit": 100
-    }
-
-
-@app.get("/dashboard/keys")
-def dashboard_keys(api_key: str = Header(...)):
-
-    check_api_key(api_key)
-
-    keys = load_json(API_KEYS)
-
-    return {
-        "total_keys": len(keys),
-        "keys": keys
-    }
-
-
-@app.get("/dashboard/billing")
-def dashboard_billing(api_key: str = Header(...)):
-
-    check_api_key(api_key)
-
-    usage = load_json(API_USAGE)
-
-    requests_used = usage.get(api_key, 0)
-
-    cost = requests_used * PRICE_PER_REQUEST
-
-    return {
-        "requests": requests_used,
-        "price_per_request": PRICE_PER_REQUEST,
-        "total_cost": cost
-    }
