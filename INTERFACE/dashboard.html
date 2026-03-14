@@ -1,20 +1,40 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <title>KING DIADEM</title>
+
 <style>
+
 body{
 background:#0b0f19;
 color:white;
 font-family:monospace;
 padding:40px;
 }
+
+input{
+padding:8px;
+margin:5px;
+width:200px;
+}
+
 button{
 padding:10px 20px;
 background:#00ffcc;
 border:none;
+cursor:pointer;
 }
+
+pre{
+background:#111;
+padding:20px;
+margin-top:20px;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -22,45 +42,70 @@ border:none;
 <h1>KING DIADEM</h1>
 
 <p>Location</p>
-<input id="location">
+<input id="location" placeholder="Bangkok">
 
 <p>Money</p>
-<input id="money">
+<input id="money" type="number">
 
 <p>Food</p>
-<input id="food">
+<input id="food" type="number">
 
 <p>Risk</p>
-<input id="risk">
+<input id="risk" placeholder="low / medium / high">
 
 <br><br>
 
 <button onclick="askAI()">DECIDE</button>
 
-<pre id="result"></pre>
+<pre id="result">Waiting...</pre>
 
 <script>
 
 async function askAI(){
 
+try{
+
+const location =
+document.getElementById("location").value
+
+const money =
+parseInt(document.getElementById("money").value)
+
+const food =
+parseInt(document.getElementById("food").value)
+
+const risk =
+document.getElementById("risk").value
+
 const res = await fetch("/decision",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json",
 "api-key":"demo"
 },
+
 body:JSON.stringify({
-location:document.getElementById("location").value,
-money:parseInt(document.getElementById("money").value),
-food:parseInt(document.getElementById("food").value),
-risk:document.getElementById("risk").value
+location,
+money,
+food,
+risk
 })
+
 })
 
 const data = await res.json()
 
 document.getElementById("result").innerText =
 JSON.stringify(data,null,2)
+
+}catch(e){
+
+document.getElementById("result").innerText =
+"ERROR: "+e
+
+}
 
 }
 
