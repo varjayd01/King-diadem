@@ -92,24 +92,32 @@ def dashboard():
 # ==========================================
 
 @app.post("/decision")
-def decision(req: DecisionRequest, api_key: str = Header(...)):
+async def decision(req: DecisionRequest, api_key: str = Header(...)):
 
-    if not validate_api_key(api_key):
-        raise HTTPException(status_code=403, detail="Invalid API key")
+    try:
 
-    if not use_credit(api_key):
-        raise HTTPException(status_code=402, detail="No credits")
+        if not validate_api_key(api_key):
+            raise HTTPException(status_code=403, detail="Invalid API key")
 
-    result = decision_engine(
-        req.location,
-        13.7,
-        100.5,
-        req.food,
-        req.money,
-        req.risk
-    )
+        if not use_credit(api_key):
+            raise HTTPException(status_code=402, detail="No credits")
 
-    return result
+        result = decision_engine(
+            req.location,
+            13.7,
+            100.5,
+            int(req.food),
+            int(req.money),
+            req.risk
+        )
+
+        return {
+            "system": "KING DIADEM",
+            "decision": result
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==========================================
