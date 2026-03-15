@@ -1,64 +1,46 @@
-from DOMAINS.domain_router import route_domain
-from DATABASE.decision_history import save_decision
+def run_decision(location,food,money,danger):
 
 
-def run_decision(context):
+    score = 0
 
-    # ---------- VALIDATION ----------
-
-    if not isinstance(context, dict):
-
-        return {
-            "error": "invalid context"
-        }
+    score += food * 2
+    score += money * 1
+    score -= danger * 3
 
 
-    # ---------- DOMAIN CHECK ----------
+    if score < 0:
 
-    domain = context.get("domain")
+        return """
+High Risk Situation
 
-    if not domain:
-
-        return {
-
-            "error": "domain missing",
-
-            "available_domains": [
-                "life",
-                "business",
-                "survival",
-                "world"
-            ]
-        }
+Priority:
+1. Reduce exposure
+2. Secure food
+3. Find temporary shelter
+"""
 
 
-    # ---------- ROUTE DOMAIN ----------
 
-    try:
+    elif score < 10:
 
-        result = route_domain(domain, context)
+        return """
+Unstable Condition
 
-    except Exception as e:
-
-        return {
-
-            "error": "decision engine failure",
-
-            "detail": str(e)
-        }
+Recommended actions:
+1. Preserve remaining resources
+2. Avoid new risks
+3. Search for stable income
+"""
 
 
-    # ---------- STORE DECISION ----------
 
-    try:
+    else:
 
-        save_decision(result)
+        return """
+Stable Situation
 
-    except Exception:
-
-        pass
-
-
-    # ---------- FINAL RESULT ----------
-
-    return result
+Options available:
+1. Expand opportunities
+2. Build long term resources
+3. Reduce dependency risk
+"""
