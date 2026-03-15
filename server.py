@@ -22,20 +22,20 @@ if os.path.exists("static"):
 
 
 # =========================
-# HOME
+# HOME → CONTROL ROOM
 # =========================
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
 
-    path = "INTERFACE/dashboard.html"
+    dashboard = "INTERFACE/dashboard.html"
 
-    if os.path.exists(path):
+    if os.path.exists(dashboard):
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(dashboard, "r", encoding="utf-8") as f:
             return f.read()
 
-    return "<h1>KING DIADEM Decision OS</h1>"
+    return "<h1>KING DIADEM Control Room</h1>"
 
 
 # =========================
@@ -48,8 +48,10 @@ async def create_key():
     key = create_api_key()
 
     return {
+
         "api_key": key,
         "credits": get_credits(key)
+
     }
 
 
@@ -63,7 +65,6 @@ async def system():
     return {
 
         "status": "running",
-
         "engine": "online",
 
         "domains": [
@@ -72,20 +73,21 @@ async def system():
             "survival",
             "world"
         ]
+
     }
 
 
 # =========================
-# GENERIC DECISION API
+# GENERIC DECISION
 # =========================
 
 @app.post("/decision")
 async def decision(
     request: Request,
-    api_key: str = Header(...)
+    api_key: str = Header(None)
 ):
 
-    if not is_valid_key(api_key):
+    if api_key and not is_valid_key(api_key):
 
         raise HTTPException(
             status_code=401,
@@ -93,35 +95,38 @@ async def decision(
         )
 
     try:
+
         body = await request.json()
 
     except:
+
         body = {}
 
-    credits = get_credits(api_key)
+    if api_key:
 
-    if credits <= 0:
+        credits = get_credits(api_key)
 
-        raise HTTPException(
-            status_code=402,
-            detail="No credits"
-        )
+        if credits <= 0:
 
-    success = use_credit(api_key)
+            raise HTTPException(
+                status_code=402,
+                detail="No credits"
+            )
 
-    if not success:
+        success = use_credit(api_key)
 
-        raise HTTPException(
-            status_code=400,
-            detail="Credit error"
-        )
+        if not success:
+
+            raise HTTPException(
+                status_code=400,
+                detail="Credit error"
+            )
 
     result = run_decision(body)
 
     return {
 
-        "result": result,
-        "credits_left": get_credits(api_key)
+        "result": result
 
     }
 
@@ -131,10 +136,7 @@ async def decision(
 # =========================
 
 @app.post("/analyze-life")
-async def analyze_life(
-    request: Request,
-    api_key: str = Header(...)
-):
+async def analyze_life(request: Request):
 
     body = await request.json()
 
@@ -150,10 +152,7 @@ async def analyze_life(
 # =========================
 
 @app.post("/analyze-business")
-async def analyze_business(
-    request: Request,
-    api_key: str = Header(...)
-):
+async def analyze_business(request: Request):
 
     body = await request.json()
 
@@ -169,10 +168,7 @@ async def analyze_business(
 # =========================
 
 @app.post("/analyze-survival")
-async def analyze_survival(
-    request: Request,
-    api_key: str = Header(...)
-):
+async def analyze_survival(request: Request):
 
     body = await request.json()
 
@@ -188,10 +184,7 @@ async def analyze_survival(
 # =========================
 
 @app.post("/analyze-world")
-async def analyze_world(
-    request: Request,
-    api_key: str = Header(...)
-):
+async def analyze_world(request: Request):
 
     body = await request.json()
 
