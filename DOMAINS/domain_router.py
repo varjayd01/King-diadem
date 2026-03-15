@@ -1,37 +1,29 @@
-def detect_domain(text):
+from DOMAINS.life_engine import analyze_life
+from DOMAINS.business_engine import analyze_business
+from DOMAINS.survival_engine import analyze_survival
+from DOMAINS.world_engine import analyze_world
 
-    text = text.lower()
 
-    life_keywords = [
-        "ชีวิต","ความรัก","ครอบครัว","ย้ายเมือง","เปลี่ยนงาน"
-    ]
+def route_domain(domain, context):
 
-    business_keywords = [
-        "ธุรกิจ","ลงทุน","กำไร","ขยาย","ลูกค้า","ตลาด"
-    ]
+    if domain == "life":
+        return analyze_life(context)
 
-    survival_keywords = [
-        "เอาตัวรอด","วิกฤต","ขาดอาหาร","ภัยพิบัติ","สงคราม"
-    ]
+    elif domain == "business":
+        return analyze_business(context)
 
-    world_keywords = [
-        "โลก","เศรษฐกิจโลก","ภูมิรัฐศาสตร์","ตลาดโลก"
-    ]
+    elif domain == "survival":
+        return analyze_survival(context)
 
-    for k in life_keywords:
-        if k in text:
-            return "life"
+    elif domain == "world":
+        return analyze_world(context)
 
-    for k in business_keywords:
-        if k in text:
-            return "business"
-
-    for k in survival_keywords:
-        if k in text:
-            return "survival"
-
-    for k in world_keywords:
-        if k in text:
-            return "world"
-
-    return "general"
+    return {
+        "error": "unknown domain",
+        "available_domains": [
+            "life",
+            "business",
+            "survival",
+            "world"
+        ]
+    }
