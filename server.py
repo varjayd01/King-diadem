@@ -1,43 +1,27 @@
 import os
+import json
+import stripe
 import uvicorn
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
-# ===============================
-# ENGINE
-# ===============================
+app = FastAPI()
 
-from ENGINE.decision_engine import run_decision
+# ==============================
+# CONFIG
+# ==============================
 
-# ===============================
-# AUTH
-# ===============================
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_ID")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
-from AUTH.auth_system import register, login
+stripe.api_key = STRIPE_SECRET_KEY
 
-# ===============================
-# PAYMENT
-# ===============================
-
-from PAYMENT.wallet_engine import topup
-
-# ===============================
-# DATABASE
-# ===============================
-
-from DATABASE.user_db import init_db
-
-# ===============================
-# APP
-# ===============================
-
-app = FastAPI(title="KING DIADEM V999")
-
-# ===============================
+# ==============================
 # CORS
-# ===============================
+# ==============================
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,169 +31,211 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ===============================
-# INIT DATABASE
-# ===============================
-
-init_db()
-
-# ===============================
-# STATIC FILES
-# ===============================
-
-if not os.path.exists("static"):
-    os.makedirs("static")
+# ==============================
+# STATIC
+# ==============================
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ===============================
+# ==============================
+# DATABASE (simple memory)
+# ==============================
+
+USERS = {}
+WALLET = {}
+TRANSACTIONS = []
+
+# ==============================
 # ROOT
-# ===============================
+# ==============================
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 def root():
-    with open("index.html") as f:
-        return f.read()
+    return {"system":"KING DIADEM","status":"running"}
 
-# ===============================
-# LOGIN PAGE
-# ===============================
-
-@app.get("/login.html", response_class=HTMLResponse)
-def login_page():
-    with open("login.html") as f:
-        return f.read()
-
-# ===============================
-# REGISTER PAGE
-# ===============================
-
-@app.get("/register.html", response_class=HTMLResponse)
-def register_page():
-    with open("register.html") as f:
-        return f.read()
-
-# ===============================
-# WALLET PAGE
-# ===============================
-
-@app.get("/wallet.html", response_class=HTMLResponse)
-def wallet_page():
-    with open("wallet.html") as f:
-        return f.read()
-
-# ===============================
-# DECISION ENGINE
-# ===============================
-
-@app.post("/decision")
-async def decision(data: dict):
-
-    location = data.get("location", "")
-    food = int(data.get("food", 0))
-    money = int(data.get("money", 0))
-    danger = int(data.get("danger", 0))
-
-    result = run_decision(location, food, money, danger)
-
-    return {
-        "result": result
-    }
-
-# ===============================
-# REGISTER
-# ===============================
-
-@app.post("/register")
-async def api_register(data: dict):
-
-    email = data.get("email")
-    password = data.get("password")
-
-    return register(email, password)
-
-# ===============================
-# LOGIN
-# ===============================
-
-@app.post("/login")
-async def api_login(data: dict):
-
-    email = data.get("email")
-    password = data.get("password")
-
-    return login(email, password)
-
-# ===============================
-# WALLET TOPUP
-# ===============================
-
-@app.post("/wallet/topup")
-async def api_topup(data: dict):
-
-    email = data.get("email")
-    amount = int(data.get("amount"))
-
-    return topup(email, amount)
-
-# ===============================
-# SYSTEM STATUS
-# ===============================
+# ==============================
+# SYSTEM
+# ==============================
 
 @app.get("/system")
-def system():
-
+def system_status():
     return {
-        "system": "KING DIADEM",
-        "version": "V999",
-        "status": "running",
-        "ai": "online",
-        "decision_engine": "active"
+        "system":"KING DIADEM",
+        "status":"running"
     }
 
-# ===============================
-# AI STATUS
-# ===============================
-
-@app.get("/ai/status")
-def ai_status():
-
+@app.get("/system/health")
+def system_health():
     return {
-        "brain": "operational",
-        "strategy_engine": "ready",
-        "simulation_layer": "ready"
+        "system":"KING DIADEM",
+        "status":"running",
+        "ai":"active",
+        "wallet":"ready",
+        "stripe":"connected"
     }
 
-# ===============================
-# HEALTH CHECK
-# ===============================
+# ==============================
+# AUTH
+# ==============================
 
-@app.get("/health")
-def health():
+@app.post("/register")
+async def register(req: Request):
+    data = await req.json()
+    email = data["email"]
+    password = data["password"]
+
+    USERS[email] = password
+    WALLET[email] = 0
+
+    return {"status":"registered"}
+
+@app.post("/login")
+async def login(req: Request):
+    data = await req.json()
+    email = data["email"]
+    password = data["password"]
+
+    if USERS.get(email) != password:
+        raise HTTPException(401)
+
+    return {"status":"login success"}
+
+# ==============================
+# WALLET
+# ==============================
+
+@app.get("/wallet/balance")
+def wallet_balance(email:str):
+
+    balance = WALLET.get(email,0)
 
     return {
-        "server": "alive",
-        "database": "connected",
-        "deploy": "render"
+        "email":email,
+        "balance":balance
     }
 
-# ===============================
-# FUTURE APP API
-# ===============================
-
-@app.get("/app/info")
-def app_info():
+@app.get("/wallet/history")
+def wallet_history():
 
     return {
-        "name": "KING DIADEM",
-        "type": "AI Strategic System",
-        "mode": "PWA + Android",
-        "status": "beta"
+        "transactions":TRANSACTIONS
     }
 
-# ===============================
-# RUN
-# ===============================
+@app.post("/wallet/topup")
+async def wallet_topup(req:Request):
+
+    data = await req.json()
+
+    email = data["email"]
+    amount = data["amount"]
+
+    WALLET[email] = WALLET.get(email,0) + amount
+
+    TRANSACTIONS.append({
+        "email":email,
+        "amount":amount,
+        "type":"topup"
+    })
+
+    return {"status":"wallet updated"}
+
+# ==============================
+# STRIPE CHECKOUT
+# ==============================
+
+@app.post("/create-checkout-session")
+async def create_checkout_session():
+
+    try:
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': STRIPE_PRICE_ID,
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url='https://king-diadem.onrender.com/success',
+            cancel_url='https://king-diadem.onrender.com/cancel',
+        )
+
+        return {"checkout_url":session.url}
+
+    except Exception as e:
+
+        return {"error":str(e)}
+
+# ==============================
+# STRIPE WEBHOOK
+# ==============================
+
+@app.post("/stripe-webhook")
+async def stripe_webhook(request: Request):
+
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    try:
+
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+
+    except Exception as e:
+
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if event["type"] == "checkout.session.completed":
+
+        session = event["data"]["object"]
+
+        TRANSACTIONS.append({
+            "type":"stripe_payment",
+            "session":session["id"]
+        })
+
+    return {"received":True}
+
+# ==============================
+# AI SYSTEM
+# ==============================
+
+@app.get("/ai/brain")
+def ai_brain():
+
+    return {
+        "AI":"KING DIADEM",
+        "brain":"online",
+        "modules":[
+            "decision_engine",
+            "simulation_engine",
+            "strategy_engine"
+        ]
+    }
+
+@app.get("/ai/decision")
+def ai_decision():
+
+    return {
+        "decision_nodes":[
+            "risk",
+            "reward",
+            "survival",
+            "probability"
+        ]
+    }
+
+@app.get("/ai/simulation")
+def ai_simulation():
+
+    return {
+        "simulation":"running",
+        "model":"world_model_v1"
+    }
+
+# ==============================
+# SERVER START
+# ==============================
 
 if __name__ == "__main__":
 
@@ -218,4 +244,4 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=10000,
         reload=True
-    )
+        )
