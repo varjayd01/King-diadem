@@ -2,17 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from ENGINE.decision_engine import run_decision
 from DATABASE.db import init_db
 from AUTH.auth import router as auth_router
 from PAYMENT.stripe_payment import create_checkout
-from decision_engine import run_decision
 
 app = FastAPI()
 
 init_db()
 
 app.include_router(auth_router)
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,28 +21,16 @@ app.add_middleware(
 )
 
 
-
 class DecisionInput(BaseModel):
-
     location:str
     food:int
     money:int
     danger:int
 
 
-
 @app.get("/")
 def root():
-
     return {"system":"KING DIADEM ONLINE"}
-
-
-
-@app.get("/health")
-def health():
-
-    return {"status":"ok"}
-
 
 
 @app.post("/decision")
@@ -57,7 +44,6 @@ def decision(data:DecisionInput):
     )
 
     return {"result":result}
-
 
 
 @app.post("/create-checkout")
