@@ -1,22 +1,25 @@
-def run_decision(body):
+def run_decision(data):
 
-    if not body:
-        return "No input provided"
+    if not isinstance(data, dict):
 
-    if isinstance(body, dict):
+        return {
+            "result": "invalid input",
+            "advice": "send JSON object"
+        }
 
-        problem = body.get("problem")
+    if len(data) == 0:
 
-        if problem:
+        return {
+            "result": "no data",
+            "advice": "provide decision context"
+        }
 
-            return {
-                "analysis": f"Analyzing: {problem}",
-                "strategy": "Optimize resource allocation",
-                "risk": "Unknown variables present"
-            }
+    # ตัวอย่าง logic
 
-    return {
-        "analysis": "Generic decision",
-        "strategy": "Gather more data",
-        "risk": "Low"
+    decision = {
+        "analysis": data,
+        "recommendation": "optimize",
+        "confidence": 0.65
     }
+
+    return decision
