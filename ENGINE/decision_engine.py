@@ -1,45 +1,26 @@
-import random
-import time
+from DOMAINS.domain_router import route_domain
 
 
-def run_decision(data):
+def run_decision(context):
 
-    # ป้องกัน input แปลก
-    if not isinstance(data, dict):
-
+    if not isinstance(context, dict):
         return {
-            "result": "invalid_input",
-            "message": "Input must be JSON object"
+            "error": "invalid context"
         }
 
-    # ถ้าไม่มีข้อมูล
-    if len(data) == 0:
+    domain = context.get("domain")
 
+    if not domain:
         return {
-            "result": "no_context",
-            "message": "Provide decision context"
+            "error": "domain missing",
+            "available_domains": [
+                "life",
+                "business",
+                "survival",
+                "world"
+            ]
         }
 
-    # วิเคราะห์แบบง่ายก่อน
-    score = random.uniform(0.4, 0.9)
-
-    recommendation = "proceed"
-
-    if score < 0.55:
-        recommendation = "high_risk"
-
-    elif score < 0.7:
-        recommendation = "caution"
-
-    result = {
-
-        "timestamp": time.time(),
-
-        "analysis": data,
-
-        "recommendation": recommendation,
-
-        "confidence": round(score, 3)
-    }
+    result = route_domain(domain, context)
 
     return result
