@@ -1,181 +1,37 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>KING DIADEM</title>
-
-<link rel="manifest" href="/static/manifest.json">
-<link rel="stylesheet" href="/static/style.css">
-
-</head>
-
 <body>
 
 <canvas id="galaxy"></canvas>
 
-<div class="center">
+<div class="panel">
 
-<div class="title">👑 KING DIADEM</div>
+<h1>👑 KING DIADEM</h1>
 
-<div class="quote">
+<div class="philosophy">
 
-ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0  
+ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0
 ระบบนั้นล้มเหลว
 
-<br><br>
-
-KING DIADEM  
-จะทำให้คุณมีทางเลือกเสมอ  
-แม้ในวันที่คุณมองไม่เห็นมัน
+Any system that reduces human choice to zero
+is a failed system.
 
 </div>
 
-<div class="system">
-
-<div id="server">SERVER ...</div>
-<div id="ai">AI ...</div>
-<div id="wallet">WALLET ...</div>
-
-</div>
-
-</div>
-
-<div class="nav">
+<div class="buttons">
 
 <button onclick="ask()">ASK</button>
+
 <button onclick="brain()">BRAIN</button>
+
 <button onclick="galaxy()">GALAXY</button>
+
+<button onclick="guide()">GUIDE</button>
 
 </div>
 
-<script>
+</div>
 
-const canvas = document.getElementById("galaxy")
-const ctx = canvas.getContext("2d")
-
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
-
-let stars = []
-
-for(let i=0;i<300;i++){
-
-stars.push({
-
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-r:Math.random()*2,
-speed:Math.random()*0.4
-
-})
-
-}
-
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-ctx.fillStyle="white"
-
-for(let s of stars){
-
-ctx.beginPath()
-ctx.arc(s.x,s.y,s.r,0,Math.PI*2)
-ctx.fill()
-
-s.y += s.speed
-
-if(s.y>canvas.height){
-
-s.y=0
-s.x=Math.random()*canvas.width
-
-}
-
-}
-
-requestAnimationFrame(draw)
-
-}
-
-draw()
-
-</script>
-
-<script>
-
-async function loadHealth(){
-
-const res = await fetch("/system/health")
-const data = await res.json()
-
-document.getElementById("server").innerText =
-"SERVER : "+data.server
-
-document.getElementById("ai").innerText =
-"AI : "+data.ai
-
-document.getElementById("wallet").innerText =
-"WALLET : "+data.wallet
-
-}
-
-setInterval(loadHealth,4000)
-
-loadHealth()
-
-</script>
-
-<script>
-
-async function ask(){
-
-const problem = prompt("ปัญหาของคุณคืออะไร")
-
-if(!problem) return
-
-const res = await fetch("/decision",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-problem:problem
-})
-
-})
-
-const data = await res.json()
-
-alert(JSON.stringify(data,null,2))
-
-}
-
-function brain(){
-
-fetch("/ai/brain")
-.then(r=>r.json())
-.then(console.log)
-
-}
-
-function galaxy(){
-
-fetch("/ai/galaxy")
-.then(r=>r.json())
-.then(console.log)
-
-}
-
-</script>
+<script src="/static/galaxy.js"></script>
+<script src="/static/ai_thinking.js"></script>
+<script src="/static/decision.js"></script>
 
 </body>
-
-</html>
