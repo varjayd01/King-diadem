@@ -1,225 +1,76 @@
 body{
 
 margin:0;
-
 font-family:Arial;
-
+background:black;
 color:white;
-
-background:radial-gradient(circle at 30% 20%, #142b6f, #030814);
-
 overflow:hidden;
 
 }
 
-
-canvas{
+#universe{
 
 position:fixed;
-
 top:0;
-
 left:0;
-
-z-index:0;
-
-}
-
-
-.wrapper{
-
-display:flex;
-
-height:100vh;
-
-position:relative;
-
-z-index:2;
+z-index:-1;
 
 }
-
 
 .panel{
 
-width:420px;
+position:absolute;
+top:80px;
+left:80px;
 
-background:rgba(8,16,32,0.92);
+background:rgba(0,20,40,0.85);
 
 padding:30px;
+border-radius:10px;
 
-box-shadow:0 0 40px rgba(0,0,0,0.7);
-
-}
-
-
-.title{
-
-font-size:28px;
-
-font-weight:bold;
+width:320px;
 
 }
-
-
-.subtitle{
-
-font-size:13px;
-
-opacity:0.6;
-
-margin-bottom:20px;
-
-}
-
 
 input{
 
 width:100%;
-
-padding:12px;
-
-margin-bottom:10px;
-
-border:none;
-
-border-radius:6px;
-
-background:#0c1333;
-
+margin-top:10px;
+padding:10px;
+background:#001f3f;
+border:0;
 color:white;
 
 }
-
 
 button{
 
 width:100%;
+margin-top:10px;
+padding:12px;
 
-padding:14px;
+background:linear-gradient(90deg,#3bc1ff,#3bff9e);
 
-border:none;
-
-border-radius:6px;
-
-background:linear-gradient(90deg,#39d06a,#2bb6ff);
-
-color:white;
-
+border:0;
+color:black;
 font-weight:bold;
 
-cursor:pointer;
-
 }
 
-
-.result{
-
-margin-top:15px;
-
-background:#0c1333;
-
-padding:12px;
-
-border-radius:8px;
-
-display:none;
-
-}
-
-
-.reason{
-
-margin-top:15px;
-
-background:#0c1333;
-
-padding:12px;
-
-border-radius:8px;
-
-display:none;
-
-font-size:13px;
-
-}
-
-
-.map{
-
-flex:1;
-
-position:relative;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-}
-
-
-.dashboard{
+.graph{
 
 position:absolute;
-
-top:20px;
-
-right:20px;
-
-background:rgba(0,0,0,0.6);
-
-padding:15px;
-
-border-radius:10px;
-
-font-size:13px;
+bottom:60px;
+left:80px;
+width:320px;
 
 }
 
-
-.meter{
-
-height:10px;
-
-background:#111;
-
-border-radius:6px;
-
-overflow:hidden;
-
-margin-top:5px;
-
-}
-
-
-.meter-bar{
-
-height:10px;
-
-width:0%;
-
-background:linear-gradient(90deg,#4fe2a5,#42aaff);
-
-}
-
-
-.telemetry{
+.footer{
 
 position:absolute;
-
-bottom:20px;
-
-right:20px;
-
-background:rgba(0,0,0,0.6);
-
-padding:15px;
-
-border-radius:10px;
-
-font-size:12px;
-
-color:#4fd1ff;
+bottom:10px;
+right:30px;
+opacity:0.6;
 
 }
