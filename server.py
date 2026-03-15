@@ -5,39 +5,20 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-# CORE ENGINES
 from ENGINE.decision_engine import run_decision
-from SIMULATIONS.future_simulator import simulate_future
-
-# DATABASE
 from DATABASE.credit_store import use_credit, get_credits
-from DATABASE.user_store import get_plan, get_queries_today, add_query, set_plan
+from AUTH.api_keys import create_api_key, is_valid_key
 
-# GLOBAL NETWORK
-from GLOBAL_NODE.feed_store import add_feed_entry, get_feed
-
-# AUTH
-from AUTH.api_keys import create_api_key
+app = FastAPI(title="KING DIADEM")
 
 
-app = FastAPI(
-    title="KING DIADEM",
-    version="0.9",
-    description="Global Decision & Simulation Engine"
-)
-
-
-# =========================
-# STATIC FILES
-# =========================
+# ---------------- STATIC ----------------
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# =========================
-# HOME
-# =========================
+# ---------------- HOME ----------------
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -49,12 +30,10 @@ async def home():
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
 
-    return "<h1>KING DIADEM</h1>"
+    return "<h1>KING DIADEM Decision OS</h1>"
 
 
-# =========================
-# CREATE API KEY
-# =========================
+# ---------------- CREATE API KEY ----------------
 
 @app.get("/auth/create-key")
 async def create_key():
@@ -62,13 +41,12 @@ async def create_key():
     key = create_api_key()
 
     return {
-        "api_key": key
+        "api_key": key,
+        "trial_credits": get_credits(key)
     }
 
 
-# =========================
-# SYSTEM STATUS
-# =========================
+# ---------------- SYSTEM STATUS ----------------
 
 @app.get("/system")
 async def system():
@@ -76,13 +54,16 @@ async def system():
     return {
         "status": "running",
         "engine": "online",
-        "simulation": "online"
+        "domains": [
+            "life",
+            "business",
+            "survival",
+            "world"
+        ]
     }
 
 
-# =========================
-# DECISION ENGINE
-# =========================
+# ---------------- DECISION ENGINE ----------------
 
 @app.post("/decision")
 async def decision(
@@ -90,32 +71,20 @@ async def decision(
     api_key: str = Header(...)
 ):
 
+    if not is_valid_key(api_key):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid API key"
+        )
+
     try:
         body = await request.json()
     except:
         body = {}
 
-    plan = get_plan(api_key)
-
-    # FREE PLAN LIMIT
-    if plan == "free":
-
-        queries = get_queries_today(api_key)
-
-        if queries >= 5:
-
-            raise HTTPException(
-                status_code=403,
-                detail="Free plan limit reached"
-            )
-
-        add_query(api_key)
-
-    # CREDIT CHECK
     credits = get_credits(api_key)
 
     if credits <= 0:
-
         raise HTTPException(
             status_code=402,
             detail="No credits"
@@ -124,111 +93,20 @@ async def decision(
     success = use_credit(api_key)
 
     if not success:
-
         raise HTTPException(
             status_code=400,
             detail="Credit error"
         )
 
-    # RUN ENGINE
-    try:
-
-        result = run_decision(body)
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=f"Decision engine error: {str(e)}"
-        )
-
-    # GLOBAL FEED
-    add_feed_entry(api_key, result)
+    result = run_decision(body)
 
     return {
-
-        "decision": result,
-        "plan": plan,
+        "result": result,
         "credits_left": get_credits(api_key)
     }
 
 
-# =========================
-# FUTURE SIMULATION
-# =========================
-
-@app.post("/simulate")
-async def simulate(
-    request: Request,
-    api_key: str = Header(...)
-):
-
-    try:
-        body = await request.json()
-    except:
-        body = {}
-
-    plan = get_plan(api_key)
-
-    if plan != "pro":
-
-        raise HTTPException(
-            status_code=403,
-            detail="Simulation is PRO feature"
-        )
-
-    result = simulate_future(body)
-
-    return {
-        "simulation": result
-    }
-
-
-# =========================
-# GLOBAL DECISION FEED
-# =========================
-
-@app.get("/global-feed")
-async def global_feed():
-
-    data = get_feed()
-
-    return {
-        "decisions": data
-    }
-
-
-# =========================
-# UPGRADE PLAN (TEST)
-# =========================
-
-@app.get("/upgrade/pro")
-async def upgrade_pro(api_key: str = Header(...)):
-
-    set_plan(api_key, "pro")
-
-    return {
-
-        "status": "upgraded",
-        "plan": "pro"
-    }
-
-
-# =========================
-# HEALTH CHECK
-# =========================
-
-@app.get("/health")
-async def health():
-
-    return {
-        "status": "ok"
-    }
-
-
-# =========================
-# SERVER START
-# =========================
+# ---------------- SERVER START ----------------
 
 if __name__ == "__main__":
 
