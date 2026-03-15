@@ -104,6 +104,85 @@ def brainmap():
     }
 
 # =========================
+# AI STATUS
+# =========================
+
+@app.get("/ai/status")
+def ai_status():
+
+    return {
+
+        "ai":"online",
+
+        "modules":[
+            "decision_engine",
+            "strategy_engine",
+            "simulation_engine"
+        ]
+
+    }
+
+# =========================
+# AI BRAIN
+# =========================
+
+@app.get("/ai/brain")
+def ai_brain():
+
+    return {
+
+        "brain":"KING DIADEM CORE",
+
+        "modules":[
+
+            {
+                "name":"decision_engine",
+                "status":"active"
+            },
+
+            {
+                "name":"strategy_engine",
+                "status":"active"
+            },
+
+            {
+                "name":"simulation_engine",
+                "status":"ready"
+            },
+
+            {
+                "name":"entropy_guard",
+                "status":"monitoring"
+            }
+
+        ]
+
+    }
+
+# =========================
+# AI GALAXY
+# =========================
+
+@app.get("/ai/galaxy")
+def galaxy_nodes():
+
+    return {
+
+        "center":"KING DIADEM",
+
+        "nodes":[
+
+            {"name":"Human Choice","orbit":1},
+            {"name":"AI Strategy","orbit":2},
+            {"name":"Simulation Engine","orbit":3},
+            {"name":"Global Node","orbit":4},
+            {"name":"Economic Flow","orbit":5}
+
+        ]
+
+    }
+
+# =========================
 # USERS
 # =========================
 
@@ -171,6 +250,58 @@ def wallet_history():
     return {
 
         "transactions":TRANSACTIONS
+
+    }
+
+# =========================
+# FINANCE
+# =========================
+
+@app.get("/system/finance")
+def finance():
+
+    return {
+
+        "wallet_users":len(WALLETS),
+
+        "transactions":len(TRANSACTIONS),
+
+        "payment":"stripe"
+
+    }
+
+# =========================
+# SERVER
+# =========================
+
+@app.get("/system/server")
+def server():
+
+    return {
+
+        "provider":"render",
+        "mode":"free",
+        "status":"running",
+        "recommendation":"upgrade when >100 users"
+
+    }
+
+# =========================
+# DECISION ENGINE
+# =========================
+
+@app.post("/decision")
+async def decision(req:Request):
+
+    data = await req.json()
+
+    problem = data["problem"]
+
+    return {
+
+        "problem":problem,
+        "decision":"simulate possible paths",
+        "status":"analysis running"
 
     }
 
@@ -244,56 +375,6 @@ async def stripe_webhook(request:Request):
     return {"received":True}
 
 # =========================
-# AI SYSTEM
-# =========================
-
-@app.get("/ai/status")
-def ai_status():
-
-    return {
-
-        "ai":"online",
-        "modules":[
-
-            "decision_engine",
-            "strategy_engine",
-            "simulation_engine"
-
-        ]
-
-    }
-
-@app.post("/decision")
-async def decision(req:Request):
-
-    data = await req.json()
-
-    problem = data["problem"]
-
-    return {
-
-        "problem":problem,
-        "decision":"simulate possible paths",
-        "status":"analysis running"
-
-    }
-
-# =========================
-# APP INFO
-# =========================
-
-@app.get("/app/info")
-def app_info():
-
-    return {
-
-        "app":"KING DIADEM",
-        "platform":"AI Strategy System",
-        "version":"V999"
-
-    }
-
-# =========================
 # START SERVER
 # =========================
 
@@ -303,4 +384,4 @@ if __name__ == "__main__":
         "server:app",
         host="0.0.0.0",
         port=10000
-    )
+        )
