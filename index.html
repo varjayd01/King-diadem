@@ -1,70 +1,152 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
 
 <title>KING DIADEM</title>
 
-<link rel="stylesheet" href="style.css">
+<style>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+body{
+background:black;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+.container{
+margin-top:120px;
+}
+
+input{
+display:block;
+margin:10px auto;
+padding:10px;
+width:250px;
+}
+
+button{
+padding:12px;
+margin:6px;
+background:#00c3ff;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+.info{
+margin-top:40px;
+color:#aaa;
+width:70%;
+margin-left:auto;
+margin-right:auto;
+line-height:1.5;
+}
+
+</style>
 
 </head>
 
+
 <body>
 
-<canvas id="universe"></canvas>
-
-<div class="panel">
+<div class="container">
 
 <h1>KING DIADEM</h1>
 
-<p class="tag">
-You can stop here. No system will rush your decision.
+<p>
+You can stop here.  
+No system will rush your decision.
 </p>
 
 <input id="location" placeholder="Where are you right now">
-
 <input id="food" placeholder="Meals remaining">
-
 <input id="money" placeholder="Money available">
+<input id="danger" placeholder="Danger level (1-10)">
 
-<input id="risk" placeholder="Danger level">
-
-<button onclick="analyze()">
-Show possible choices
+<button onclick="decision()">
+Show Possible Choices
 </button>
 
-<button onclick="buyAccess()">
-Unlock Strategic Engine
-</button>
 
-<div id="resultBox">
-<div id="resultText"></div>
-</div>
+<br><br>
 
-</div>
+<a href="/FRONTEND/register.html">
+<button>Register</button>
+</a>
 
-<div class="graph">
+<a href="/FRONTEND/login.html">
+<button>Login</button>
+</a>
 
-<h3>Simulation signal</h3>
-
-<canvas id="simChart"></canvas>
-
-</div>
-
-<div class="footer">
-
-Fail less. Harm less. Restore more.
+<a href="/FRONTEND/wallet.html">
+<button>Top Up</button>
+</a>
 
 </div>
 
-<script src="universe.js"></script>
-<script src="decision.js"></script>
-<script src="simulation_graph.js"></script>
-<script src="system_status.js"></script>
+
+
+<div class="info">
+
+<h3>How to use</h3>
+
+<p>
+
+KING DIADEM is a decision system designed to detect
+Choice Collapse.
+
+1. Enter your current situation.  
+2. The system evaluates risk and remaining choices.  
+3. It generates survival strategies.
+
+This tool does not replace human judgement.
+It helps restore at least one real option.
+
+</p>
+
+</div>
+
+
+
+<script>
+
+async function decision(){
+
+let location=document.getElementById("location").value
+let food=document.getElementById("food").value
+let money=document.getElementById("money").value
+let danger=document.getElementById("danger").value
+
+
+let res=await fetch(
+"https://king-diadem.onrender.com/decision",
+{
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+location:location,
+food:food,
+money:money,
+danger:danger
+})
+
+})
+
+let data=await res.json()
+
+alert(data.result)
+
+}
+
+</script>
+
 
 </body>
 </html>
