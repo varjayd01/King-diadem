@@ -1,136 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>KING DIADEM</title>
-
-<link rel="manifest" href="/manifest.json">
-
-<style>
+<!DOCTYPE html><html>
+<head><title>KING DIADEM Control Room</title><style>
 
 body{
-font-family:Arial;
-background:#f2f2f2;
+background:#0a0a0a;
+color:#eaeaea;
+font-family:monospace;
 margin:0;
-padding:0;
-text-align:center;
 }
 
-header{
-background:#000;
-color:white;
+.header{
 padding:20px;
 font-size:28px;
-font-weight:bold;
+border-bottom:1px solid #333;
 }
 
 .container{
-margin-top:30px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+padding:20px;
 }
 
-textarea{
-width:90%;
-height:120px;
-font-size:16px;
-padding:10px;
+.panel{
+background:#121212;
+padding:20px;
+border-radius:8px;
+border:1px solid #333;
 }
 
 button{
-padding:12px 20px;
-font-size:16px;
-margin-top:10px;
+background:#1e88ff;
+border:none;
+padding:10px;
+color:white;
 cursor:pointer;
 }
 
-.result{
-margin-top:20px;
-background:white;
-padding:20px;
-width:90%;
-margin-left:auto;
-margin-right:auto;
-border-radius:6px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+input{
+width:100%;
+padding:8px;
+margin-top:5px;
+background:#1b1b1b;
+border:1px solid #333;
+color:white;
 }
 
-</style>
+.result{
+margin-top:10px;
+background:#000;
+padding:10px;
+}
 
-</head>
+</style></head><body><div class="header">
+👑 KING DIADEM Control Room
+</div><div class="container"><div class="panel"><h3>Business Analysis</h3><label>Revenue</label>
+<input id="rev">
 
-<body>
+<label>Cost</label>
+<input id="cost">
 
-<header>
-KING DIADEM
-</header>
+<label>Market Growth</label>
+<input id="growth">
 
-<div class="container">
+<label>Competition</label>
+<input id="comp">
 
-<h2>Reality Optimization System</h2>
+<label>Demand</label>
+<input id="demand">
 
-<textarea id="input"
-placeholder="Describe your situation..."></textarea>
+<button onclick="runBusiness()">Analyze</button>
 
-<br>
+<div id="business_result" class="result"></div></div><div class="panel"><h3>System Status</h3><button onclick="loadSystem()">Load Status</button>
 
-<button onclick="runDecision()">
-Run Decision Engine
-</button>
+<div id="system_result" class="result"></div></div></div><script>
 
-<div class="result" id="output">
+async function loadSystem(){
 
-System Ready
+const r = await fetch("/system")
 
-</div>
+const d = await r.json()
 
-</div>
+document.getElementById("system_result").innerText =
+JSON.stringify(d,null,2)
 
-<script>
+}
 
-async function runDecision(){
+async function runBusiness(){
 
-let text=document.getElementById("input").value
+const body = {
 
-let response=await fetch("/decision",{
+revenue:parseFloat(document.getElementById("rev").value),
+cost:parseFloat(document.getElementById("cost").value),
+market_growth:parseFloat(document.getElementById("growth").value),
+competition:parseFloat(document.getElementById("comp").value),
+demand:parseFloat(document.getElementById("demand").value)
+
+}
+
+const r = await fetch("/analyze-business",{
 
 method:"POST",
 
 headers:{
-"Content-Type":"application/json",
-"api-key":"demo-key"
+"Content-Type":"application/json"
 },
 
-body:JSON.stringify({
-
-location:"global",
-food:text,
-money:0,
-risk:"unknown"
+body:JSON.stringify(body)
 
 })
 
-})
+const d = await r.json()
 
-let data=await response.json()
-
-document.getElementById("output").innerText=
-JSON.stringify(data,null,2)
+document.getElementById("business_result").innerText =
+JSON.stringify(d,null,2)
 
 }
 
-</script>
-
-<script>
-
-if('serviceWorker' in navigator){
-
-navigator.serviceWorker.register('/service_worker.js')
-
-}
-
-</script>
-
-</body>
+</script></body>
 </html>
