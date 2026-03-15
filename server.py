@@ -9,15 +9,22 @@ from ENGINE.decision_engine import run_decision
 from DATABASE.credit_store import use_credit, get_credits
 from AUTH.api_keys import create_api_key
 
-app = FastAPI(title="KING DIADEM")
+app = FastAPI(
+    title="KING DIADEM",
+    version="0.5",
+    description="Reality Optimization Decision Engine"
+)
 
-# STATIC
+# =========================
+# STATIC FILES
+# =========================
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
+# =========================
 # HOME
+# =========================
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -25,14 +32,14 @@ async def home():
     path = "INTERFACE/dashboard.html"
 
     if os.path.exists(path):
-
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
 
     return "<h1>KING DIADEM</h1>"
 
-
+# =========================
 # CREATE API KEY
+# =========================
 
 @app.get("/auth/create-key")
 async def create_key():
@@ -41,11 +48,12 @@ async def create_key():
 
     return {
         "api_key": key,
-        "credits": 100
+        "credits": get_credits(key)
     }
 
-
+# =========================
 # SYSTEM STATUS
+# =========================
 
 @app.get("/system")
 async def system():
@@ -56,8 +64,9 @@ async def system():
         "credits": "active"
     }
 
-
+# =========================
 # DECISION ENGINE
+# =========================
 
 @app.post("/decision")
 async def decision(
@@ -65,6 +74,7 @@ async def decision(
     api_key: str = Header(...)
 ):
 
+    # ป้องกัน body ว่าง
     try:
         body = await request.json()
     except:
@@ -78,17 +88,41 @@ async def decision(
             detail="No credits"
         )
 
-    use_credit(api_key)
+    success = use_credit(api_key)
 
-    result = run_decision(body)
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail="Credit error"
+        )
+
+    try:
+        result = run_decision(body)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Decision engine error: {str(e)}"
+        )
 
     return {
         "decision": result,
-        "credits_left": credits - 1
+        "credits_left": get_credits(api_key)
     }
 
+# =========================
+# HEALTH CHECK
+# =========================
 
+@app.get("/health")
+async def health():
+
+    return {
+        "status": "ok"
+    }
+
+# =========================
 # SERVER START
+# =========================
 
 if __name__ == "__main__":
 
