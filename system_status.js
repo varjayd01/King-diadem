@@ -1,29 +1,17 @@
-async function checkSystem(){
+async function ping(){
 
 try{
 
-const res=await fetch(
+await fetch("https://king-diadem.onrender.com/health")
 
-"https://king-diadem.onrender.com/system"
+}
 
-)
+catch(e){
 
-const data=await res.json()
-
-document.getElementById("system").innerHTML=
-
-"System online"
-
-}catch{
-
-document.getElementById("system").innerHTML=
-
-"Server reconnecting..."
+console.log("server sleeping")
 
 }
 
 }
 
-checkSystem()
-
-setInterval(checkSystem,10000)
+setInterval(ping,30000)
