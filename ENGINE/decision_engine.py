@@ -1,46 +1,18 @@
-def run_decision(location,food,money,danger):
+from AI.strategic_engine import strategic_analysis
 
 
-    score = 0
+def run_decision(location, food, money, danger):
 
-    score += food * 2
-    score += money * 1
-    score -= danger * 3
+    analysis = strategic_analysis(location, food, money, danger)
 
-
-    if score < 0:
-
-        return """
-High Risk Situation
-
-Priority:
-1. Reduce exposure
-2. Secure food
-3. Find temporary shelter
-"""
-
-
-
-    elif score < 10:
-
-        return """
-Unstable Condition
+    result = f"""
+RISK SCORE: {analysis['risk_score']}
 
 Recommended actions:
-1. Preserve remaining resources
-2. Avoid new risks
-3. Search for stable income
+
 """
 
+    for action in analysis["recommended_actions"]:
+        result += f"- {action}\n"
 
-
-    else:
-
-        return """
-Stable Situation
-
-Options available:
-1. Expand opportunities
-2. Build long term resources
-3. Reduce dependency risk
-"""
+    return result
