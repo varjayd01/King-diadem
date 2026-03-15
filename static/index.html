@@ -1,91 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>KING DIADEM</title>
+
 <style>
 
 body{
-background:#0b0f1a;
+margin:0;
+background:black;
 color:white;
-font-family:Arial;
+font-family:system-ui;
+overflow:hidden;
+}
+
+canvas{
+position:absolute;
+top:0;
+left:0;
+}
+
+.center{
+
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
 text-align:center;
-padding-top:80px;
+
 }
 
-input{
-padding:10px;
-width:300px;
-margin:10px;
-border-radius:6px;
-border:none;
+.title{
+font-size:40px;
 }
 
-button{
-padding:10px 20px;
-background:#00ffd5;
-border:none;
-border-radius:6px;
-cursor:pointer;
-font-weight:bold;
-}
+.quote{
 
-button:hover{
-background:#00c8a8;
-}
+max-width:500px;
+opacity:0.8;
+margin-top:20px;
 
-.box{
-background:#11182b;
-padding:30px;
-width:400px;
-margin:auto;
-border-radius:10px;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="box">
+<canvas id="space"></canvas>
 
-<h2>KING DIADEM</h2>
+<div class="center">
 
-<p>พิมพ์สิ่งที่ท่านติดปัญหาและต้องการทางเลือก</p>
+<div class="title">👑 KING DIADEM</div>
 
-<input id="apikey" placeholder="API KEY"><br>
+<div class="quote">
 
-<input id="question" placeholder="Your situation..."><br>
+ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0  
+ระบบนั้นล้มเหลว  
 
-<button onclick="ask()">Analyze</button>
+<br><br>
 
-<p id="result"></p>
+KING DIADEM  
+จะทำให้คุณมีทางเลือกเสมอ  
+แม้ในวันที่คุณมองไม่เห็นมัน
+
+</div>
 
 </div>
 
 <script>
 
-async function ask(){
+const canvas=document.getElementById("space")
+const ctx=canvas.getContext("2d")
 
-const api = document.getElementById("apikey").value
-const question = document.getElementById("question").value
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
 
-const response = await fetch("/decision",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-api_key:api,
-question:question
+let stars=[]
+
+for(let i=0;i<400;i++){
+
+stars.push({
+
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*2
+
 })
-})
-
-const data = await response.json()
-
-document.getElementById("result").innerText =
-JSON.stringify(data,null,2)
 
 }
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+for(let s of stars){
+
+ctx.beginPath()
+ctx.arc(s.x,s.y,s.r,0,Math.PI*2)
+ctx.fillStyle="white"
+ctx.fill()
+
+}
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
 
 </script>
 
