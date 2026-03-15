@@ -1,0 +1,24 @@
+<html>
+
+<h2>KING DIADEM WALLET</h2>
+
+<button onclick="pay()">Top Up</button>
+
+<script>
+
+async function pay(){
+
+let res = await fetch(
+"https://king-diadem.onrender.com/create-checkout",
+{method:"POST"}
+)
+
+let data = await res.json()
+
+window.location=data.checkout_url
+
+}
+
+</script>
+
+</html>
