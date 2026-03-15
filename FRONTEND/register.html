@@ -1,0 +1,38 @@
+<html>
+
+<h2>Register</h2>
+
+<input id="email" placeholder="email">
+<input id="password" type="password" placeholder="password">
+
+<button onclick="register()">Register</button>
+
+<script>
+
+async function register(){
+
+let email=document.getElementById("email").value
+let password=document.getElementById("password").value
+
+await fetch("https://king-diadem.onrender.com/register",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+email:email,
+password:password
+})
+
+})
+
+alert("user created")
+
+}
+
+</script>
+
+</html>
