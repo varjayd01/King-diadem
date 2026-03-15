@@ -1,6 +1,6 @@
-const ctxChart=document.getElementById("simChart")
+const ctx=document.getElementById("simChart")
 
-const simChart=new Chart(ctxChart,{
+new Chart(ctx,{
 
 type:"line",
 
@@ -12,18 +12,16 @@ datasets:[{
 
 label:"Decision Stability",
 
-data:[10,18,9,22,16,12,25,30],
+data:[10,18,9,22,15,11,25,30],
 
-borderColor:"#4fd1ff"
+borderColor:"#4bd4ff",
+
+backgroundColor:"rgba(75,212,255,0.2)"
 
 }]
 
 },
 
-options:{
-
-responsive:true
-
-}
+options:{responsive:true}
 
 })
