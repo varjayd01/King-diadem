@@ -1,190 +1,76 @@
 import os
-import stripe
-import uvicorn
+import time
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="KING DIADEM V999")
 
-# =========================
-# CONFIG
-# =========================
+# ===============================
+# STATIC
+# ===============================
 
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_ID")
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-stripe.api_key = STRIPE_SECRET_KEY
-
-# =========================
+# ===============================
 # CORS
-# =========================
+# ===============================
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
-# =========================
-# STATIC
-# =========================
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# =========================
+# ===============================
 # MEMORY DATABASE
-# =========================
+# ===============================
 
 USERS = {}
 WALLETS = {}
 TRANSACTIONS = []
 
-# =========================
+# Guest limit
+GUEST_LIMIT = 5
+GUEST_LOG = {}
+
+# ===============================
 # ROOT
-# =========================
+# ===============================
 
 @app.get("/")
 def root():
-
     return {
-        "system":"KING DIADEM",
-        "version":"V999",
-        "status":"running",
-        "ai":"online",
-        "decision_engine":"active"
+        "system": "KING DIADEM",
+        "version": "V999",
+        "status": "running"
     }
 
-# =========================
+# ===============================
 # SYSTEM STATUS
-# =========================
-
-@app.get("/system")
-def system():
-
-    return {
-        "system":"KING DIADEM",
-        "status":"running"
-    }
+# ===============================
 
 @app.get("/system/health")
 def health():
 
     return {
-        "server":"online",
-        "ai":"active",
-        "wallet":"ready",
-        "stripe":"connected"
+        "server": "online",
+        "ai": "active",
+        "wallet": "ready"
     }
 
-# =========================
-# BRAIN MAP
-# =========================
-
-@app.get("/system/brainmap")
-def brainmap():
+@app.get("/system/server")
+def server():
 
     return {
-
-        "center":"KING DIADEM",
-
-        "nodes":[
-
-            {"name":"AI Brain","status":"active"},
-            {"name":"Decision Engine","status":"active"},
-            {"name":"Simulation Engine","status":"ready"},
-            {"name":"Wallet System","status":"online"},
-            {"name":"Global Node Network","status":"scanning"}
-
-        ]
-
+        "mode": "SURVIVAL",
+        "max_guest_requests": GUEST_LIMIT
     }
 
-# =========================
-# AI STATUS
-# =========================
-
-@app.get("/ai/status")
-def ai_status():
-
-    return {
-
-        "ai":"online",
-
-        "modules":[
-            "decision_engine",
-            "strategy_engine",
-            "simulation_engine"
-        ]
-
-    }
-
-# =========================
-# AI BRAIN
-# =========================
-
-@app.get("/ai/brain")
-def ai_brain():
-
-    return {
-
-        "brain":"KING DIADEM CORE",
-
-        "modules":[
-
-            {
-                "name":"decision_engine",
-                "status":"active"
-            },
-
-            {
-                "name":"strategy_engine",
-                "status":"active"
-            },
-
-            {
-                "name":"simulation_engine",
-                "status":"ready"
-            },
-
-            {
-                "name":"entropy_guard",
-                "status":"monitoring"
-            }
-
-        ]
-
-    }
-
-# =========================
-# AI GALAXY
-# =========================
-
-@app.get("/ai/galaxy")
-def galaxy_nodes():
-
-    return {
-
-        "center":"KING DIADEM",
-
-        "nodes":[
-
-            {"name":"Human Choice","orbit":1},
-            {"name":"AI Strategy","orbit":2},
-            {"name":"Simulation Engine","orbit":3},
-            {"name":"Global Node","orbit":4},
-            {"name":"Economic Flow","orbit":5}
-
-        ]
-
-    }
-
-# =========================
-# USERS
-# =========================
+# ===============================
+# USER SYSTEM
+# ===============================
 
 @app.post("/register")
 async def register(req: Request):
@@ -197,7 +83,7 @@ async def register(req: Request):
     USERS[email] = password
     WALLETS[email] = 0
 
-    return {"status":"registered"}
+    return {"status": "registered"}
 
 @app.post("/login")
 async def login(req: Request):
@@ -210,178 +96,118 @@ async def login(req: Request):
     if USERS.get(email) != password:
         raise HTTPException(status_code=401)
 
-    return {"status":"login success"}
+    return {"status": "login success"}
 
-# =========================
+# ===============================
 # WALLET
-# =========================
+# ===============================
 
 @app.get("/wallet/balance")
-def wallet_balance(email:str):
+def wallet_balance(email: str):
 
     return {
-
-        "email":email,
-        "balance":WALLETS.get(email,0)
-
+        "email": email,
+        "balance": WALLETS.get(email, 0)
     }
-
-@app.post("/wallet/topup")
-async def wallet_topup(req: Request):
-
-    data = await req.json()
-
-    email = data["email"]
-    amount = data["amount"]
-
-    WALLETS[email] = WALLETS.get(email,0) + amount
-
-    TRANSACTIONS.append({
-        "email":email,
-        "amount":amount,
-        "type":"topup"
-    })
-
-    return {"wallet":"updated"}
 
 @app.get("/wallet/history")
 def wallet_history():
 
     return {
-
-        "transactions":TRANSACTIONS
-
+        "transactions": TRANSACTIONS
     }
 
-# =========================
-# FINANCE
-# =========================
+# ===============================
+# AI STATUS
+# ===============================
 
-@app.get("/system/finance")
-def finance():
+@app.get("/ai/status")
+def ai_status():
 
     return {
-
-        "wallet_users":len(WALLETS),
-
-        "transactions":len(TRANSACTIONS),
-
-        "payment":"stripe"
-
+        "ai": "online",
+        "modules": [
+            "decision_engine",
+            "strategy_engine",
+            "simulation_engine"
+        ]
     }
 
-# =========================
-# SERVER
-# =========================
-
-@app.get("/system/server")
-def server():
+@app.get("/ai/brain")
+def ai_brain():
 
     return {
-
-        "provider":"render",
-        "mode":"free",
-        "status":"running",
-        "recommendation":"upgrade when >100 users"
-
+        "core": "KING DIADEM",
+        "modules": [
+            "decision_engine",
+            "strategy_engine",
+            "simulation_engine"
+        ],
+        "status": "active"
     }
 
-# =========================
+@app.get("/ai/galaxy")
+def ai_galaxy():
+
+    return {
+        "nodes": [
+            {"id": 1, "name": "AI CORE"},
+            {"id": 2, "name": "DECISION ENGINE"},
+            {"id": 3, "name": "SIMULATION"},
+            {"id": 4, "name": "GLOBAL NODE"}
+        ]
+    }
+
+# ===============================
+# GUEST LIMIT SYSTEM
+# ===============================
+
+def check_guest(ip):
+
+    now = time.time()
+
+    if ip not in GUEST_LOG:
+        GUEST_LOG[ip] = []
+
+    GUEST_LOG[ip] = [
+        t for t in GUEST_LOG[ip]
+        if now - t < 86400
+    ]
+
+    if len(GUEST_LOG[ip]) >= GUEST_LIMIT:
+        return False
+
+    GUEST_LOG[ip].append(now)
+
+    return True
+
+
+# ===============================
 # DECISION ENGINE
-# =========================
+# ===============================
 
 @app.post("/decision")
-async def decision(req:Request):
+async def decision(req: Request):
+
+    ip = req.client.host
+
+    if not check_guest(ip):
+
+        raise HTTPException(
+            status_code=429,
+            detail="guest limit reached"
+        )
 
     data = await req.json()
 
     problem = data["problem"]
 
     return {
-
-        "problem":problem,
-        "decision":"simulate possible paths",
-        "status":"analysis running"
-
+        "problem": problem,
+        "analysis": "running simulation",
+        "possible_paths": [
+            "wait",
+            "act now",
+            "collect more data"
+        ]
     }
-
-# =========================
-# STRIPE CHECKOUT
-# =========================
-
-@app.post("/create-checkout-session")
-async def create_checkout():
-
-    try:
-
-        session = stripe.checkout.Session.create(
-
-            payment_method_types=["card"],
-
-            line_items=[{
-
-                "price":STRIPE_PRICE_ID,
-                "quantity":1
-
-            }],
-
-            mode="payment",
-
-            success_url="https://king-diadem.onrender.com/static/success.html",
-
-            cancel_url="https://king-diadem.onrender.com/static/cancel.html"
-
-        )
-
-        return {"url":session.url}
-
-    except Exception as e:
-
-        return {"error":str(e)}
-
-# =========================
-# STRIPE WEBHOOK
-# =========================
-
-@app.post("/stripe-webhook")
-async def stripe_webhook(request:Request):
-
-    payload = await request.body()
-    sig = request.headers.get("stripe-signature")
-
-    try:
-
-        event = stripe.Webhook.construct_event(
-            payload,
-            sig,
-            STRIPE_WEBHOOK_SECRET
-        )
-
-    except Exception as e:
-
-        raise HTTPException(400,str(e))
-
-    if event["type"] == "checkout.session.completed":
-
-        data = event["data"]["object"]
-
-        TRANSACTIONS.append({
-
-            "type":"stripe_payment",
-            "session":data["id"]
-
-        })
-
-    return {"received":True}
-
-# =========================
-# START SERVER
-# =========================
-
-if __name__ == "__main__":
-
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=10000
-        )
