@@ -1,25 +1,44 @@
 import os
-
-from fastapi import FastAPI
+import uvicorn
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+# ===============================
 # ENGINE
+# ===============================
+
 from ENGINE.decision_engine import run_decision
 
+# ===============================
 # AUTH
+# ===============================
+
 from AUTH.auth_system import register, login
 
+# ===============================
 # PAYMENT
+# ===============================
+
 from PAYMENT.wallet_engine import topup
 
+# ===============================
 # DATABASE
+# ===============================
+
 from DATABASE.user_db import init_db
 
-app = FastAPI(title="KING DIADEM")
+# ===============================
+# APP
+# ===============================
 
-# ---------- CORS ----------
+app = FastAPI(title="KING DIADEM V999")
+
+# ===============================
+# CORS
+# ===============================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,26 +47,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- INIT DATABASE ----------
+# ===============================
+# INIT DATABASE
+# ===============================
+
 init_db()
 
-# ---------- STATIC FILES ----------
-app.mount("/FRONTEND", StaticFiles(directory="FRONTEND"), name="frontend")
+# ===============================
+# STATIC FILES
+# ===============================
 
+if not os.path.exists("static"):
+    os.makedirs("static")
 
-# ==============================
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# ===============================
 # ROOT
-# ==============================
+# ===============================
 
 @app.get("/", response_class=HTMLResponse)
 def root():
     with open("index.html") as f:
         return f.read()
 
+# ===============================
+# LOGIN PAGE
+# ===============================
 
-# ==============================
-# AI DECISION
-# ==============================
+@app.get("/login.html", response_class=HTMLResponse)
+def login_page():
+    with open("login.html") as f:
+        return f.read()
+
+# ===============================
+# REGISTER PAGE
+# ===============================
+
+@app.get("/register.html", response_class=HTMLResponse)
+def register_page():
+    with open("register.html") as f:
+        return f.read()
+
+# ===============================
+# WALLET PAGE
+# ===============================
+
+@app.get("/wallet.html", response_class=HTMLResponse)
+def wallet_page():
+    with open("wallet.html") as f:
+        return f.read()
+
+# ===============================
+# DECISION ENGINE
+# ===============================
 
 @app.post("/decision")
 async def decision(data: dict):
@@ -63,10 +116,9 @@ async def decision(data: dict):
         "result": result
     }
 
-
-# ==============================
+# ===============================
 # REGISTER
-# ==============================
+# ===============================
 
 @app.post("/register")
 async def api_register(data: dict):
@@ -76,10 +128,9 @@ async def api_register(data: dict):
 
     return register(email, password)
 
-
-# ==============================
+# ===============================
 # LOGIN
-# ==============================
+# ===============================
 
 @app.post("/login")
 async def api_login(data: dict):
@@ -89,10 +140,9 @@ async def api_login(data: dict):
 
     return login(email, password)
 
-
-# ==============================
+# ===============================
 # WALLET TOPUP
-# ==============================
+# ===============================
 
 @app.post("/wallet/topup")
 async def api_topup(data: dict):
@@ -102,15 +152,70 @@ async def api_topup(data: dict):
 
     return topup(email, amount)
 
-
-# ==============================
-# HEALTH CHECK
-# ==============================
+# ===============================
+# SYSTEM STATUS
+# ===============================
 
 @app.get("/system")
 def system():
 
     return {
         "system": "KING DIADEM",
-        "status": "running"
+        "version": "V999",
+        "status": "running",
+        "ai": "online",
+        "decision_engine": "active"
     }
+
+# ===============================
+# AI STATUS
+# ===============================
+
+@app.get("/ai/status")
+def ai_status():
+
+    return {
+        "brain": "operational",
+        "strategy_engine": "ready",
+        "simulation_layer": "ready"
+    }
+
+# ===============================
+# HEALTH CHECK
+# ===============================
+
+@app.get("/health")
+def health():
+
+    return {
+        "server": "alive",
+        "database": "connected",
+        "deploy": "render"
+    }
+
+# ===============================
+# FUTURE APP API
+# ===============================
+
+@app.get("/app/info")
+def app_info():
+
+    return {
+        "name": "KING DIADEM",
+        "type": "AI Strategic System",
+        "mode": "PWA + Android",
+        "status": "beta"
+    }
+
+# ===============================
+# RUN
+# ===============================
+
+if __name__ == "__main__":
+
+    uvicorn.run(
+        "server:app",
+        host="0.0.0.0",
+        port=10000,
+        reload=True
+    )
