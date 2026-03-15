@@ -1,5 +1,7 @@
 import time
 
+from SIMULATIONS.future_simulator import simulate_future
+
 
 def analyze_business(context):
 
@@ -14,7 +16,7 @@ def analyze_business(context):
 
     runway = context.get("runway_months", 12)
 
-    # ---------- FINANCIAL ----------
+    # ---------------- FINANCIAL ----------------
 
     profit = revenue - cost
 
@@ -31,7 +33,7 @@ def analyze_business(context):
         (1 - burn_risk) * 0.4
     )
 
-    # ---------- MARKET ----------
+    # ---------------- MARKET ----------------
 
     market_power = (
         market_growth * 0.4 +
@@ -39,23 +41,21 @@ def analyze_business(context):
         barrier * 0.2
     )
 
-    # ---------- COMPETITION ----------
+    # ---------------- COMPETITION ----------------
 
     competitive_pressure = (
         competition * 0.7 +
         (1 - barrier) * 0.3
     )
 
-    # ---------- SURVIVAL ----------
+    # ---------------- SURVIVAL ----------------
 
-    survival_resilience = (
-        runway / 24
-    )
+    survival_resilience = runway / 24
 
     if survival_resilience > 1:
         survival_resilience = 1
 
-    # ---------- STRATEGIC SCORE ----------
+    # ---------------- STRATEGIC SCORE ----------------
 
     strategic_score = (
         financial_strength * 0.35 +
@@ -64,7 +64,7 @@ def analyze_business(context):
         competitive_pressure * 0.25
     )
 
-    # ---------- STRATEGY ----------
+    # ---------------- STRATEGY ----------------
 
     strategy = "observe"
 
@@ -82,6 +82,10 @@ def analyze_business(context):
 
     else:
         strategy = "pivot or restructure"
+
+    # ---------------- FUTURE SIMULATION ----------------
+
+    future_projection = simulate_future(strategic_score)
 
     return {
 
@@ -105,5 +109,7 @@ def analyze_business(context):
 
         "strategic_score": round(strategic_score,3),
 
-        "recommended_strategy": strategy
+        "recommended_strategy": strategy,
+
+        "future_projection": future_projection
     }
