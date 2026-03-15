@@ -1,25 +1,45 @@
+import random
+import time
+
+
 def run_decision(data):
 
+    # ป้องกัน input แปลก
     if not isinstance(data, dict):
 
         return {
-            "result": "invalid input",
-            "advice": "send JSON object"
+            "result": "invalid_input",
+            "message": "Input must be JSON object"
         }
 
+    # ถ้าไม่มีข้อมูล
     if len(data) == 0:
 
         return {
-            "result": "no data",
-            "advice": "provide decision context"
+            "result": "no_context",
+            "message": "Provide decision context"
         }
 
-    # ตัวอย่าง logic
+    # วิเคราะห์แบบง่ายก่อน
+    score = random.uniform(0.4, 0.9)
 
-    decision = {
+    recommendation = "proceed"
+
+    if score < 0.55:
+        recommendation = "high_risk"
+
+    elif score < 0.7:
+        recommendation = "caution"
+
+    result = {
+
+        "timestamp": time.time(),
+
         "analysis": data,
-        "recommendation": "optimize",
-        "confidence": 0.65
+
+        "recommendation": recommendation,
+
+        "confidence": round(score, 3)
     }
 
-    return decision
+    return result
