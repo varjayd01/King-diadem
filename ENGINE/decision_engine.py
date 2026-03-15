@@ -1,4 +1,5 @@
 from DOMAINS.domain_router import route_domain
+from DATABASE.decision_history import store_decision
 
 
 def run_decision(context):
@@ -21,6 +22,13 @@ def run_decision(context):
             ]
         }
 
+    # run domain analysis
     result = route_domain(domain, context)
+
+    # store decision history
+    try:
+        store_decision(result)
+    except:
+        pass
 
     return result
