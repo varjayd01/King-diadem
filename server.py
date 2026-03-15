@@ -7,13 +7,16 @@ from fastapi.staticfiles import StaticFiles
 
 from ENGINE.decision_engine import run_decision
 from DATABASE.credit_store import use_credit, get_credits
+from DATABASE.user_store import get_plan, get_queries_today, add_query, set_plan
 from AUTH.api_keys import create_api_key
+
 
 app = FastAPI(
     title="KING DIADEM",
-    version="0.5",
+    version="0.6",
     description="Reality Optimization Decision Engine"
 )
+
 
 # =========================
 # STATIC FILES
@@ -21,6 +24,7 @@ app = FastAPI(
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # =========================
 # HOME
@@ -32,10 +36,12 @@ async def home():
     path = "INTERFACE/dashboard.html"
 
     if os.path.exists(path):
+
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
 
     return "<h1>KING DIADEM</h1>"
+
 
 # =========================
 # CREATE API KEY
@@ -47,9 +53,9 @@ async def create_key():
     key = create_api_key()
 
     return {
-        "api_key": key,
-        "credits": get_credits(key)
+        "api_key": key
     }
+
 
 # =========================
 # SYSTEM STATUS
@@ -64,6 +70,7 @@ async def system():
         "credits": "active"
     }
 
+
 # =========================
 # DECISION ENGINE
 # =========================
@@ -74,15 +81,39 @@ async def decision(
     api_key: str = Header(...)
 ):
 
-    # ป้องกัน body ว่าง
+    # อ่าน body
     try:
         body = await request.json()
     except:
         body = {}
 
+    plan = get_plan(api_key)
+
+    # =========================
+    # FREE PLAN LIMIT
+    # =========================
+
+    if plan == "free":
+
+        queries = get_queries_today(api_key)
+
+        if queries >= 5:
+
+            raise HTTPException(
+                status_code=403,
+                detail="Free plan limit reached. Upgrade to PRO."
+            )
+
+        add_query(api_key)
+
+    # =========================
+    # CREDIT CHECK
+    # =========================
+
     credits = get_credits(api_key)
 
     if credits <= 0:
+
         raise HTTPException(
             status_code=402,
             detail="No credits"
@@ -91,14 +122,22 @@ async def decision(
     success = use_credit(api_key)
 
     if not success:
+
         raise HTTPException(
             status_code=400,
             detail="Credit error"
         )
 
+    # =========================
+    # RUN DECISION ENGINE
+    # =========================
+
     try:
+
         result = run_decision(body)
+
     except Exception as e:
+
         raise HTTPException(
             status_code=500,
             detail=f"Decision engine error: {str(e)}"
@@ -106,8 +145,25 @@ async def decision(
 
     return {
         "decision": result,
+        "plan": plan,
         "credits_left": get_credits(api_key)
     }
+
+
+# =========================
+# UPGRADE PLAN (TEST)
+# =========================
+
+@app.get("/upgrade/pro")
+async def upgrade_pro(api_key: str = Header(...)):
+
+    set_plan(api_key, "pro")
+
+    return {
+        "status": "upgraded",
+        "plan": "pro"
+    }
+
 
 # =========================
 # HEALTH CHECK
@@ -119,6 +175,7 @@ async def health():
     return {
         "status": "ok"
     }
+
 
 # =========================
 # SERVER START
