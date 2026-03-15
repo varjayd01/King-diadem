@@ -7,7 +7,7 @@
 
 <title>KING DIADEM</title>
 
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -21,22 +21,46 @@ text-align:center;
 padding:40px;
 }
 
+h1{
+font-size:38px;
+margin-bottom:10px;
+}
+
+p{
+color:#ccc;
+}
+
 input{
+
 display:block;
 margin:10px auto;
-padding:10px;
-width:220px;
+padding:12px;
+width:240px;
+border-radius:6px;
+border:none;
+
 }
 
 button{
-padding:10px 20px;
+
+padding:12px 24px;
 margin-top:10px;
+border-radius:6px;
+border:none;
+cursor:pointer;
+
 }
 
 a{
+
 display:block;
-margin-top:10px;
-color:#6cf;
+margin-top:12px;
+color:#66aaff;
+
+}
+
+#installBtn{
+display:none;
 }
 
 </style>
@@ -47,14 +71,13 @@ color:#6cf;
 
 <h1>KING DIADEM</h1>
 
-<p>
-Decision System for Survival Strategy
-</p>
+<p>Decision System for Survival Strategy</p>
 
 <p>
-This system helps analyze situations and suggest safe strategic choices
+This system analyzes situations and suggests safe strategic choices
 without harming people, animals, property or the environment.
 </p>
+
 
 <input id="location" placeholder="Where are you now">
 
@@ -64,17 +87,27 @@ without harming people, animals, property or the environment.
 
 <input id="danger" placeholder="Danger level (1-10)">
 
+
+
 <button onclick="run()">Analyze Decision</button>
 
 <br><br>
 
-<a href="FRONTEND/register.html">Create Account</a>
+<button id="installBtn">Install App</button>
 
-<a href="FRONTEND/login.html">Login</a>
 
-<a href="FRONTEND/wallet.html">Top Up Credit</a>
+<br><br>
+
+
+<a href="/FRONTEND/register.html">Create Account</a>
+
+<a href="/FRONTEND/login.html">Login</a>
+
+<a href="/FRONTEND/wallet.html">Top Up Credit</a>
+
 
 <script>
+
 
 async function run(){
 
@@ -96,7 +129,8 @@ food,
 money,
 danger
 })
-})
+}
+)
 
 let data=await res.json()
 
@@ -105,13 +139,41 @@ alert(data.result)
 }
 
 
-// register service worker
 
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('/service_worker.js')
 }
 
+
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+
+e.preventDefault();
+
+deferredPrompt = e;
+
+document.getElementById("installBtn").style.display="block";
+
+});
+
+
+document.getElementById("installBtn").addEventListener("click", async () => {
+
+deferredPrompt.prompt();
+
+const choice = await deferredPrompt.userChoice;
+
+if(choice.outcome==="accepted"){
+console.log("app installed")
+}
+
+});
+
 </script>
 
+
 </body>
+
 </html>
