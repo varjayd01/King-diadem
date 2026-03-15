@@ -3,7 +3,7 @@ import os
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-def create_payment_session():
+def create_checkout():
 
     session = stripe.checkout.Session.create(
 
@@ -11,17 +11,14 @@ def create_payment_session():
 
         line_items=[{
             "price": os.getenv("STRIPE_PRICE_ID"),
-            "quantity": 1
+            "quantity":1
         }],
 
         mode="payment",
 
-        success_url="https://king-diadem.onrender.com/success",
-        cancel_url="https://king-diadem.onrender.com/cancel",
+        success_url="https://varjayd01.github.io/King-diadem/success.html",
 
-        metadata={
-            "api_key": "KING-001"
-        }
+        cancel_url="https://varjayd01.github.io/King-diadem/cancel.html"
 
     )
 
