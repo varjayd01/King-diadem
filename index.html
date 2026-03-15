@@ -7,133 +7,16 @@
 
 <title>KING DIADEM</title>
 
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-color:white;
-background:radial-gradient(circle at 30% 20%, #142b6f,#030814);
-overflow:hidden;
-}
-
-canvas{
-position:fixed;
-top:0;
-left:0;
-z-index:0;
-}
-
-.wrapper{
-display:flex;
-height:100vh;
-position:relative;
-z-index:2;
-}
-
-.panel{
-width:420px;
-background:rgba(8,16,32,0.92);
-padding:30px;
-box-shadow:0 0 40px rgba(0,0,0,0.7);
-}
-
-.title{
-font-size:28px;
-font-weight:bold;
-}
-
-.subtitle{
-font-size:13px;
-opacity:0.6;
-margin-bottom:20px;
-}
-
-input{
-width:100%;
-padding:12px;
-margin-bottom:10px;
-border:none;
-border-radius:6px;
-background:#0c1333;
-color:white;
-}
-
-button{
-width:100%;
-padding:14px;
-border:none;
-border-radius:6px;
-background:linear-gradient(90deg,#39d06a,#2bb6ff);
-color:white;
-font-weight:bold;
-cursor:pointer;
-margin-top:10px;
-}
-
-.result{
-margin-top:15px;
-background:#0c1333;
-padding:12px;
-border-radius:8px;
-display:none;
-}
-
-.reason{
-margin-top:15px;
-background:#0c1333;
-padding:12px;
-border-radius:8px;
-display:none;
-font-size:13px;
-line-height:1.6;
-}
-
-.map{
-flex:1;
-display:flex;
-align-items:center;
-justify-content:center;
-position:relative;
-}
-
-.world{
-opacity:0.1;
-width:70%;
-position:absolute;
-}
-
-.dashboard{
-position:absolute;
-top:20px;
-right:20px;
-background:rgba(0,0,0,0.6);
-padding:15px;
-border-radius:10px;
-font-size:13px;
-}
-
-.meter{
-height:10px;
-background:#111;
-border-radius:6px;
-margin-top:5px;
-overflow:hidden;
-}
-
-.meter-bar{
-height:10px;
-width:0%;
-background:linear-gradient(90deg,#ff5e5e,#42aaff);
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
+
 <body>
 
-<canvas id="particles"></canvas>
+
+<canvas id="universe"></canvas>
+
 
 <div class="wrapper">
 
@@ -145,6 +28,7 @@ background:linear-gradient(90deg,#ff5e5e,#42aaff);
 Strategic Civilization Engine
 </div>
 
+
 <input id="location" placeholder="Location">
 
 <input id="food" placeholder="Food Level">
@@ -153,25 +37,41 @@ Strategic Civilization Engine
 
 <input id="risk" placeholder="Risk Level">
 
+
 <button onclick="analyze()">
+
 ⚡ Analyze Situation
+
 </button>
 
+
+
 <div class="result" id="resultBox">
+
 <div id="resultText"></div>
+
 </div>
+
 
 <div class="reason" id="reasonBox">
-<b>Reasoning Tree</b>
+
+<b>Decision Reasoning</b>
+
 <div id="reasonText"></div>
-</div>
 
 </div>
+
+
+</div>
+
+
 
 <div class="map">
 
-<img class="world"
-src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg">
+
+<canvas id="brain"></canvas>
+
+
 
 <div class="dashboard">
 
@@ -182,7 +82,9 @@ src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolut
 Survival Probability
 
 <div class="meter">
+
 <div class="meter-bar" id="probBar"></div>
+
 </div>
 
 <div id="probText">0%</div>
@@ -193,142 +95,43 @@ Survival Probability
 
 </div>
 
-</div>
+
+
+<div class="telemetry">
+
+AI CORE STATUS
+
+<br><br>
+
+Entropy :
+<span id="entropy">Stable</span>
+
+<br>
+
+Risk Level :
+<span id="riskLevel">Low</span>
+
+<br>
+
+Simulation Cycles :
+<span id="sim">128</span>
 
 </div>
 
-<script>
 
-const canvas=document.getElementById("particles")
-const ctx=canvas.getContext("2d")
+</div>
 
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
 
-let particles=[]
+</div>
 
-for(let i=0;i<80;i++){
 
-particles.push({
+<script src="universe.js"></script>
 
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-vx:(Math.random()-0.5)*0.4,
-vy:(Math.random()-0.5)*0.4
+<script src="ai_brain.js"></script>
 
-})
+<script src="decision.js"></script>
 
-}
-
-function animate(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-particles.forEach(p=>{
-
-p.x+=p.vx
-p.y+=p.vy
-
-if(p.x<0||p.x>canvas.width)p.vx*=-1
-if(p.y<0||p.y>canvas.height)p.vy*=-1
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,2,0,Math.PI*2)
-ctx.fillStyle="#6ec7ff"
-ctx.fill()
-
-})
-
-requestAnimationFrame(animate)
-
-}
-
-animate()
-
-async function analyze(){
-
-const location=document.getElementById("location").value
-const food=document.getElementById("food").value
-const money=document.getElementById("money").value
-const risk=document.getElementById("risk").value
-
-const resultBox=document.getElementById("resultBox")
-const resultText=document.getElementById("resultText")
-const reasonBox=document.getElementById("reasonBox")
-const reasonText=document.getElementById("reasonText")
-
-resultBox.style.display="block"
-resultText.innerHTML="Analyzing strategic state..."
-
-try{
-
-const res=await fetch(
-"https://king-diadem.onrender.com/decision",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-location:location,
-food:food,
-money:money,
-risk:risk
-})
-}
-)
-
-const data=await res.json()
-
-let output="<b>AI Strategic Output</b><br><br>"
-
-output+="Best Action: "+data.best_action+"<br>"
-output+="Score: "+data.score+"<br><br>"
-
-if(data.alternatives){
-
-data.alternatives.forEach(a=>{
-
-output+=a.action+" ("+a.expected_score+")<br>"
-
-})
-
-}
-
-resultText.innerHTML=output
-
-reasonBox.style.display="block"
-
-reasonText.innerHTML=
-
-"1. Evaluate survival resources<br>"+
-"2. Analyze risk exposure<br>"+
-"3. Determine minimal viable action<br>"+
-"4. Generate strategic options<br>"+
-"5. Preserve human choice pathways"
-
-let prob=Math.min(
-95,
-Math.max(
-10,
-(Number(money)/10)+(food.length*5)-(risk.length*2)
-)
-)
-
-document.getElementById("probBar").style.width=prob+"%"
-document.getElementById("probText").innerHTML=prob+"%"
-
-}
-
-catch(e){
-
-resultText.innerHTML="System error. Node reconnecting..."
-
-}
-
-}
-
-</script>
 
 </body>
+
 </html>
