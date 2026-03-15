@@ -1,3 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KING DIADEM</title>
+
+<link rel="manifest" href="/static/manifest.json">
+
+<link rel="stylesheet" href="/static/style.css">
+
+</head>
+
 <body>
 
 <canvas id="galaxy"></canvas>
@@ -8,10 +25,12 @@
 
 <div class="philosophy">
 
-ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0
-ระบบนั้นล้มเหลว
+ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0  
+ระบบนั้นล้มเหลว  
 
-Any system that reduces human choice to zero
+<br><br>
+
+Any system that reduces human choice to zero  
 is a failed system.
 
 </div>
@@ -30,8 +49,66 @@ is a failed system.
 
 </div>
 
+
 <script src="/static/galaxy.js"></script>
 <script src="/static/ai_thinking.js"></script>
 <script src="/static/decision.js"></script>
 
+<script>
+
+function ask(){
+
+let q = prompt("Your problem")
+
+fetch("/decision",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+problem:q
+
+})
+
+})
+
+.then(r=>r.json())
+
+.then(d=>{
+
+alert(d.answer)
+
+})
+
+}
+
+
+function brain(){
+
+window.location="/ai/brain"
+
+}
+
+
+function galaxy(){
+
+window.location="/ai/galaxy"
+
+}
+
+
+function guide(){
+
+window.location="/static/guide.html"
+
+}
+
+</script>
+
+
 </body>
+</html>
