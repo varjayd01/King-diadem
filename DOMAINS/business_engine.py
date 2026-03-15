@@ -1,6 +1,7 @@
 import time
 
-from SIMULATIONS.future_simulator import simulate_future
+from INTELLIGENCE.risk_engine import analyze_risk
+from DATABASE.decision_history import save_decision
 
 
 def analyze_business(context):
@@ -9,85 +10,72 @@ def analyze_business(context):
     cost = context.get("cost", 0)
 
     market_growth = context.get("market_growth", 0.5)
-    demand = context.get("demand", 0.5)
-
     competition = context.get("competition", 0.5)
-    barrier = context.get("barrier_to_entry", 0.5)
-
-    runway = context.get("runway_months", 12)
-
-    # ---------------- FINANCIAL ----------------
+    demand = context.get("demand", 0.5)
 
     profit = revenue - cost
 
     margin = 0
+
     if revenue > 0:
         margin = profit / revenue
 
-    burn_risk = 0
-    if runway < 12:
-        burn_risk = (12 - runway) / 12
 
-    financial_strength = (
-        margin * 0.6 +
-        (1 - burn_risk) * 0.4
+    # ---------- OPPORTUNITY MODEL ----------
+
+    opportunity_score = (
+
+        market_growth * 0.35 +
+        demand * 0.40 +
+        (1 - competition) * 0.25
+
     )
 
-    # ---------------- MARKET ----------------
 
-    market_power = (
-        market_growth * 0.4 +
-        demand * 0.4 +
-        barrier * 0.2
+    # ---------- COST PRESSURE ----------
+
+    cost_pressure = 0
+
+    if revenue > 0:
+        cost_pressure = cost / revenue
+
+
+    # ---------- CORE BUSINESS SCORE ----------
+
+    base_score = (
+
+        opportunity_score * 0.6 +
+        margin * 0.4
+
     )
 
-    # ---------------- COMPETITION ----------------
 
-    competitive_pressure = (
-        competition * 0.7 +
-        (1 - barrier) * 0.3
-    )
+    # ---------- RISK ANALYSIS ----------
 
-    # ---------------- SURVIVAL ----------------
+    risk = analyze_risk(base_score)
 
-    survival_resilience = runway / 24
 
-    if survival_resilience > 1:
-        survival_resilience = 1
-
-    # ---------------- STRATEGIC SCORE ----------------
-
-    strategic_score = (
-        financial_strength * 0.35 +
-        market_power * 0.30 +
-        survival_resilience * 0.20 -
-        competitive_pressure * 0.25
-    )
-
-    # ---------------- STRATEGY ----------------
+    # ---------- STRATEGY ENGINE ----------
 
     strategy = "observe"
 
-    if strategic_score > 0.6:
-        strategy = "scale aggressively"
+    if margin < 0:
+        strategy = "pivot"
 
-    elif strategic_score > 0.45:
-        strategy = "controlled expansion"
+    elif risk["risk_level"] == "critical":
+        strategy = "defensive"
 
-    elif strategic_score > 0.25:
-        strategy = "optimize operations"
+    elif opportunity_score > 0.7 and margin > 0.25:
+        strategy = "scale"
 
-    elif strategic_score > 0:
-        strategy = "defensive strategy"
+    elif opportunity_score > 0.5:
+        strategy = "optimize"
 
-    else:
-        strategy = "pivot or restructure"
+    elif demand < 0.3:
+        strategy = "rethink_market"
 
-    # ---------------- FUTURE SIMULATION ----------------
 
-    future_projection = simulate_future(strategic_score)
-
-    return {
+    result = {
 
         "domain": "business",
 
@@ -99,17 +87,20 @@ def analyze_business(context):
 
         "profit_margin": round(margin,3),
 
-        "financial_strength": round(financial_strength,3),
+        "opportunity_score": round(opportunity_score,3),
 
-        "market_power": round(market_power,3),
+        "cost_pressure": round(cost_pressure,3),
 
-        "competitive_pressure": round(competitive_pressure,3),
-
-        "survival_resilience": round(survival_resilience,3),
-
-        "strategic_score": round(strategic_score,3),
+        "base_score": round(base_score,3),
 
         "recommended_strategy": strategy,
 
-        "future_projection": future_projection
+        "risk_analysis": risk
     }
+
+
+    # ---------- SAVE DECISION ----------
+
+    save_decision(result)
+
+    return result
