@@ -9,29 +9,70 @@
 
 <link rel="manifest" href="manifest.json">
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+background:#000;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:40px;
+}
+
+input{
+display:block;
+margin:10px auto;
+padding:10px;
+width:220px;
+}
+
+button{
+padding:10px 20px;
+margin-top:10px;
+}
+
+a{
+display:block;
+margin-top:10px;
+color:#6cf;
+}
+
+</style>
+
 </head>
 
 <body>
 
 <h1>KING DIADEM</h1>
 
-<p>Decision System for Survival Strategy</p>
+<p>
+Decision System for Survival Strategy
+</p>
 
-<input id="location" placeholder="Location">
-<input id="food" placeholder="Meals Remaining">
-<input id="money" placeholder="Money">
-<input id="danger" placeholder="Danger Level">
+<p>
+This system helps analyze situations and suggest safe strategic choices
+without harming people, animals, property or the environment.
+</p>
 
-<button onclick="run()">Run Decision</button>
+<input id="location" placeholder="Where are you now">
+
+<input id="food" placeholder="Meals remaining">
+
+<input id="money" placeholder="Money available">
+
+<input id="danger" placeholder="Danger level (1-10)">
+
+<button onclick="run()">Analyze Decision</button>
 
 <br><br>
 
-<a href="FRONTEND/register.html">Register</a>
-<br>
-<a href="FRONTEND/login.html">Login</a>
-<br>
-<a href="FRONTEND/wallet.html">Top Up</a>
+<a href="FRONTEND/register.html">Create Account</a>
 
+<a href="FRONTEND/login.html">Login</a>
+
+<a href="FRONTEND/wallet.html">Top Up Credit</a>
 
 <script>
 
@@ -41,7 +82,6 @@ let location=document.getElementById("location").value
 let food=document.getElementById("food").value
 let money=document.getElementById("money").value
 let danger=document.getElementById("danger").value
-
 
 let res=await fetch(
 "https://king-diadem.onrender.com/decision",
@@ -62,6 +102,13 @@ let data=await res.json()
 
 alert(data.result)
 
+}
+
+
+// register service worker
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('/service_worker.js')
 }
 
 </script>
