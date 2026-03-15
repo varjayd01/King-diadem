@@ -1,24 +1,32 @@
-<html>
+<h2>Wallet</h2>
 
-<h2>KING DIADEM WALLET</h2>
+<input id="email" placeholder="email">
 
-<button onclick="pay()">Top Up</button>
+<input id="amount" placeholder="amount">
+
+<button onclick="topup()">Top Up</button>
 
 <script>
 
-async function pay(){
+async function topup(){
 
-let res = await fetch(
-"https://king-diadem.onrender.com/create-checkout",
-{method:"POST"}
-)
+let email=document.getElementById("email").value
+let amount=document.getElementById("amount").value
 
-let data = await res.json()
+let res=await fetch(
+"https://king-diadem.onrender.com/wallet/topup",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email,amount})
+})
 
-window.location=data.checkout_url
+let data=await res.json()
+
+alert(JSON.stringify(data))
 
 }
 
 </script>
-
-</html>
