@@ -1,6 +1,8 @@
 import secrets
 
 from DATABASE.credit_store import add_credits
+from DATABASE.user_store import create_user
+
 
 api_keys = {}
 
@@ -13,7 +15,11 @@ def create_api_key():
         "credits": 100
     }
 
+    # ให้เครดิตเริ่มต้น
     add_credits(key, 100)
+
+    # สร้าง user
+    create_user(key)
 
     return key
 
