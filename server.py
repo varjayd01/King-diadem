@@ -6,25 +6,27 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from ENGINE.decision_engine import run_decision
+
 from DATABASE.credit_store import use_credit, get_credits
 from DATABASE.user_store import get_plan, get_queries_today, add_query, set_plan
+
+from GLOBAL_NODE.feed_store import add_feed_entry, get_feed
+
 from AUTH.api_keys import create_api_key
 
 
 app = FastAPI(
     title="KING DIADEM",
-    version="0.6",
+    version="0.7",
     description="Reality Optimization Decision Engine"
 )
 
-
 # =========================
-# STATIC FILES
+# STATIC
 # =========================
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 # =========================
 # HOME
@@ -81,7 +83,6 @@ async def decision(
     api_key: str = Header(...)
 ):
 
-    # อ่าน body
     try:
         body = await request.json()
     except:
@@ -89,9 +90,9 @@ async def decision(
 
     plan = get_plan(api_key)
 
-    # =========================
+    # -------------------------
     # FREE PLAN LIMIT
-    # =========================
+    # -------------------------
 
     if plan == "free":
 
@@ -106,9 +107,9 @@ async def decision(
 
         add_query(api_key)
 
-    # =========================
+    # -------------------------
     # CREDIT CHECK
-    # =========================
+    # -------------------------
 
     credits = get_credits(api_key)
 
@@ -128,9 +129,9 @@ async def decision(
             detail="Credit error"
         )
 
-    # =========================
+    # -------------------------
     # RUN DECISION ENGINE
-    # =========================
+    # -------------------------
 
     try:
 
@@ -143,10 +144,30 @@ async def decision(
             detail=f"Decision engine error: {str(e)}"
         )
 
+    # -------------------------
+    # GLOBAL FEED
+    # -------------------------
+
+    add_feed_entry(api_key, result)
+
     return {
         "decision": result,
         "plan": plan,
         "credits_left": get_credits(api_key)
+    }
+
+
+# =========================
+# GLOBAL DECISION FEED
+# =========================
+
+@app.get("/global-feed")
+async def global_feed():
+
+    data = get_feed()
+
+    return {
+        "decisions": data
     }
 
 
