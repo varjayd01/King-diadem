@@ -1,83 +1,26 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
-<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="stylesheet" href="/static/style.css">
 
 <title>KING DIADEM</title>
-
-<link rel="manifest" href="/manifest.json">
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-
-body{
-background:#000;
-color:white;
-font-family:Arial;
-text-align:center;
-padding:40px;
-}
-
-h1{
-font-size:38px;
-margin-bottom:10px;
-}
-
-p{
-color:#ccc;
-}
-
-input{
-
-display:block;
-margin:10px auto;
-padding:12px;
-width:240px;
-border-radius:6px;
-border:none;
-
-}
-
-button{
-
-padding:12px 24px;
-margin-top:10px;
-border-radius:6px;
-border:none;
-cursor:pointer;
-
-}
-
-a{
-
-display:block;
-margin-top:12px;
-color:#66aaff;
-
-}
-
-#installBtn{
-display:none;
-}
-
-</style>
 
 </head>
 
 <body>
 
+<div class="container">
+
+<img src="/static/icon-512.png" class="logo">
+
 <h1>KING DIADEM</h1>
 
-<p>Decision System for Survival Strategy</p>
-
-<p>
-This system analyzes situations and suggests safe strategic choices
-without harming people, animals, property or the environment.
-</p>
-
+<div class="subtitle">
+Decision Intelligence System
+</div>
 
 <input id="location" placeholder="Where are you now">
 
@@ -87,93 +30,44 @@ without harming people, animals, property or the environment.
 
 <input id="danger" placeholder="Danger level (1-10)">
 
+<button onclick="analyze()">Analyze Decision</button>
 
+<div class="link">
 
-<button onclick="run()">Analyze Decision</button>
+<a href="/login.html">Login</a> •
+<a href="/register.html">Create Account</a> •
+<a href="/wallet.html">Top Up</a>
 
-<br><br>
+</div>
 
-<button id="installBtn">Install App</button>
-
-
-<br><br>
-
-
-<a href="/FRONTEND/register.html">Create Account</a>
-
-<a href="/FRONTEND/login.html">Login</a>
-
-<a href="/FRONTEND/wallet.html">Top Up Credit</a>
-
+</div>
 
 <script>
 
+async function analyze(){
 
-async function run(){
+const data = {
 
-let location=document.getElementById("location").value
-let food=document.getElementById("food").value
-let money=document.getElementById("money").value
-let danger=document.getElementById("danger").value
+location:document.getElementById("location").value,
+food:document.getElementById("food").value,
+money:document.getElementById("money").value,
+danger:document.getElementById("danger").value
 
-let res=await fetch(
-"https://king-diadem.onrender.com/decision",
-{
+}
+
+const res = await fetch("/decision",{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-location,
-food,
-money,
-danger
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
 })
-}
-)
 
-let data=await res.json()
+const result = await res.json()
 
-alert(data.result)
+alert(result.result)
 
 }
-
-
-
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('/service_worker.js')
-}
-
-
-
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-
-e.preventDefault();
-
-deferredPrompt = e;
-
-document.getElementById("installBtn").style.display="block";
-
-});
-
-
-document.getElementById("installBtn").addEventListener("click", async () => {
-
-deferredPrompt.prompt();
-
-const choice = await deferredPrompt.userChoice;
-
-if(choice.outcome==="accepted"){
-console.log("app installed")
-}
-
-});
 
 </script>
 
-
 </body>
-
 </html>
