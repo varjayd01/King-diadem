@@ -1,18 +1,15 @@
-from AI.strategic_engine import strategic_analysis
+from SIMULATIONS.scenario_tree import simulate_paths
 
+def run_decision(problem, persona):
 
-def run_decision(location, food, money, danger):
+    paths = simulate_paths(problem)
 
-    analysis = strategic_analysis(location, food, money, danger)
+    return {
 
-    result = f"""
-RISK SCORE: {analysis['risk_score']}
+        "problem":problem,
 
-Recommended actions:
+        "persona":persona,
 
-"""
+        "paths":paths
 
-    for action in analysis["recommended_actions"]:
-        result += f"- {action}\n"
-
-    return result
+    }
