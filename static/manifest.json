@@ -1,0 +1,21 @@
+{
+"name": "KING DIADEM",
+"short_name": "DIADEM",
+"start_url": "/static/index.html",
+"display": "standalone",
+"background_color": "#05070d",
+"theme_color": "#05070d",
+
+"icons": [
+{
+"src": "/static/icon.png",
+"sizes": "192x192",
+"type": "image/png"
+},
+{
+"src": "/static/icon.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+]
+}
