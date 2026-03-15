@@ -1,77 +1,15 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>KING DIADEM</title>
 
-<style>
+<link rel="manifest" href="/static/manifest.json">
 
-body{
-margin:0;
-background:#05070d;
-color:white;
-font-family:system-ui;
-overflow:hidden;
-}
-
-canvas{
-position:absolute;
-top:0;
-left:0;
-}
-
-.center{
-
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-text-align:center;
-
-}
-
-.title{
-
-font-size:44px;
-letter-spacing:4px;
-
-}
-
-.quote{
-
-margin-top:20px;
-max-width:520px;
-opacity:0.85;
-line-height:1.6;
-
-}
-
-.nodes{
-
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-
-}
-
-.node{
-
-position:absolute;
-width:10px;
-height:10px;
-border-radius:50%;
-background:white;
-opacity:0.9;
-
-}
-
-</style>
+<link rel="stylesheet" href="/static/style.css">
 
 </head>
 
@@ -79,16 +17,16 @@ opacity:0.9;
 
 <canvas id="galaxy"></canvas>
 
-<div class="center">
+<div class="ui">
 
-<div class="title">
+<div class="logo">
 👑 KING DIADEM
 </div>
 
 <div class="quote">
 
 ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0  
-ระบบนั้นล้มเหลว  
+ระบบนั้นล้มเหลว
 
 <br><br>
 
@@ -98,7 +36,34 @@ KING DIADEM
 
 </div>
 
+<div class="system">
+
+<div id="server">SERVER : ...</div>
+
+<div id="ai">AI : ...</div>
+
+<div id="wallet">WALLET : ...</div>
+
 </div>
+
+</div>
+
+<div class="nav">
+
+<button onclick="openAsk()">ASK</button>
+
+<button onclick="openBrain()">BRAIN</button>
+
+<button onclick="openGalaxy()">GALAXY</button>
+
+<button onclick="openWallet()">WALLET</button>
+
+</div>
+
+<script src="/static/app.js"></script>
+<script src="/static/system.js"></script>
+<script src="/static/brain.js"></script>
+<script src="/static/galaxy.js"></script>
 
 <script>
 
@@ -110,14 +75,14 @@ canvas.height = window.innerHeight
 
 let stars = []
 
-for(let i=0;i<500;i++){
+for(let i=0;i<300;i++){
 
 stars.push({
 
 x:Math.random()*canvas.width,
 y:Math.random()*canvas.height,
-r:Math.random()*1.5,
-speed:Math.random()*0.3
+r:Math.random()*2,
+speed:Math.random()*0.5
 
 })
 
@@ -127,21 +92,22 @@ function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
+ctx.fillStyle="white"
+
 for(let s of stars){
-
-s.y += s.speed
-
-if(s.y > canvas.height){
-
-s.y = 0
-s.x = Math.random()*canvas.width
-
-}
 
 ctx.beginPath()
 ctx.arc(s.x,s.y,s.r,0,Math.PI*2)
-ctx.fillStyle="white"
 ctx.fill()
+
+s.y += s.speed
+
+if(s.y>canvas.height){
+
+s.y=0
+s.x=Math.random()*canvas.width
+
+}
 
 }
 
@@ -153,6 +119,58 @@ draw()
 
 </script>
 
-</body>
+<script>
 
+async function loadHealth(){
+
+const res = await fetch("/system/health")
+
+const data = await res.json()
+
+document.getElementById("server").innerText =
+"SERVER : "+data.server
+
+document.getElementById("ai").innerText =
+"AI : "+data.ai
+
+document.getElementById("wallet").innerText =
+"WALLET : "+data.wallet
+
+}
+
+setInterval(loadHealth,4000)
+
+loadHealth()
+
+</script>
+
+<script>
+
+function openAsk(){
+
+location.href="/static/ask.html"
+
+}
+
+function openBrain(){
+
+fetch("/ai/brain")
+
+}
+
+function openGalaxy(){
+
+fetch("/ai/galaxy")
+
+}
+
+function openWallet(){
+
+fetch("/wallet/history")
+
+}
+
+</script>
+
+</body>
 </html>
