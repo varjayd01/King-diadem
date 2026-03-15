@@ -1,208 +1,73 @@
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+import stripe
 import os
-import uvicorn
 
-from fastapi import FastAPI, Request, Header, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+app = FastAPI()
 
-from ENGINE.decision_engine import run_decision
-from DATABASE.credit_store import use_credit, get_credits
-from AUTH.api_keys import create_api_key, is_valid_key
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-app = FastAPI(title="KING DIADEM")
+PRICE_ID = os.getenv("STRIPE_PRICE_ID")
 
+@app.get("/")
+def root():
 
-# =========================
-# STATIC FILES
-# =========================
+    return {"system":"KING DIADEM ONLINE"}
 
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+@app.get("/health")
+def health():
 
-
-# =========================
-# HOME → CONTROL ROOM
-# =========================
-
-@app.get("/", response_class=HTMLResponse)
-async def home():
-
-    dashboard = "INTERFACE/dashboard.html"
-
-    if os.path.exists(dashboard):
-
-        with open(dashboard, "r", encoding="utf-8") as f:
-            return f.read()
-
-    return "<h1>KING DIADEM Control Room</h1>"
-
-
-# =========================
-# CREATE API KEY
-# =========================
-
-@app.get("/auth/create-key")
-async def create_key():
-
-    key = create_api_key()
-
-    return {
-
-        "api_key": key,
-        "credits": get_credits(key)
-
-    }
-
-
-# =========================
-# SYSTEM STATUS
-# =========================
-
-@app.get("/system")
-async def system():
-
-    return {
-
-        "status": "running",
-        "engine": "online",
-
-        "domains": [
-            "life",
-            "business",
-            "survival",
-            "world"
-        ]
-
-    }
-
-
-# =========================
-# GENERIC DECISION
-# =========================
+    return {"status":"ok"}
 
 @app.post("/decision")
-async def decision(
-    request: Request,
-    api_key: str = Header(None)
-):
+async def decision(request: Request):
 
-    if api_key and not is_valid_key(api_key):
+    body = await request.json()
 
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid API key"
-        )
+    location = body.get("location","unknown")
+    food = int(body.get("food",0))
+    money = int(body.get("money",0))
+    risk = int(body.get("risk",0))
 
-    try:
+    score = max(0,min(100,(food*2)+(money/10)-(risk*3)))
 
-        body = await request.json()
-
-    except:
-
-        body = {}
-
-    if api_key:
-
-        credits = get_credits(api_key)
-
-        if credits <= 0:
-
-            raise HTTPException(
-                status_code=402,
-                detail="No credits"
-            )
-
-        success = use_credit(api_key)
-
-        if not success:
-
-            raise HTTPException(
-                status_code=400,
-                detail="Credit error"
-            )
-
-    result = run_decision(body)
+    if score > 70:
+        action = "Advance strategic position"
+    elif score > 40:
+        action = "Stabilize resources"
+    else:
+        action = "Minimize exposure and survive"
 
     return {
-
-        "result": result
-
+        "best_action": action,
+        "score": score
     }
 
+@app.post("/create-checkout")
+def create_checkout():
 
-# =========================
-# LIFE DOMAIN
-# =========================
+    session = stripe.checkout.Session.create(
 
-@app.post("/analyze-life")
-async def analyze_life(request: Request):
+        payment_method_types=["card"],
 
-    body = await request.json()
+        line_items=[{
+            "price": PRICE_ID,
+            "quantity": 1
+        }],
 
-    body["domain"] = "life"
+        mode="payment",
 
-    result = run_decision(body)
+        success_url="https://varjayd01.github.io/King-diadem/success.html",
 
-    return result
+        cancel_url="https://varjayd01.github.io/King-diadem/"
 
-
-# =========================
-# BUSINESS DOMAIN
-# =========================
-
-@app.post("/analyze-business")
-async def analyze_business(request: Request):
-
-    body = await request.json()
-
-    body["domain"] = "business"
-
-    result = run_decision(body)
-
-    return result
-
-
-# =========================
-# SURVIVAL DOMAIN
-# =========================
-
-@app.post("/analyze-survival")
-async def analyze_survival(request: Request):
-
-    body = await request.json()
-
-    body["domain"] = "survival"
-
-    result = run_decision(body)
-
-    return result
-
-
-# =========================
-# WORLD DOMAIN
-# =========================
-
-@app.post("/analyze-world")
-async def analyze_world(request: Request):
-
-    body = await request.json()
-
-    body["domain"] = "world"
-
-    result = run_decision(body)
-
-    return result
-
-
-# =========================
-# SERVER START
-# =========================
-
-if __name__ == "__main__":
-
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=10000
     )
+
+    return {"url": session.url}
