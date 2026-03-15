@@ -1,6 +1,7 @@
 import time
 
 from INTELLIGENCE.risk_engine import analyze_risk
+from INTELLIGENCE.decision_intelligence import intelligence_layer
 from DATABASE.decision_history import save_decision
 
 
@@ -59,21 +60,24 @@ def analyze_business(context):
 
     strategy = "observe"
 
+
     if margin < 0:
         strategy = "pivot"
 
     elif risk["risk_level"] == "critical":
         strategy = "defensive"
 
-    elif opportunity_score > 0.7 and margin > 0.25:
+    elif opportunity_score > 0.75 and margin > 0.25:
         strategy = "scale"
 
-    elif opportunity_score > 0.5:
+    elif opportunity_score > 0.55:
         strategy = "optimize"
 
     elif demand < 0.3:
         strategy = "rethink_market"
 
+
+    # ---------- RESULT OBJECT ----------
 
     result = {
 
@@ -85,22 +89,26 @@ def analyze_business(context):
 
         "profit": profit,
 
-        "profit_margin": round(margin,3),
+        "profit_margin": round(margin, 3),
 
-        "opportunity_score": round(opportunity_score,3),
+        "opportunity_score": round(opportunity_score, 3),
 
-        "cost_pressure": round(cost_pressure,3),
+        "cost_pressure": round(cost_pressure, 3),
 
-        "base_score": round(base_score,3),
+        "base_score": round(base_score, 3),
 
         "recommended_strategy": strategy,
 
         "risk_analysis": risk
+
     }
 
 
-    # ---------- SAVE DECISION ----------
+    # ---------- SAVE DECISION HISTORY ----------
 
     save_decision(result)
 
-    return result
+
+    # ---------- INTELLIGENCE LAYER ----------
+
+    return intelligence_layer(result)
