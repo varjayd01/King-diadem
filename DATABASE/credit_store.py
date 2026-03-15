@@ -4,6 +4,7 @@ credits = {
 
 
 def get_credits(api_key):
+
     return credits.get(api_key, 0)
 
 
@@ -16,6 +17,7 @@ def use_credit(api_key):
         return False
 
     credits[api_key] -= 1
+
     return True
 
 
