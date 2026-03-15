@@ -5,28 +5,35 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+# CORE ENGINES
 from ENGINE.decision_engine import run_decision
+from SIMULATIONS.future_simulator import simulate_future
 
+# DATABASE
 from DATABASE.credit_store import use_credit, get_credits
 from DATABASE.user_store import get_plan, get_queries_today, add_query, set_plan
 
+# GLOBAL NETWORK
 from GLOBAL_NODE.feed_store import add_feed_entry, get_feed
 
+# AUTH
 from AUTH.api_keys import create_api_key
 
 
 app = FastAPI(
     title="KING DIADEM",
-    version="0.7",
-    description="Reality Optimization Decision Engine"
+    version="0.9",
+    description="Global Decision & Simulation Engine"
 )
 
+
 # =========================
-# STATIC
+# STATIC FILES
 # =========================
 
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # =========================
 # HOME
@@ -69,7 +76,7 @@ async def system():
     return {
         "status": "running",
         "engine": "online",
-        "credits": "active"
+        "simulation": "online"
     }
 
 
@@ -90,10 +97,7 @@ async def decision(
 
     plan = get_plan(api_key)
 
-    # -------------------------
     # FREE PLAN LIMIT
-    # -------------------------
-
     if plan == "free":
 
         queries = get_queries_today(api_key)
@@ -102,15 +106,12 @@ async def decision(
 
             raise HTTPException(
                 status_code=403,
-                detail="Free plan limit reached. Upgrade to PRO."
+                detail="Free plan limit reached"
             )
 
         add_query(api_key)
 
-    # -------------------------
     # CREDIT CHECK
-    # -------------------------
-
     credits = get_credits(api_key)
 
     if credits <= 0:
@@ -129,10 +130,7 @@ async def decision(
             detail="Credit error"
         )
 
-    # -------------------------
-    # RUN DECISION ENGINE
-    # -------------------------
-
+    # RUN ENGINE
     try:
 
         result = run_decision(body)
@@ -144,16 +142,45 @@ async def decision(
             detail=f"Decision engine error: {str(e)}"
         )
 
-    # -------------------------
     # GLOBAL FEED
-    # -------------------------
-
     add_feed_entry(api_key, result)
 
     return {
+
         "decision": result,
         "plan": plan,
         "credits_left": get_credits(api_key)
+    }
+
+
+# =========================
+# FUTURE SIMULATION
+# =========================
+
+@app.post("/simulate")
+async def simulate(
+    request: Request,
+    api_key: str = Header(...)
+):
+
+    try:
+        body = await request.json()
+    except:
+        body = {}
+
+    plan = get_plan(api_key)
+
+    if plan != "pro":
+
+        raise HTTPException(
+            status_code=403,
+            detail="Simulation is PRO feature"
+        )
+
+    result = simulate_future(body)
+
+    return {
+        "simulation": result
     }
 
 
@@ -181,6 +208,7 @@ async def upgrade_pro(api_key: str = Header(...)):
     set_plan(api_key, "pro")
 
     return {
+
         "status": "upgraded",
         "plan": "pro"
     }
