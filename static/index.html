@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>KING DIADEM</title>
 
 <link rel="manifest" href="/static/manifest.json">
-
 <link rel="stylesheet" href="/static/style.css">
 
 </head>
@@ -17,11 +17,9 @@
 
 <canvas id="galaxy"></canvas>
 
-<div class="ui">
+<div class="center">
 
-<div class="logo">
-👑 KING DIADEM
-</div>
+<div class="title">👑 KING DIADEM</div>
 
 <div class="quote">
 
@@ -38,11 +36,9 @@ KING DIADEM
 
 <div class="system">
 
-<div id="server">SERVER : ...</div>
-
-<div id="ai">AI : ...</div>
-
-<div id="wallet">WALLET : ...</div>
+<div id="server">SERVER ...</div>
+<div id="ai">AI ...</div>
+<div id="wallet">WALLET ...</div>
 
 </div>
 
@@ -50,20 +46,11 @@ KING DIADEM
 
 <div class="nav">
 
-<button onclick="openAsk()">ASK</button>
-
-<button onclick="openBrain()">BRAIN</button>
-
-<button onclick="openGalaxy()">GALAXY</button>
-
-<button onclick="openWallet()">WALLET</button>
+<button onclick="ask()">ASK</button>
+<button onclick="brain()">BRAIN</button>
+<button onclick="galaxy()">GALAXY</button>
 
 </div>
-
-<script src="/static/app.js"></script>
-<script src="/static/system.js"></script>
-<script src="/static/brain.js"></script>
-<script src="/static/galaxy.js"></script>
 
 <script>
 
@@ -82,7 +69,7 @@ stars.push({
 x:Math.random()*canvas.width,
 y:Math.random()*canvas.height,
 r:Math.random()*2,
-speed:Math.random()*0.5
+speed:Math.random()*0.4
 
 })
 
@@ -124,7 +111,6 @@ draw()
 async function loadHealth(){
 
 const res = await fetch("/system/health")
-
 const data = await res.json()
 
 document.getElementById("server").innerText =
@@ -146,31 +132,50 @@ loadHealth()
 
 <script>
 
-function openAsk(){
+async function ask(){
 
-location.href="/static/ask.html"
+const problem = prompt("ปัญหาของคุณคืออะไร")
+
+if(!problem) return
+
+const res = await fetch("/decision",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+problem:problem
+})
+
+})
+
+const data = await res.json()
+
+alert(JSON.stringify(data,null,2))
 
 }
 
-function openBrain(){
+function brain(){
 
 fetch("/ai/brain")
+.then(r=>r.json())
+.then(console.log)
 
 }
 
-function openGalaxy(){
+function galaxy(){
 
 fetch("/ai/galaxy")
-
-}
-
-function openWallet(){
-
-fetch("/wallet/history")
+.then(r=>r.json())
+.then(console.log)
 
 }
 
 </script>
 
 </body>
+
 </html>
