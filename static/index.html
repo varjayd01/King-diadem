@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
 <meta charset="UTF-8">
@@ -11,7 +12,7 @@
 
 body{
 margin:0;
-background:black;
+background:#05070d;
 color:white;
 font-family:system-ui;
 overflow:hidden;
@@ -34,14 +35,39 @@ text-align:center;
 }
 
 .title{
-font-size:40px;
+
+font-size:44px;
+letter-spacing:4px;
+
 }
 
 .quote{
 
-max-width:500px;
-opacity:0.8;
 margin-top:20px;
+max-width:520px;
+opacity:0.85;
+line-height:1.6;
+
+}
+
+.nodes{
+
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+
+}
+
+.node{
+
+position:absolute;
+width:10px;
+height:10px;
+border-radius:50%;
+background:white;
+opacity:0.9;
 
 }
 
@@ -51,11 +77,13 @@ margin-top:20px;
 
 <body>
 
-<canvas id="space"></canvas>
+<canvas id="galaxy"></canvas>
 
 <div class="center">
 
-<div class="title">👑 KING DIADEM</div>
+<div class="title">
+👑 KING DIADEM
+</div>
 
 <div class="quote">
 
@@ -74,21 +102,22 @@ KING DIADEM
 
 <script>
 
-const canvas=document.getElementById("space")
-const ctx=canvas.getContext("2d")
+const canvas = document.getElementById("galaxy")
+const ctx = canvas.getContext("2d")
 
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight
 
-let stars=[]
+let stars = []
 
-for(let i=0;i<400;i++){
+for(let i=0;i<500;i++){
 
 stars.push({
 
 x:Math.random()*canvas.width,
 y:Math.random()*canvas.height,
-r:Math.random()*2
+r:Math.random()*1.5,
+speed:Math.random()*0.3
 
 })
 
@@ -99,6 +128,15 @@ function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
 for(let s of stars){
+
+s.y += s.speed
+
+if(s.y > canvas.height){
+
+s.y = 0
+s.x = Math.random()*canvas.width
+
+}
 
 ctx.beginPath()
 ctx.arc(s.x,s.y,s.r,0,Math.PI*2)
@@ -116,4 +154,5 @@ draw()
 </script>
 
 </body>
+
 </html>
