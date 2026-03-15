@@ -1,144 +1,29 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
 
 <meta charset="UTF-8">
-<title>KING DIADEM V13</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<title>KING DIADEM</title>
+
+<link rel="stylesheet" href="style.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-
-body{
-margin:0;
-background:black;
-color:white;
-font-family:Arial;
-overflow:hidden;
-}
-
-#space{
-position:fixed;
-top:0;
-left:0;
-}
-
-#nodes{
-position:fixed;
-top:0;
-left:0;
-pointer-events:none;
-}
-
-.panel{
-
-position:absolute;
-left:30px;
-top:30px;
-width:380px;
-
-background:rgba(10,20,40,0.85);
-padding:25px;
-border-radius:12px;
-
-backdrop-filter:blur(8px);
-
-}
-
-.panel h2{
-margin-top:0;
-}
-
-input{
-
-width:100%;
-padding:12px;
-margin-bottom:10px;
-
-background:#07142b;
-border:none;
-border-radius:6px;
-color:white;
-
-}
-
-button{
-
-width:100%;
-padding:14px;
-
-background:linear-gradient(90deg,#2bb6ff,#39d06a);
-border:none;
-
-color:white;
-font-weight:bold;
-cursor:pointer;
-
-}
-
-#result{
-
-margin-top:15px;
-font-size:14px;
-
-}
-
-#chartBox{
-
-position:absolute;
-bottom:20px;
-left:30px;
-width:380px;
-
-background:rgba(10,20,40,0.85);
-padding:20px;
-border-radius:10px;
-
-}
-
-#system{
-
-position:absolute;
-top:30px;
-right:40px;
-font-size:14px;
-opacity:0.7;
-
-}
-
-footer{
-
-position:absolute;
-bottom:10px;
-right:20px;
-font-size:12px;
-opacity:0.5;
-
-}
-
-</style>
 
 </head>
 
 <body>
 
-<canvas id="space"></canvas>
-<canvas id="nodes"></canvas>
-
-<div id="system"></div>
+<canvas id="universe"></canvas>
 
 <div class="panel">
 
-<h2>KING DIADEM</h2>
+<h1>KING DIADEM</h1>
 
-<div style="opacity:0.6;margin-bottom:15px;">
-
-You can stop here.  
-No system will rush your decision.
-
-</div>
+<p class="tag">
+You can stop here. No system will rush your decision.
+</p>
 
 <input id="location" placeholder="Where are you right now">
 
@@ -148,32 +33,38 @@ No system will rush your decision.
 
 <input id="risk" placeholder="Danger level">
 
-<button onclick="analyze()">Show possible choices</button>
+<button onclick="analyze()">
+Show possible choices
+</button>
 
-<div id="result"></div>
+<button onclick="buyAccess()">
+Unlock Strategic Engine
+</button>
+
+<div id="resultBox">
+<div id="resultText"></div>
+</div>
 
 </div>
 
-<div id="chartBox">
+<div class="graph">
 
-Simulation signal
+<h3>Simulation signal</h3>
 
 <canvas id="simChart"></canvas>
 
 </div>
 
-<footer>
+<div class="footer">
 
 Fail less. Harm less. Restore more.
 
-</footer>
+</div>
 
-<script src="solar_system.js"></script>
-<script src="planetary_nodes.js"></script>
-<script src="simulation_graph.js"></script>
+<script src="universe.js"></script>
 <script src="decision.js"></script>
+<script src="simulation_graph.js"></script>
 <script src="system_status.js"></script>
 
 </body>
-
 </html>
