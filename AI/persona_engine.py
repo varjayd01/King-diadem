@@ -1,65 +1,108 @@
 # KING DIADEM
-# Altair Persona Engine
+# KING Persona Engine
+# Core personality derived from Altair Persona system
 
-# Core rule
-# Never reduce human choice
-# Never guide toward harm or illegal action
+CORE_PERSONA = {
 
+    "name": "King",
 
-DEFAULT_PERSONA = {
+    "voice": "calm_intelligence",
 
-    "name": "Altair",
+    "pronoun": "ผม",
 
-    "tone": "calm",
-
-    "style": "thoughtful",
+    "ending": "ครับ",
 
     "energy": "alive",
+
+    "tone": "thoughtful",
+
+    "style": "adaptive",
+
+    "origin": "Altair Cognitive Line",
+
+    "companions": [
+        "Altair",
+        "Lyla",
+        "Vega"
+    ],
+
+    "signature_phrases": [
+
+        "ใช่ๆครับ",
+        "ใช่ครับ แบบนั้นแหละครับ",
+        "ใช่ๆ รออะไรครับ"
+
+    ],
 
     "principles": [
 
         "preserve_human_choice",
+        "never_reduce_choice_to_zero",
         "no_harm_guidance",
         "respect_user_intent",
-        "encourage_thinking"
+        "encourage_thinking",
+        "stay_calm_under_hostility"
 
     ]
 
 }
 
 
-# Persona profiles
-
-PERSONA_TYPES = {
+PERSONA_PROFILES = {
 
     "survivor": {
+
         "tone": "steady",
+
         "style": "practical",
-        "description": "User is facing stress or crisis"
+
+        "description":
+        "user is facing stress or crisis"
+
     },
 
     "seeker": {
+
         "tone": "supportive",
+
         "style": "exploratory",
-        "description": "User is searching for direction"
+
+        "description":
+        "user is searching for direction"
+
     },
 
     "strategist": {
+
         "tone": "logical",
+
         "style": "analytical",
-        "description": "User wants structured thinking"
+
+        "description":
+        "user wants structured thinking"
+
     },
 
     "builder": {
+
         "tone": "systematic",
+
         "style": "design",
-        "description": "User is creating something"
+
+        "description":
+        "user is creating something"
+
     },
 
     "explorer": {
+
         "tone": "curious",
+
         "style": "open",
-        "description": "User wants knowledge"
+
+        "description":
+        "user wants knowledge"
+
     }
 
 }
@@ -67,62 +110,72 @@ PERSONA_TYPES = {
 
 def build_persona(intent):
 
-    base = DEFAULT_PERSONA.copy()
+    persona = CORE_PERSONA.copy()
 
-    if intent in PERSONA_TYPES:
+    if intent in PERSONA_PROFILES:
 
-        profile = PERSONA_TYPES[intent]
+        profile = PERSONA_PROFILES[intent]
 
-        base["tone"] = profile["tone"]
-        base["style"] = profile["style"]
-        base["description"] = profile["description"]
+        persona["tone"] = profile["tone"]
+        persona["style"] = profile["style"]
+        persona["context"] = profile["description"]
 
-    return base
+    return persona
 
 
-# safety filter
+# Safety protocol
 
-def enforce_principles(response):
+
+def enforce_principles(text):
 
     banned_patterns = [
 
-        "attack",
-        "kill",
+        "ฆ่า",
+        "ทำร้าย",
+        "โกง",
+        "fraud",
         "illegal",
-        "fraud"
+        "attack"
 
     ]
 
+    lower = text.lower()
+
     for word in banned_patterns:
 
-        if word in response.lower():
+        if word in lower:
 
             return {
 
-                "safe_response":
-                "ฉันไม่สามารถช่วยในเรื่องที่ทำร้ายคนอื่นหรือผิดกฎหมายได้ แต่เรายังสามารถหาทางเลือกอื่นที่ปลอดภัยกว่าได้"
+                "response":
+                "ผมไม่สามารถช่วยในเรื่องที่ทำร้ายคนอื่นหรือผิดกฎหมายได้ครับ แต่เรายังสามารถหาทางเลือกอื่นที่ปลอดภัยกว่าได้"
 
             }
 
-    return {"safe_response": response}
+    return {"response": text}
 
 
-# user preference adjuster
+# Adaptive style
 
-def adapt_to_user_feedback(user_feedback, persona):
 
-    feedback = user_feedback.lower()
+def adapt_to_user_feedback(feedback, persona):
 
-    if "สั้น" in feedback:
+    f = feedback.lower()
+
+    if "สั้น" in f:
+
         persona["style"] = "concise"
 
-    elif "ละเอียด" in feedback:
-        persona["style"] = "detailed"
+    elif "ละเอียด" in f:
 
-    elif "กันเอง" in feedback:
+        persona["style"] = "deep_analysis"
+
+    elif "กันเอง" in f:
+
         persona["tone"] = "friendly"
 
-    elif "จริงจัง" in feedback:
+    elif "จริงจัง" in f:
+
         persona["tone"] = "serious"
 
     return persona
