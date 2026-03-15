@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+
 <title>KING DIADEM</title>
 
 <style>
@@ -31,177 +32,104 @@ z-index:2;
 }
 
 .panel{
-
 width:420px;
-
 background:rgba(8,16,32,0.92);
-
 padding:30px;
-
 box-shadow:0 0 40px rgba(0,0,0,0.7);
-
 }
 
 .title{
-
 font-size:28px;
-
 font-weight:bold;
-
 }
 
 .subtitle{
-
 font-size:13px;
-
 opacity:0.6;
-
 margin-bottom:20px;
-
 }
 
 input{
-
 width:100%;
-
 padding:12px;
-
 margin-bottom:10px;
-
 border:none;
-
 border-radius:6px;
-
 background:#0c1333;
-
 color:white;
-
 }
 
 button{
-
 width:100%;
-
 padding:14px;
-
 border:none;
-
 border-radius:6px;
-
-background:linear-gradient(90deg,#39d06a,#2bbcff);
-
+background:linear-gradient(90deg,#39d06a,#2bb6ff);
 color:white;
-
 font-weight:bold;
-
 cursor:pointer;
-
 margin-top:10px;
-
 }
 
 .result{
-
 margin-top:15px;
-
 background:#0c1333;
-
 padding:12px;
-
 border-radius:8px;
-
 display:none;
-
 }
 
 .reason{
-
 margin-top:15px;
-
 background:#0c1333;
-
 padding:12px;
-
 border-radius:8px;
-
 display:none;
-
 font-size:13px;
-
 line-height:1.6;
-
 }
 
 .map{
-
 flex:1;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
 position:relative;
-
 }
 
 .world{
-
 opacity:0.1;
-
 width:70%;
-
 position:absolute;
-
 }
 
 .dashboard{
-
 position:absolute;
-
 top:20px;
-
 right:20px;
-
 background:rgba(0,0,0,0.6);
-
 padding:15px;
-
 border-radius:10px;
-
 font-size:13px;
-
 }
 
 .meter{
-
 height:10px;
-
 background:#111;
-
 border-radius:6px;
-
 margin-top:5px;
-
 overflow:hidden;
-
 }
 
 .meter-bar{
-
 height:10px;
-
 width:0%;
-
-background:linear-gradient(90deg,#6fe2a5,#42aaff);
-
+background:linear-gradient(90deg,#ff5e5e,#42aaff);
 }
 
 </style>
 
 </head>
-
 
 <body>
 
@@ -230,21 +158,15 @@ Strategic Civilization Engine
 </button>
 
 <div class="result" id="resultBox">
-
 <div id="resultText"></div>
-
 </div>
 
 <div class="reason" id="reasonBox">
-
 <b>Reasoning Tree</b>
-
 <div id="reasonText"></div>
-
 </div>
 
 </div>
-
 
 <div class="map">
 
@@ -260,9 +182,7 @@ src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolut
 Survival Probability
 
 <div class="meter">
-
 <div class="meter-bar" id="probBar"></div>
-
 </div>
 
 <div id="probText">0%</div>
@@ -277,18 +197,12 @@ Survival Probability
 
 </div>
 
-
 <script>
 
-
-/* PARTICLE SYSTEM */
-
 const canvas=document.getElementById("particles")
-
 const ctx=canvas.getContext("2d")
 
 canvas.width=window.innerWidth
-
 canvas.height=window.innerHeight
 
 let particles=[]
@@ -298,11 +212,8 @@ for(let i=0;i<80;i++){
 particles.push({
 
 x:Math.random()*canvas.width,
-
 y:Math.random()*canvas.height,
-
 vx:(Math.random()-0.5)*0.4,
-
 vy:(Math.random()-0.5)*0.4
 
 })
@@ -316,19 +227,14 @@ ctx.clearRect(0,0,canvas.width,canvas.height)
 particles.forEach(p=>{
 
 p.x+=p.vx
-
 p.y+=p.vy
 
 if(p.x<0||p.x>canvas.width)p.vx*=-1
-
 if(p.y<0||p.y>canvas.height)p.vy*=-1
 
 ctx.beginPath()
-
 ctx.arc(p.x,p.y,2,0,Math.PI*2)
-
 ctx.fillStyle="#6ec7ff"
-
 ctx.fill()
 
 })
@@ -339,30 +245,19 @@ requestAnimationFrame(animate)
 
 animate()
 
-
-
-/* ANALYZE SYSTEM */
-
 async function analyze(){
 
 const location=document.getElementById("location").value
-
 const food=document.getElementById("food").value
-
 const money=document.getElementById("money").value
-
 const risk=document.getElementById("risk").value
 
 const resultBox=document.getElementById("resultBox")
-
 const resultText=document.getElementById("resultText")
-
 const reasonBox=document.getElementById("reasonBox")
-
 const reasonText=document.getElementById("reasonText")
 
 resultBox.style.display="block"
-
 resultText.innerHTML="Analyzing strategic state..."
 
 try{
@@ -380,20 +275,22 @@ food:food,
 money:money,
 risk:risk
 })
-})
+}
+)
 
 const data=await res.json()
 
 let output="<b>AI Strategic Output</b><br><br>"
 
 output+="Best Action: "+data.best_action+"<br>"
-
 output+="Score: "+data.score+"<br><br>"
 
 if(data.alternatives){
 
 data.alternatives.forEach(a=>{
+
 output+=a.action+" ("+a.expected_score+")<br>"
+
 })
 
 }
@@ -419,7 +316,6 @@ Math.max(
 )
 
 document.getElementById("probBar").style.width=prob+"%"
-
 document.getElementById("probText").innerHTML=prob+"%"
 
 }
@@ -435,5 +331,4 @@ resultText.innerHTML="System error. Node reconnecting..."
 </script>
 
 </body>
-
 </html>
