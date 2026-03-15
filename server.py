@@ -5,73 +5,70 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-# =========================
-# ENGINE
-# =========================
 from ENGINE.decision_engine import run_decision
-
-# =========================
-# DATABASE
-# =========================
 from DATABASE.credit_store import use_credit, get_credits
+from AUTH.api_keys import create_api_key
 
-# =========================
-# PAYMENT
-# =========================
-from PAYMENT.create_checkout import create_checkout
-from PAYMENT.stripe_webhook import handle_webhook
-
-# =========================
-# APP INIT
-# =========================
 app = FastAPI(title="KING DIADEM")
 
-# =========================
 # STATIC
-# =========================
+
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# =========================
 # HOME
-# =========================
+
 @app.get("/", response_class=HTMLResponse)
 async def home():
 
     path = "INTERFACE/dashboard.html"
 
     if os.path.exists(path):
+
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
 
     return "<h1>KING DIADEM</h1>"
 
 
-# =========================
+# CREATE API KEY
+
+@app.get("/auth/create-key")
+async def create_key():
+
+    key = create_api_key()
+
+    return {
+        "api_key": key,
+        "credits": 100
+    }
+
+
 # SYSTEM STATUS
-# =========================
+
 @app.get("/system")
 async def system():
 
     return {
         "status": "running",
         "engine": "online",
-        "payments": "enabled",
         "credits": "active"
     }
 
 
-# =========================
 # DECISION ENGINE
-# =========================
+
 @app.post("/decision")
 async def decision(
     request: Request,
     api_key: str = Header(...)
 ):
 
-    body = await request.json()
+    try:
+        body = await request.json()
+    except:
+        body = {}
 
     credits = get_credits(api_key)
 
@@ -91,43 +88,8 @@ async def decision(
     }
 
 
-# =========================
-# BUY CREDITS
-# =========================
-@app.get("/buy")
-async def buy(api_key: str = Header(...)):
-
-    checkout = create_checkout(api_key)
-
-    return checkout
-
-
-# =========================
-# STRIPE WEBHOOK
-# =========================
-@app.post("/stripe/webhook")
-async def stripe_webhook(request: Request):
-
-    payload = await request.body()
-
-    sig_header = request.headers.get("stripe-signature")
-
-    if sig_header is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Missing Stripe signature"
-        )
-
-    result = handle_webhook(payload, sig_header)
-
-    return {
-        "status": result
-    }
-
-
-# =========================
 # SERVER START
-# =========================
+
 if __name__ == "__main__":
 
     uvicorn.run(
