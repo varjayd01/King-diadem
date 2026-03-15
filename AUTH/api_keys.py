@@ -2,7 +2,6 @@ import secrets
 
 from DATABASE.credit_store import add_credits
 
-
 api_keys = {}
 
 
