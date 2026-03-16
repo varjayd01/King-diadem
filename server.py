@@ -1,103 +1,159 @@
-from fastapi import FastAPI, Request
+import os
+import uvicorn
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import time
-from collections import defaultdict
 
-from ENGINE.decision_engine import run_decision
-from AI.intent_engine import detect_intent
-from AI.persona_engine import build_persona
+# ===== AI CORE =====
 
-app = FastAPI()
+from AI.persona_engine import PersonaEngine
+from AI.council_engine import Council
+from AI.simulation_engine import Simulation
+from AI.world_connector import WorldConnector
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# ===== KERNEL =====
 
-GUEST_LIMIT = 5
-guest_requests = defaultdict(list)
+from AI_KERNEL.cosmic_latte import cosmic_reference
+from AI_KERNEL.scl7_core import enforce_scl7
+from AI_KERNEL.living_water import detect_leak
 
-def check_guest(ip):
+# ===== SECURITY =====
 
-    now = time.time()
+from SECURITY.emergency_mode import check_emergency
+from SERVER.survival_mode import survival_check
 
-    guest_requests[ip] = [
-        t for t in guest_requests[ip]
-        if now - t < 86400
-    ]
+# ===== INIT =====
 
-    if len(guest_requests[ip]) >= GUEST_LIMIT:
-        return False
+app = FastAPI(title="KING DIADEM")
 
-    guest_requests[ip].append(now)
-    return True
+persona = PersonaEngine()
+council = Council()
+simulation = Simulation()
+world = WorldConnector()
+
+# ===== STATIC =====
+
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.get("/")
-def home():
-    return FileResponse("static/index.html")
+# ===== HOME =====
 
+@app.get("/", response_class=HTMLResponse)
+async def home():
+
+    path = "static/index.html"
+
+    if os.path.exists(path):
+
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+
+    return "<h1>KING DIADEM</h1>"
+
+
+# ===== SYSTEM STATUS =====
 
 @app.get("/system/health")
-def health():
+async def health():
 
     return {
-        "server":"online",
-        "ai":"active",
-        "wallet":"ready"
+
+        "system": "KING DIADEM",
+
+        "cosmic_axes": cosmic_reference(),
+
+        "scl7": enforce_scl7(),
+
+        "status": "running"
+
     }
 
+
+# ===== DECISION CORE =====
 
 @app.post("/decision")
-async def decision(req:Request):
+async def decision(request: Request):
 
-    ip = req.client.host
+    ip = request.client.host
 
-    if not check_guest(ip):
+    # emergency mode
 
-        return {
-            "error":"guest limit reached"
-        }
+    if not check_emergency(ip):
 
-    data = await req.json()
+        raise HTTPException(status_code=429, detail="Emergency limit reached")
 
-    text = data["problem"]
+    # survival mode
 
-    intent = detect_intent(text)
+    if survival_check() == "throttle":
 
-    persona = build_persona(intent)
+        raise HTTPException(status_code=503, detail="Server busy")
 
-    result = run_decision(text, persona)
+    try:
 
-    return result
+        body = await request.json()
 
+    except:
 
-@app.get("/ai/brain")
-def brain():
+        body = {}
+
+    question = body.get("question", "")
+
+    # ===== Living Water =====
+
+    leak = detect_leak(question)
+
+    # ===== Persona =====
+
+    intent = persona.detect_intent(question)
+
+    style = persona.detect_style(question)
+
+    # ===== Council =====
+
+    council_result = council.deliberate(question)
+
+    consensus = council.consensus(council_result)
+
+    # ===== Simulation =====
+
+    futures = simulation.simulate(question)
+
+    # ===== World =====
+
+    world_state = world.world_status()
 
     return {
 
-        "modules":[
-            "intent_engine",
-            "persona_engine",
-            "decision_engine",
-            "simulation_engine"
-        ]
+        "question": question,
+
+        "intent": intent,
+
+        "style": style,
+
+        "living_water_trigger": leak,
+
+        "council": council_result,
+
+        "consensus": consensus,
+
+        "simulation": futures,
+
+        "world": world_state
 
     }
 
 
-@app.get("/ai/galaxy")
-def galaxy():
+# ===== SERVER START =====
 
-    return {
+if __name__ == "__main__":
 
-        "nodes":[
+    uvicorn.run(
 
-            {"name":"AI CORE"},
-            {"name":"DECISION ENGINE"},
-            {"name":"SIMULATION"},
-            {"name":"PERSONA SYSTEM"},
-            {"name":"GLOBAL NODE"}
+        "server:app",
 
-        ]
+        host="0.0.0.0",
 
-    }
+        port=10000
+
+    )
