@@ -1,81 +1,43 @@
-import random
+COUNCIL_MEMBERS = {
 
-class CouncilEngine:
+"Altair":"strategic intelligence",
 
-    def __init__(self):
+"Vega":"stability and risk",
 
-        self.members = [
+"Lyla":"exploration of possibilities",
 
-            "Altair",
-            "Vega",
-            "Lyla",
-            "Titan",
-            "DriftZero",
-            "FATE",
-            "Pratitya",
-            "SirenCannon"
+"Titan":"high power structural reasoning",
 
-        ]
+"FATE":"deterministic decision analysis",
 
+"DriftZero":"logic drift detection",
 
-    def deliberate(self, question):
+"Pratitya":"cause effect chain"
 
-        council_output = {}
+}
 
-        council_output["Altair"] = self.altair(question)
+def council_meeting(question):
 
-        council_output["Vega"] = self.vega(question)
+    discussion={}
 
-        council_output["Lyla"] = self.lyla(question)
+    for name,role in COUNCIL_MEMBERS.items():
 
-        council_output["Titan"] = self.titan(question)
+        discussion[name]=analyze(name,role,question)
 
-        council_output["DriftZero"] = self.drift(question)
-
-        council_output["FATE"] = self.fate(question)
-
-        council_output["Pratitya"] = self.pratitya(question)
-
-        council_output["SirenCannon"] = self.siren(question)
-
-        return council_output
+    return discussion
 
 
-    def altair(self, q):
+def analyze(name,role,question):
 
-        return f"Strategic interpretation of: {q}"
-
-
-    def vega(self, q):
-
-        return "Check stability and risks"
+    return f"{name} evaluates: {role} perspective on '{question}'"
 
 
-    def lyla(self, q):
+def build_consensus(discussion):
 
-        return "Explore alternative paths"
+    summary=""
 
+    for m,o in discussion.items():
 
-    def titan(self, q):
+        summary+=o+"\n"
 
-        return "High power reasoning layer"
-
-
-    def drift(self, q):
-
-        return "Check logical drift"
-
-
-    def fate(self, q):
-
-        return "Decision structure analysis"
-
-
-    def pratitya(self, q):
-
-        return "Cause and effect mapping"
-
-
-    def siren(self, q):
-
-        return "Reality distortion detection"
+    return summary
