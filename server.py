@@ -1,159 +1,180 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
-# ===== AI CORE =====
+# =============================
+# IMPORT AI SYSTEMS
+# =============================
 
 from AI.persona_engine import PersonaEngine
 from AI.council_engine import Council
 from AI.simulation_engine import Simulation
 from AI.world_connector import WorldConnector
 
-# ===== KERNEL =====
-
-from AI_KERNEL.cosmic_latte import cosmic_reference
-from AI_KERNEL.scl7_core import enforce_scl7
-from AI_KERNEL.living_water import detect_leak
-
-# ===== SECURITY =====
-
 from SECURITY.emergency_mode import check_emergency
-from SERVER.survival_mode import survival_check
+from SECURITY.survival_mode import survival_check
 
-# ===== INIT =====
+from AI_KERNEL.living_water import detect_leak
+from AI_KERNEL.scl7_core import enforce_scl7
 
-app = FastAPI(title="KING DIADEM")
+
+# =============================
+# INIT SYSTEMS
+# =============================
 
 persona = PersonaEngine()
 council = Council()
 simulation = Simulation()
 world = WorldConnector()
 
-# ===== STATIC =====
+app = FastAPI()
 
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# =============================
+# STATIC FILES
+# =============================
 
-# ===== HOME =====
-
-@app.get("/", response_class=HTMLResponse)
-async def home():
-
-    path = "static/index.html"
-
-    if os.path.exists(path):
-
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
-
-    return "<h1>KING DIADEM</h1>"
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# ===== SYSTEM STATUS =====
+# =============================
+# HEALTH CHECK
+# =============================
 
 @app.get("/system/health")
 async def health():
 
     return {
-
-        "system": "KING DIADEM",
-
-        "cosmic_axes": cosmic_reference(),
-
-        "scl7": enforce_scl7(),
-
-        "status": "running"
-
+        "system":"KING DIADEM",
+        "status":"running",
+        "modules":[
+            "persona",
+            "council",
+            "simulation",
+            "world_connector",
+            "security",
+            "ai_kernel"
+        ]
     }
 
 
-# ===== DECISION CORE =====
+# =============================
+# MAIN AI ENDPOINT
+# =============================
 
-@app.post("/decision")
-async def decision(request: Request):
+@app.post("/ask")
+async def ask(request: Request):
+
+    body = await request.json()
+    question = body.get("question","")
 
     ip = request.client.host
 
     # emergency mode
-
     if not check_emergency(ip):
 
-        raise HTTPException(status_code=429, detail="Emergency limit reached")
+        return JSONResponse({
+            "error":"Emergency limit reached (5 requests/hour)"
+        })
 
-    # survival mode
-
+    # server survival
     if survival_check() == "throttle":
 
-        raise HTTPException(status_code=503, detail="Server busy")
+        return JSONResponse({
+            "error":"Server busy, please wait"
+        })
 
-    try:
-
-        body = await request.json()
-
-    except:
-
-        body = {}
-
-    question = body.get("question", "")
-
-    # ===== Living Water =====
-
+    # living water detection
     leak = detect_leak(question)
 
-    # ===== Persona =====
-
+    # intent detection
     intent = persona.detect_intent(question)
 
-    style = persona.detect_style(question)
+    # council meeting
+    opinions = council.deliberate(question)
 
-    # ===== Council =====
+    # simulation
+    paths = simulation.simulate(question)
 
-    council_result = council.deliberate(question)
+    # world data
+    world_data = world.world_status()
 
-    consensus = council.consensus(council_result)
-
-    # ===== Simulation =====
-
-    futures = simulation.simulate(question)
-
-    # ===== World =====
-
-    world_state = world.world_status()
+    # kernel rules
+    rules = enforce_scl7()
 
     return {
 
-        "question": question,
+        "question":question,
 
-        "intent": intent,
+        "intent":intent,
 
-        "style": style,
+        "leak_detected":leak,
 
-        "living_water_trigger": leak,
+        "council":opinions,
 
-        "council": council_result,
+        "simulation":paths,
 
-        "consensus": consensus,
+        "world":world_data,
 
-        "simulation": futures,
-
-        "world": world_state
+        "kernel_rules":rules
 
     }
 
 
-# ===== SERVER START =====
+# =============================
+# DECISION MAP
+# =============================
+
+@app.post("/decision")
+async def decision(request: Request):
+
+    body = await request.json()
+    question = body.get("question","")
+
+    paths = simulation.simulate(question)
+
+    return {
+
+        "problem":question,
+
+        "options":paths
+
+    }
+
+
+# =============================
+# ROOT
+# =============================
+
+@app.get("/")
+async def root():
+
+    return JSONResponse({
+        "message":"KING DIADEM AI Strategic Command Center"
+    })
+
+
+# =============================
+# RUN
+# =============================
 
 if __name__ == "__main__":
 
+    port = int(os.environ.get("PORT", 10000))
+
     uvicorn.run(
-
         "server:app",
-
         host="0.0.0.0",
-
-        port=10000
-
+        port=port,
+        reload=False
     )
