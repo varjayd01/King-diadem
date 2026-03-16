@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -11,37 +12,41 @@
 
 body{
 
-background:#050510;
+background:#030312;
+
 color:white;
+
 font-family:Arial;
+
 text-align:center;
 
 }
 
 canvas{
 
-border:1px solid #222;
+border:1px solid #111;
+
+margin-top:20px;
 
 }
 
 input{
 
-width:60%;
-padding:12px;
-margin-top:20px;
+padding:10px;
+
+width:300px;
 
 }
 
 button{
 
-padding:12px 25px;
-margin-left:10px;
+padding:10px 20px;
 
 }
 
-#thinking{
+#chat{
 
-margin-top:20px;
+margin-top:40px;
 
 }
 
@@ -54,14 +59,18 @@ margin-top:20px;
 <h1>KING DIADEM</h1>
 
 <p>
+
 ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0  
 ระบบนั้นล้มเหลว
+
 </p>
 
 <p>
-Any system that reduces human choice to zero  
-is a failed system
+
+Any system that reduces human choice to zero is a failed system
+
 </p>
+
 
 <input id="question" placeholder="Ask a strategic question">
 
@@ -69,9 +78,12 @@ is a failed system
 
 <div id="thinking"></div>
 
-<canvas id="galaxyDecision" width="900" height="500"></canvas>
+
+<canvas id="galaxyDecision" width="900" height="400"></canvas>
+
 
 <script src="/static/galaxy_decision.js"></script>
+
 
 <script>
 
@@ -86,11 +98,15 @@ fetch("/decision",{
 method:"POST",
 
 headers:{
+
 "Content-Type":"application/json"
+
 },
 
 body:JSON.stringify({
+
 question:q
+
 })
 
 })
@@ -100,12 +116,19 @@ question:q
 .then(data=>{
 
 drawGalaxy(
+
 data.problem,
+
 data.options.map(o=>({
+
 strategy:o,
+
 risk:Math.random(),
+
 confidence:Math.random()
+
 }))
+
 )
 
 document.getElementById("thinking").innerText=""
@@ -115,6 +138,82 @@ document.getElementById("thinking").innerText=""
 }
 
 </script>
+
+
+<hr>
+
+
+<div id="chat">
+
+<h2>Global Decision Network</h2>
+
+<div id="messages"></div>
+
+<input id="user" placeholder="name">
+
+<input id="msg" placeholder="message">
+
+<button onclick="sendMsg()">send</button>
+
+</div>
+
+
+<script>
+
+function sendMsg(){
+
+let u=document.getElementById("user").value
+
+let m=document.getElementById("msg").value
+
+fetch("/world/chat",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+
+user:u,
+
+message:m
+
+})
+
+})
+
+}
+
+function loadChat(){
+
+fetch("/world/messages")
+
+.then(r=>r.json())
+
+.then(data=>{
+
+let box=document.getElementById("messages")
+
+box.innerHTML=""
+
+data.forEach(m=>{
+
+let d=document.createElement("div")
+
+d.innerText=m.user+" : "+m.message
+
+box.appendChild(d)
+
+})
+
+})
+
+}
+
+setInterval(loadChat,2000)
+
+</script>
+
 
 </body>
 
