@@ -1,14 +1,16 @@
-memory_store=[]
+decision_memory=[]
 
-def save_decision(problem,options):
 
-    entry={
-        "problem":problem,
+def store_decision(question,options):
+
+    node={
+        "question":question,
         "options":options
     }
 
-    memory_store.append(entry)
+    decision_memory.append(node)
 
-def get_recent():
 
-    return memory_store[-20:]
+def get_memory():
+
+    return decision_memory[-50:]
