@@ -1,12 +1,37 @@
-// ==========================
-// KING DIADEM APP ENGINE
-// ==========================
+// =======================================
+// KING DIADEM GLOBAL ENGINE
+// =======================================
 
-let thinkingInterval
+// -----------------------------
+// JARVIS THINKING
+// -----------------------------
 
-// ==========================
+let thinkingTimer
+
+function startThinking(){
+
+let r=document.getElementById("response")
+let dots=0
+
+thinkingTimer=setInterval(()=>{
+
+dots++
+r.innerText="AI Council thinking"+".".repeat(dots%4)
+
+},350)
+
+}
+
+function stopThinking(){
+
+clearInterval(thinkingTimer)
+
+}
+
+
+// -----------------------------
 // ASK AI
-// ==========================
+// -----------------------------
 
 async function ask(){
 
@@ -15,13 +40,17 @@ let q=document.getElementById("question").value
 startThinking()
 
 let res=await fetch("/ask",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({
 question:q
 })
+
 })
 
 let data=await res.json()
@@ -33,36 +62,9 @@ document.getElementById("response").innerText=data.answer
 }
 
 
-// ==========================
-// JARVIS THINKING
-// ==========================
-
-function startThinking(){
-
-let r=document.getElementById("response")
-
-let dots=0
-
-thinkingInterval=setInterval(()=>{
-
-dots++
-
-r.innerText="AI Council thinking"+".".repeat(dots%4)
-
-},400)
-
-}
-
-function stopThinking(){
-
-clearInterval(thinkingInterval)
-
-}
-
-
-// ==========================
+// -----------------------------
 // GLOBAL CHAT
-// ==========================
+// -----------------------------
 
 async function send(){
 
@@ -91,7 +93,6 @@ loadMessages()
 async function loadMessages(){
 
 let res=await fetch("/world/messages")
-
 let data=await res.json()
 
 let html=""
@@ -109,9 +110,9 @@ document.getElementById("messages").innerHTML=html
 loadMessages()
 
 
-// ==========================
+// -----------------------------
 // STRIPE UPGRADE
-// ==========================
+// -----------------------------
 
 async function upgrade(plan){
 
@@ -136,43 +137,45 @@ window.location=data.url
 }
 
 
-// ==========================
+// =======================================
 // GALAXY DECISION MAP
-// ==========================
+// =======================================
 
-const canvas=document.getElementById("galaxy")
+const galaxy=document.getElementById("galaxy")
 
-if(canvas){
+if(galaxy){
 
-const ctx=canvas.getContext("2d")
+const ctx=galaxy.getContext("2d")
 
-canvas.width=window.innerWidth
-canvas.height=400
+galaxy.width=window.innerWidth
+galaxy.height=420
 
 let nodes=[]
 
-for(let i=0;i<60;i++){
+for(let i=0;i<90;i++){
 
 nodes.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
+
+x:Math.random()*galaxy.width,
+y:Math.random()*galaxy.height,
 vx:(Math.random()-0.5)*0.4,
 vy:(Math.random()-0.5)*0.4
+
 })
 
 }
 
-function draw(){
+function drawGalaxy(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+ctx.clearRect(0,0,galaxy.width,galaxy.height)
 
 nodes.forEach(n=>{
 
 n.x+=n.vx
 n.y+=n.vy
 
-if(n.x<0||n.x>canvas.width)n.vx*=-1
-if(n.y<0||n.y>canvas.height)n.vy*=-1
+if(n.x<0||n.x>galaxy.width)n.vx*=-1
+if(n.y<0||n.y>galaxy.height)n.vy*=-1
 
 ctx.beginPath()
 ctx.arc(n.x,n.y,2,0,Math.PI*2)
@@ -181,26 +184,32 @@ ctx.fill()
 
 })
 
-requestAnimationFrame(draw)
+requestAnimationFrame(drawGalaxy)
 
 }
 
-draw()
+drawGalaxy()
 
 }
 
 
-// ==========================
-// PLANETARY SIGNAL
-// ==========================
+// =======================================
+// PLANETARY SIGNAL MONITOR
+// =======================================
 
 function planetarySignal(){
 
-let signal=Math.random()
+let pressure=Math.random()
 
-if(signal>0.7){
+if(pressure>0.8){
 
-console.log("Global pressure rising")
+console.log("Planetary pressure rising")
+
+}
+
+if(pressure<0.2){
+
+console.log("Planetary stability")
 
 }
 
@@ -209,21 +218,46 @@ console.log("Global pressure rising")
 setInterval(planetarySignal,10000)
 
 
-// ==========================
-// DECISION TREE GENERATOR
-// ==========================
+// =======================================
+// GLOBAL DECISION HEATMAP
+// =======================================
 
-function generateDecisionTree(problem){
+function generateDecisionMap(problem){
 
 let options=[
 
-"Gather more information",
-"Delay decision",
-"Execute controlled action",
-"Seek collaboration"
+"observe situation",
+"gather more information",
+"execute limited action",
+"collaborate with others"
 
 ]
 
 return options
 
 }
+
+
+// =======================================
+// CIVILIZATION SIGNAL
+// =======================================
+
+function civilizationSignal(){
+
+let signal=Math.random()
+
+if(signal>0.7){
+
+console.log("Human choice expanding")
+
+}
+
+else{
+
+console.log("Human pressure increasing")
+
+}
+
+}
+
+setInterval(civilizationSignal,15000)
