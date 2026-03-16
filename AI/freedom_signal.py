@@ -1,41 +1,32 @@
-global_stats={
-    "questions":0,
-    "choices_created":0,
-    "crisis":0,
-    "business":0,
-    "survival":0
+stats={
+
+"questions":0,
+"choices":0,
+"crisis":0
+
 }
 
-def record_event(intent):
+def record_question():
 
-    global_stats["questions"]+=1
-
-    if intent=="crisis":
-        global_stats["crisis"]+=1
-
-    if intent=="business":
-        global_stats["business"]+=1
-
-    if intent=="survival":
-        global_stats["survival"]+=1
-
+    stats["questions"]+=1
 
 def record_choice():
 
-    global_stats["choices_created"]+=1
+    stats["choices"]+=1
 
+def record_crisis():
 
-def calculate_freedom():
+    stats["crisis"]+=1
 
-    q=global_stats["questions"]
-    c=global_stats["choices_created"]
-    crisis=global_stats["crisis"]
+def freedom_index():
+
+    q=stats["questions"]
 
     if q==0:
         return 50
 
-    freedom=(c*2 - crisis)/q
+    value=(stats["choices"]-stats["crisis"])/q
 
-    score=max(0,min(100,int(50+freedom*50)))
+    score=max(0,min(100,int(50+value*50)))
 
     return score
