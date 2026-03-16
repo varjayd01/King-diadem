@@ -1,172 +1,296 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>KING DIADEM</title>
 
 <style>
 
 body{
-
-background:#030312;
-
+background:#050816;
 color:white;
-
-font-family:Arial;
-
+font-family:Arial,Helvetica,sans-serif;
 text-align:center;
-
+margin:0;
+padding:0;
 }
 
-canvas{
+header{
+padding:40px 20px;
+font-size:32px;
+font-weight:bold;
+}
 
-border:1px solid #111;
+.subtitle{
+color:#9aa4ff;
+margin-bottom:20px;
+}
 
-margin-top:20px;
-
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
 input{
-
-padding:10px;
-
-width:300px;
-
+padding:12px;
+width:60%;
+border:none;
+border-radius:6px;
+margin-right:10px;
 }
 
 button{
-
-padding:10px 20px;
-
+padding:12px 20px;
+border:none;
+background:#5b7cff;
+color:white;
+border-radius:6px;
+cursor:pointer;
 }
 
-#chat{
+button:hover{
+background:#738fff;
+}
 
-margin-top:40px;
+#result{
+margin-top:30px;
+text-align:left;
+}
 
+.option{
+background:#0f1329;
+padding:12px;
+margin:8px 0;
+border-radius:6px;
+}
+
+.section{
+margin-top:50px;
+}
+
+.chatbox{
+margin-top:20px;
+}
+
+.chatmsg{
+background:#0d1025;
+margin:5px;
+padding:8px;
+border-radius:4px;
+}
+
+footer{
+margin-top:60px;
+padding:20px;
+font-size:14px;
+color:#aaa;
 }
 
 </style>
 
 </head>
 
+
 <body>
 
-<h1>KING DIADEM</h1>
+<header>KING DIADEM</header>
 
-<p>
-
-ระบบใดที่ทำให้ทางเลือกของมนุษย์ = 0  
-ระบบนั้นล้มเหลว
-
-</p>
-
-<p>
+<div class="subtitle">
 
 Any system that reduces human choice to zero is a failed system
 
-</p>
+</div>
 
+
+<div class="container">
+
+<h2>Strategic Decision Engine</h2>
 
 <input id="question" placeholder="Ask a strategic question">
 
-<button onclick="ask()">ASK</button>
+<button onclick="askAI()">ASK</button>
 
-<div id="thinking"></div>
+<div id="result"></div>
+
+</div>
 
 
-<canvas id="galaxyDecision" width="900" height="400"></canvas>
+<div class="container section">
+
+<h2>Planetary Freedom Signal</h2>
+
+<div id="freedom">Loading...</div>
+
+</div>
 
 
-<script src="/static/galaxy_decision.js"></script>
+<div class="container section">
+
+<h2>Galaxy Decision Network</h2>
+
+<div id="galaxy"></div>
+
+</div>
+
+
+<div class="container section">
+
+<h2>Global Decision Map</h2>
+
+<div id="decisionmap"></div>
+
+</div>
+
+
+<div class="container section">
+
+<h2>Global Decision Network</h2>
+
+<div class="chatbox">
+
+<input id="chatname" placeholder="name">
+
+<input id="chatmsg" placeholder="message">
+
+<button onclick="sendChat()">send</button>
+
+</div>
+
+<div id="chatlog"></div>
+
+</div>
+
+
+<footer>
+
+KING DIADEM Planetary Decision Infrastructure
+
+</footer>
+
+
+
+<script src="/static/app.js"></script>
 
 
 <script>
 
-function ask(){
 
-let q=document.getElementById("question").value
+async function askAI(){
 
-document.getElementById("thinking").innerText="AI Council thinking..."
+const q=document.getElementById("question").value
 
-fetch("/decision",{
+const res=await fetch("/ask",{
 
 method:"POST",
 
-headers:{
+headers:{"Content-Type":"application/json"},
 
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-question:q
+body:JSON.stringify({question:q})
 
 })
 
-})
+const data=await res.json()
 
-.then(r=>r.json())
+const result=document.getElementById("result")
 
-.then(data=>{
+result.innerHTML=""
 
-drawGalaxy(
+data.options.forEach((o,i)=>{
 
-data.problem,
+const div=document.createElement("div")
 
-data.options.map(o=>({
+div.className="option"
 
-strategy:o,
+div.innerHTML=(i+1)+". "+o
 
-risk:Math.random(),
-
-confidence:Math.random()
-
-}))
-
-)
-
-document.getElementById("thinking").innerText=""
+result.appendChild(div)
 
 })
 
 }
 
-</script>
 
 
-<hr>
+async function loadFreedom(){
+
+const r=await fetch("/freedom")
+
+const d=await r.json()
+
+document.getElementById("freedom").innerHTML=
+
+"Freedom Index: "+d.freedom_index+" ("+d.status+")"
+
+}
 
 
-<div id="chat">
 
-<h2>Global Decision Network</h2>
+async function loadGalaxy(){
 
-<div id="messages"></div>
+const r=await fetch("/galaxy")
 
-<input id="user" placeholder="name">
+const d=await r.json()
 
-<input id="msg" placeholder="message">
+document.getElementById("galaxy").innerHTML=
 
-<button onclick="sendMsg()">send</button>
+"Active decision stars: "+d.stars.length
 
-</div>
+}
 
 
-<script>
 
-function sendMsg(){
+async function loadDecisionMap(){
 
-let u=document.getElementById("user").value
+const r=await fetch("/decision/map")
 
-let m=document.getElementById("msg").value
+const d=await r.json()
 
-fetch("/world/chat",{
+document.getElementById("decisionmap").innerHTML=
+
+"Decision nodes detected: "+d.nodes.length
+
+}
+
+
+
+async function loadChat(){
+
+const r=await fetch("/world/messages")
+
+const d=await r.json()
+
+const log=document.getElementById("chatlog")
+
+log.innerHTML=""
+
+d.messages.forEach(m=>{
+
+const div=document.createElement("div")
+
+div.className="chatmsg"
+
+div.innerHTML="<b>"+m.user+":</b> "+m.message
+
+log.appendChild(div)
+
+})
+
+}
+
+
+
+async function sendChat(){
+
+const name=document.getElementById("chatname").value
+
+const msg=document.getElementById("chatmsg").value
+
+await fetch("/world/chat",{
 
 method:"POST",
 
@@ -174,47 +298,33 @@ headers:{"Content-Type":"application/json"},
 
 body:JSON.stringify({
 
-user:u,
+user:name,
 
-message:m
+message:msg
+
+})
 
 })
 
-})
+loadChat()
 
 }
 
-function loadChat(){
 
-fetch("/world/messages")
 
-.then(r=>r.json())
+window.onload=function(){
 
-.then(data=>{
+loadFreedom()
 
-let box=document.getElementById("messages")
+loadGalaxy()
 
-box.innerHTML=""
+loadDecisionMap()
 
-data.forEach(m=>{
-
-let d=document.createElement("div")
-
-d.innerText=m.user+" : "+m.message
-
-box.appendChild(d)
-
-})
-
-})
+loadChat()
 
 }
-
-setInterval(loadChat,2000)
 
 </script>
 
-
 </body>
-
 </html>
