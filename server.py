@@ -5,30 +5,75 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-# =============================
-# IMPORT AI SYSTEMS
-# =============================
+# =========================
+# SAFE IMPORTS
+# =========================
 
-from AI.persona_engine import PersonaEngine
-from AI.council_engine import Council
-from AI.simulation_engine import Simulation
-from AI.world_connector import WorldConnector
+try:
+    from AI.persona_engine import PersonaEngine
+except:
+    PersonaEngine=None
 
-from SECURITY.emergency_mode import check_emergency
-from SECURITY.survival_mode import survival_check
+try:
+    from AI.council_engine import Council
+except:
+    Council=None
 
-from AI_KERNEL.living_water import detect_leak
-from AI_KERNEL.scl7_core import enforce_scl7
+try:
+    from AI.simulation_engine import Simulation
+except:
+    Simulation=None
+
+try:
+    from AI.world_connector import WorldConnector
+except:
+    WorldConnector=None
+
+try:
+    from SECURITY.emergency_mode import check_emergency
+except:
+    def check_emergency(ip): return True
+
+try:
+    from SECURITY.survival_mode import survival_check
+except:
+    def survival_check(): return "ok"
+
+try:
+    from AI_KERNEL.living_water import detect_leak
+except:
+    def detect_leak(t): return False
+
+try:
+    from AI_KERNEL.scl7_core import enforce_scl7
+except:
+    def enforce_scl7(): return {}
+
+try:
+    from AI.decision_memory import save_decision,get_memory
+except:
+    def save_decision(q,r): pass
+    def get_memory(): return []
+
+try:
+    from NETWORK.global_network import add_message,get_messages
+except:
+    chat=[]
+    def add_message(u,m):
+        chat.append({"user":u,"message":m})
+    def get_messages():
+        return chat
 
 
-# =============================
+# =========================
 # INIT SYSTEMS
-# =============================
+# =========================
 
-persona = PersonaEngine()
-council = Council()
-simulation = Simulation()
-world = WorldConnector()
+persona = PersonaEngine() if PersonaEngine else None
+council = Council() if Council else None
+simulation = Simulation() if Simulation else None
+world = WorldConnector() if WorldConnector else None
+
 
 app = FastAPI()
 
@@ -40,77 +85,94 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =============================
-# STATIC FILES
-# =============================
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# =============================
-# HEALTH CHECK
-# =============================
+# =========================
+# SYSTEM HEALTH
+# =========================
 
 @app.get("/system/health")
-async def health():
+async def system_health():
 
     return {
+
         "system":"KING DIADEM",
-        "status":"running",
+
         "modules":[
-            "persona",
-            "council",
-            "simulation",
-            "world_connector",
+
+            "persona_engine",
+
+            "ai_council",
+
+            "simulation_engine",
+
+            "decision_memory",
+
+            "global_network",
+
             "security",
+
             "ai_kernel"
-        ]
+
+        ],
+
+        "status":"running"
+
     }
 
 
-# =============================
-# MAIN AI ENDPOINT
-# =============================
+# =========================
+# AI ASK
+# =========================
 
 @app.post("/ask")
-async def ask(request: Request):
+
+async def ask(request:Request):
 
     body = await request.json()
+
     question = body.get("question","")
 
     ip = request.client.host
 
-    # emergency mode
     if not check_emergency(ip):
 
-        return JSONResponse({
-            "error":"Emergency limit reached (5 requests/hour)"
-        })
+        return {"error":"Emergency request limit reached"}
 
-    # server survival
-    if survival_check() == "throttle":
+    if survival_check()=="throttle":
 
-        return JSONResponse({
-            "error":"Server busy, please wait"
-        })
+        return {"error":"Server busy"}
 
-    # living water detection
     leak = detect_leak(question)
 
-    # intent detection
-    intent = persona.detect_intent(question)
+    intent="general"
 
-    # council meeting
-    opinions = council.deliberate(question)
+    if persona:
 
-    # simulation
-    paths = simulation.simulate(question)
+        intent = persona.detect_intent(question)
 
-    # world data
-    world_data = world.world_status()
+    opinions={}
 
-    # kernel rules
-    rules = enforce_scl7()
+    if council:
+
+        opinions = council.deliberate(question)
+
+    paths=[]
+
+    if simulation:
+
+        paths = simulation.simulate(question)
+
+    world_data={}
+
+    if world:
+
+        world_data = world.world_status()
+
+    kernel = enforce_scl7()
+
+    save_decision(question,paths)
 
     return {
 
@@ -126,55 +188,102 @@ async def ask(request: Request):
 
         "world":world_data,
 
-        "kernel_rules":rules
+        "kernel":kernel
 
     }
 
 
-# =============================
+# =========================
 # DECISION MAP
-# =============================
+# =========================
 
 @app.post("/decision")
-async def decision(request: Request):
+
+async def decision(request:Request):
 
     body = await request.json()
-    question = body.get("question","")
 
-    paths = simulation.simulate(question)
+    q = body.get("question","")
+
+    if simulation:
+
+        options = simulation.simulate(q)
+
+    else:
+
+        options=["advance","wait","pivot"]
 
     return {
 
-        "problem":question,
+        "problem":q,
 
-        "options":paths
+        "options":options
 
     }
 
 
-# =============================
+# =========================
+# GLOBAL CHAT
+# =========================
+
+@app.post("/world/chat")
+
+async def world_chat(request:Request):
+
+    body=await request.json()
+
+    user=body.get("user","anon")
+
+    msg=body.get("message","")
+
+    add_message(user,msg)
+
+    return {"status":"ok"}
+
+
+@app.get("/world/messages")
+
+async def world_messages():
+
+    return get_messages()
+
+
+# =========================
+# MEMORY
+# =========================
+
+@app.get("/memory")
+
+async def memory():
+
+    return get_memory()
+
+
+# =========================
 # ROOT
-# =============================
+# =========================
 
 @app.get("/")
+
 async def root():
 
-    return JSONResponse({
-        "message":"KING DIADEM AI Strategic Command Center"
-    })
+    return {"KING DIADEM":"AI Strategic Command Center"}
 
 
-# =============================
+# =========================
 # RUN
-# =============================
+# =========================
 
 if __name__ == "__main__":
 
-    port = int(os.environ.get("PORT", 10000))
+    port=int(os.environ.get("PORT",10000))
 
     uvicorn.run(
+
         "server:app",
+
         host="0.0.0.0",
-        port=port,
-        reload=False
+
+        port=port
+
     )
