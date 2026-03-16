@@ -5,6 +5,7 @@ from AI.decision_memory import store_decision
 from AI.planetary_reality import planetary_status
 from AI.consensus_engine import build_consensus
 from AI.node_consensus import node_vote
+from AI.civilization_learning import record_learning
 
 from NETWORK.node_registry import get_nodes
 
@@ -17,13 +18,9 @@ def generate_options(question):
     base = [
 
         "gather more information",
-
         "act cautiously",
-
         "delay decision",
-
         "consult trusted people",
-
         "run a small experiment"
 
     ]
@@ -31,13 +28,9 @@ def generate_options(question):
     strategic = [
 
         "pivot strategy",
-
         "reduce exposure",
-
         "increase resilience",
-
         "secure survival resources",
-
         "explore new opportunity"
 
     ]
@@ -51,21 +44,15 @@ def generate_options(question):
     return options
 
 
-
 def council_reasoning(question, options):
 
     council_results = {
 
         "Altair": random.choice(options),
-
         "Vega": random.choice(options),
-
         "Lyla": random.choice(options),
-
         "Titan": random.choice(options),
-
         "FATE": random.choice(options),
-
         "DriftZero": random.choice(options)
 
     }
@@ -73,7 +60,6 @@ def council_reasoning(question, options):
     summary = build_consensus(council_results)
 
     return council_results, summary
-
 
 
 def node_reasoning(options):
@@ -85,37 +71,40 @@ def node_reasoning(options):
     return vote
 
 
-
 def process_decision(question):
 
+    # Step 1 generate base options
     options = generate_options(question)
 
+    # Step 2 simulation
     sim_results = sim.simulate(question)
 
     options = options + sim_results
 
+    # Step 3 planetary context
     planet = planetary_status()
 
+    # Step 4 council reasoning
     council_results, council_summary = council_reasoning(question, options)
 
+    # Step 5 distributed node voting
     node_result = node_reasoning(options)
 
     final_choice = node_result["winner"]
 
+    # Step 6 store decision memory
     store_decision(question, options)
+
+    # Step 7 learning loop
+    record_learning(question, final_choice, planet)
 
     return {
 
         "options": options,
-
         "consensus": final_choice,
-
         "planetary_context": planet,
-
         "council": council_results,
-
         "council_summary": council_summary,
-
         "node_votes": node_result["votes"]
 
     }
