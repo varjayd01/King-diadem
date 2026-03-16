@@ -1,46 +1,176 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta charset="UTF-8">
 <title>KING DIADEM</title>
 
 <style>
 
+*{box-sizing:border-box}
+
 body{
-background:#05070d;
-color:white;
+margin:0;
 font-family:Arial;
+background:radial-gradient(circle at top,#0a0f24,#000);
+color:white;
+overflow-x:hidden;
+}
+
+/* glow */
+
+body::before{
+content:"";
+position:fixed;
+top:-200px;
+left:-200px;
+width:600px;
+height:600px;
+background:#5b7cff33;
+filter:blur(160px);
+z-index:-1;
+}
+
+body::after{
+content:"";
+position:fixed;
+bottom:-200px;
+right:-200px;
+width:600px;
+height:600px;
+background:#7c5bff33;
+filter:blur(160px);
+z-index:-1;
+}
+
+/* hero */
+
+.hero{
+padding:140px 20px;
 text-align:center;
-padding:40px;
 }
 
 h1{
-font-size:38px;
+font-size:64px;
+letter-spacing:3px;
+}
+
+.tag{
+color:#9aa4ff;
+}
+
+/* ask */
+
+.askbox{
+margin-top:50px;
 }
 
 input{
-padding:12px;
-width:60%;
-background:#111;
-border:1px solid #333;
+padding:14px;
+width:320px;
+background:#0f132b;
+border:1px solid #2a2f66;
+border-radius:8px;
 color:white;
 }
 
 button{
-padding:12px 20px;
+padding:14px 22px;
 background:#5b7cff;
 border:none;
+border-radius:8px;
 color:white;
 cursor:pointer;
+margin-left:8px;
+transition:0.2s;
+}
+
+button:hover{
+background:#7a95ff;
+transform:translateY(-2px);
 }
 
 #response{
-margin-top:30px;
-font-size:18px;
+margin-top:40px;
+max-width:600px;
+margin-left:auto;
+margin-right:auto;
+background:#0c1030;
+padding:20px;
+border-radius:12px;
+border:1px solid #1c2266;
 }
 
+/* galaxy */
+
+.ai-visual{
+margin-top:120px;
+position:relative;
+height:400px;
+}
+
+#galaxy{
+position:absolute;
+width:100%;
+height:100%;
+}
+
+/* pricing */
+
+.section{
+margin-top:120px;
+text-align:center;
+}
+
+.pricing{
+display:flex;
+justify-content:center;
+gap:40px;
+margin-top:50px;
+flex-wrap:wrap;
+}
+
+.card{
+background:#0b0f22;
+padding:40px;
+width:280px;
+border-radius:16px;
+border:1px solid #1e235a;
+}
+
+.card:hover{
+border:1px solid #5b7cff;
+transform:translateY(-6px);
+}
+
+.price{
+font-size:38px;
+margin:20px 0;
+}
+
+/* chat */
+
 .chat{
-margin-top:60px;
+margin-top:120px;
+text-align:center;
+}
+
+.messages{
+margin-top:30px;
+max-width:700px;
+margin-left:auto;
+margin-right:auto;
+background:#0c1030;
+border-radius:12px;
+padding:20px;
+border:1px solid #1c2266;
+}
+
+footer{
+margin-top:120px;
+padding:40px;
+color:#777;
 }
 
 </style>
@@ -49,35 +179,164 @@ margin-top:60px;
 
 <body>
 
+<div class="hero">
+
 <h1>KING DIADEM</h1>
+
+<p class="tag">
+Planetary Decision Intelligence
+</p>
 
 <p>
 Any system that reduces human choice to zero is a failed system
 </p>
 
-<br>
+<div class="askbox">
 
 <input id="question" placeholder="Ask a strategic question">
+
 <button onclick="ask()">ASK</button>
+
+</div>
 
 <div id="response"></div>
 
+</div>
+
+<div class="ai-visual">
+
+<canvas id="galaxy"></canvas>
+
+</div>
+
+
+<div class="section">
+
+<h2>Pricing</h2>
+
+<div class="pricing">
+
+<div class="card">
+
+<h3>Premium</h3>
+<div class="price">฿279</div>
+
+<p>
+AI decision engine<br>
+Global decision network
+</p>
+
+<button onclick="upgrade('premium')">
+Upgrade
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>Pro</h3>
+<div class="price">฿789</div>
+
+<p>
+Strategic simulation<br>
+Planetary signals
+</p>
+
+<button onclick="upgrade('pro')">
+Upgrade
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>Sovereign</h3>
+<div class="price">฿1650</div>
+
+<p>
+Full AI access<br>
+Unlimited decision
+</p>
+
+<button onclick="upgrade('sovereign')">
+Upgrade
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
 <div class="chat">
 
-<h3>Global Decision Network</h3>
+<h2>Global Decision Network</h2>
 
 <input id="name" placeholder="name">
 <input id="message" placeholder="message">
 
 <button onclick="send()">Send</button>
 
-<div id="messages"></div>
+<div id="messages" class="messages"></div>
 
 </div>
 
-<br><br>
 
-<button onclick="upgrade()">Upgrade Premium</button>
+<footer>
+
+KING DIADEM — Planetary Decision Infrastructure
+
+</footer>
+
+
+<script>
+
+const canvas=document.getElementById("galaxy")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=400
+
+let stars=[]
+
+for(let i=0;i<80;i++){
+
+stars.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+v:Math.random()*0.5+0.2
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+stars.forEach(s=>{
+
+ctx.beginPath()
+ctx.arc(s.x,s.y,2,0,Math.PI*2)
+ctx.fillStyle="#7a95ff"
+ctx.fill()
+
+s.y+=s.v
+
+if(s.y>canvas.height)s.y=0
+
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+</script>
+
 
 <script src="/static/app.js"></script>
 
