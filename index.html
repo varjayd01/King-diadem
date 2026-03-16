@@ -1,73 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<link rel="stylesheet" href="/static/style.css">
-
+<meta charset="UTF-8">
 <title>KING DIADEM</title>
+
+<style>
+
+body{
+background:#05070d;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:40px;
+}
+
+h1{
+font-size:38px;
+}
+
+input{
+padding:12px;
+width:60%;
+background:#111;
+border:1px solid #333;
+color:white;
+}
+
+button{
+padding:12px 20px;
+background:#5b7cff;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+#response{
+margin-top:30px;
+font-size:18px;
+}
+
+.chat{
+margin-top:60px;
+}
+
+</style>
 
 </head>
 
 <body>
 
-<div class="container">
-
-<img src="/static/icon-512.png" class="logo">
-
 <h1>KING DIADEM</h1>
 
-<div class="subtitle">
-Decision Intelligence System
+<p>
+Any system that reduces human choice to zero is a failed system
+</p>
+
+<br>
+
+<input id="question" placeholder="Ask a strategic question">
+<button onclick="ask()">ASK</button>
+
+<div id="response"></div>
+
+<div class="chat">
+
+<h3>Global Decision Network</h3>
+
+<input id="name" placeholder="name">
+<input id="message" placeholder="message">
+
+<button onclick="send()">Send</button>
+
+<div id="messages"></div>
+
 </div>
 
-<input id="location" placeholder="Where are you now">
+<br><br>
 
-<input id="food" placeholder="Meals remaining">
+<button onclick="upgrade()">Upgrade Premium</button>
 
-<input id="money" placeholder="Money available">
-
-<input id="danger" placeholder="Danger level (1-10)">
-
-<button onclick="analyze()">Analyze Decision</button>
-
-<div class="link">
-
-<a href="/login.html">Login</a> •
-<a href="/register.html">Create Account</a> •
-<a href="/wallet.html">Top Up</a>
-
-</div>
-
-</div>
-
-<script>
-
-async function analyze(){
-
-const data = {
-
-location:document.getElementById("location").value,
-food:document.getElementById("food").value,
-money:document.getElementById("money").value,
-danger:document.getElementById("danger").value
-
-}
-
-const res = await fetch("/decision",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(data)
-})
-
-const result = await res.json()
-
-alert(result.result)
-
-}
-
-</script>
+<script src="/static/app.js"></script>
 
 </body>
 </html>
