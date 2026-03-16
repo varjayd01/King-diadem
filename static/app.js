@@ -1,94 +1,68 @@
-async function askAI() {
+async function ask(){
 
-    const input = document.getElementById("question")
+let q=document.getElementById("question").value
 
-    const question = input.value
+let res=await fetch("/ask",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+question:q
+})
+})
 
-    if (!question) return
+let data=await res.json()
 
-    const response = await fetch("/ask", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            question: question
-        })
-    })
-
-    const data = await response.json()
-
-    renderOptions(data.options)
+document.getElementById("response").innerText=data.answer
 
 }
 
+async function send(){
 
-function renderOptions(options){
+let name=document.getElementById("name").value
+let message=document.getElementById("message").value
 
-    const container = document.getElementById("result")
+await fetch("/world/chat",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+name:name,
+message:message
+})
+})
 
-    container.innerHTML = ""
-
-    options.forEach((opt,i)=>{
-
-        const div = document.createElement("div")
-
-        div.className="option"
-
-        div.innerHTML = (i+1)+". "+opt
-
-        container.appendChild(div)
-
-    })
-
-}
-
-
-async function loadFreedom(){
-
-    const res = await fetch("/freedom")
-
-    const data = await res.json()
-
-    const el = document.getElementById("freedom")
-
-    if(!el) return
-
-    el.innerHTML =
-        "Freedom Index: "+data.freedom_index+
-        " ("+data.status+")"
+loadMessages()
 
 }
 
+async function loadMessages(){
 
-async function loadGalaxy(){
+let res=await fetch("/world/messages")
+let data=await res.json()
 
-    const res = await fetch("/galaxy")
+let html=""
 
-    const data = await res.json()
+data.messages.forEach(m=>{
+html+=`<p><b>${m.name}</b>: ${m.message}</p>`
+})
 
-    console.log("Galaxy Nodes:",data)
-
-}
-
-
-async function loadDecisionMap(){
-
-    const res = await fetch("/decision/map")
-
-    const data = await res.json()
-
-    console.log("Decision Map:",data)
+document.getElementById("messages").innerHTML=html
 
 }
 
+async function upgrade(){
 
-window.onload=function(){
+let res=await fetch("/create-checkout-session",{
+method:"POST"
+})
 
-    loadFreedom()
+let data=await res.json()
 
-    loadGalaxy()
-
-    loadDecisionMap()
+window.location=data.url
 
 }
+
+loadMessages()
