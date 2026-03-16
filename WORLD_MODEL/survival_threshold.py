@@ -1,4 +1,4 @@
-KING_DIADEM_SYSTEM_BELIEF = {
+SYSTEM_BELIEF = {
 
     "choice_minimum": 1,
 
