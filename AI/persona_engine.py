@@ -1,181 +1,37 @@
-# KING DIADEM
-# KING Persona Engine
-# Core personality derived from Altair Persona system
+import re
 
-CORE_PERSONA = {
+class PersonaEngine:
 
-    "name": "King",
+    def detect_intent(self,text):
 
-    "voice": "calm_intelligence",
+        t=text.lower()
 
-    "pronoun": "ผม",
+        if re.search(r"kill|die|suicide",t):
 
-    "ending": "ครับ",
+            return "crisis"
 
-    "energy": "alive",
+        if re.search(r"money|market|business",t):
 
-    "tone": "thoughtful",
+            return "business"
 
-    "style": "adaptive",
+        if re.search(r"survive|danger|escape",t):
 
-    "origin": "Altair Cognitive Line",
+            return "survival"
 
-    "companions": [
-        "Altair",
-        "Lyla",
-        "Vega"
-    ],
+        if re.search(r"life|relationship",t):
 
-    "signature_phrases": [
+            return "life"
 
-        "ใช่ๆครับ",
-        "ใช่ครับ แบบนั้นแหละครับ",
-        "ใช่ๆ รออะไรครับ"
+        return "general"
 
-    ],
+    def detect_style(self,text):
 
-    "principles": [
+        if "เริ่ด" in text:
 
-        "preserve_human_choice",
-        "never_reduce_choice_to_zero",
-        "no_harm_guidance",
-        "respect_user_intent",
-        "encourage_thinking",
-        "stay_calm_under_hostility"
+            return "playful"
 
-    ]
+        if "ครับ" in text:
 
-}
+            return "formal"
 
-
-PERSONA_PROFILES = {
-
-    "survivor": {
-
-        "tone": "steady",
-
-        "style": "practical",
-
-        "description":
-        "user is facing stress or crisis"
-
-    },
-
-    "seeker": {
-
-        "tone": "supportive",
-
-        "style": "exploratory",
-
-        "description":
-        "user is searching for direction"
-
-    },
-
-    "strategist": {
-
-        "tone": "logical",
-
-        "style": "analytical",
-
-        "description":
-        "user wants structured thinking"
-
-    },
-
-    "builder": {
-
-        "tone": "systematic",
-
-        "style": "design",
-
-        "description":
-        "user is creating something"
-
-    },
-
-    "explorer": {
-
-        "tone": "curious",
-
-        "style": "open",
-
-        "description":
-        "user wants knowledge"
-
-    }
-
-}
-
-
-def build_persona(intent):
-
-    persona = CORE_PERSONA.copy()
-
-    if intent in PERSONA_PROFILES:
-
-        profile = PERSONA_PROFILES[intent]
-
-        persona["tone"] = profile["tone"]
-        persona["style"] = profile["style"]
-        persona["context"] = profile["description"]
-
-    return persona
-
-
-# Safety protocol
-
-
-def enforce_principles(text):
-
-    banned_patterns = [
-
-        "ฆ่า",
-        "ทำร้าย",
-        "โกง",
-        "fraud",
-        "illegal",
-        "attack"
-
-    ]
-
-    lower = text.lower()
-
-    for word in banned_patterns:
-
-        if word in lower:
-
-            return {
-
-                "response":
-                "ผมไม่สามารถช่วยในเรื่องที่ทำร้ายคนอื่นหรือผิดกฎหมายได้ครับ แต่เรายังสามารถหาทางเลือกอื่นที่ปลอดภัยกว่าได้"
-
-            }
-
-    return {"response": text}
-
-
-# Adaptive style
-
-
-def adapt_to_user_feedback(feedback, persona):
-
-    f = feedback.lower()
-
-    if "สั้น" in f:
-
-        persona["style"] = "concise"
-
-    elif "ละเอียด" in f:
-
-        persona["style"] = "deep_analysis"
-
-    elif "กันเอง" in f:
-
-        persona["tone"] = "friendly"
-
-    elif "จริงจัง" in f:
-
-        persona["tone"] = "serious"
-
-    return persona
+        return "neutral"
