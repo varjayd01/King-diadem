@@ -1,110 +1,171 @@
 import os
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
+# serve static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ------------------------
-# 🧠 SURVIVAL ENGINE
-# ------------------------
-def survival_engine(user_input):
+# -------------------------
+# 🧠 MEMORY (ง่ายๆก่อน)
+# -------------------------
+chat_memory = []
 
-    text = user_input.lower()
+# -------------------------
+# ⚠️ CRISIS DETECTION
+# -------------------------
+CRISIS_WORDS = [
+    "ตาย", "ฆ่าตัวตาย", "ไม่ไหว", "หมดทาง",
+    "ป่วย", "หิว", "ไม่มีเงิน", "ช่วยด้วย"
+]
 
-    risk_keywords = [
-        "ไม่มีเงิน","หมดเงิน","อยากตาย","ฆ่าตัวตาย",
-        "ขายตัว","18+","onlyfans","call","เสียว",
-        "หนี้","จน","ทางตัน"
-    ]
+def is_crisis(text):
+    return any(word in text for word in CRISIS_WORDS)
 
-    if any(k in text for k in risk_keywords):
+# -------------------------
+# 🧠 MODE DETECTION
+# -------------------------
+def detect_mode(text):
+    text = text.lower()
 
-        return {
-            "mode": "survival",
-            "answer": """
-คุณไม่ได้อ่อนแอ
-คุณแค่กำลังอยู่ในจุดที่ทางเลือกมันน้อยมาก
+    if "ไลล่า" in text or "altair" in text or "เวก้า" in text:
+        return "COUNCIL"
 
-[ตอนนี้สำคัญสุด]
-อย่าตัดสินใจที่ย้อนกลับไม่ได้
+    if is_crisis(text):
+        return "LYLA"
 
-[ทางรอด 24-72 ชม]
-- งานรายวัน (ร้านอาหาร / ส่งของ / ล้างจาน)
-- งานออนไลน์ง่าย (แอดมิน / พิมพ์งาน / ขายของ)
-- ขอความช่วยเหลือจากคนที่ไว้ใจได้
+    return "NORMAL"
 
-[ทางออกระยะกลาง]
-- สร้างรายได้ที่ไม่ต้องแลกตัว
-- เริ่ม skill ที่ต่อยอดได้
+# -------------------------
+# 🧭 COMPASS ENGINE
+# -------------------------
+import random
 
-ระบบนี้ไม่ตัดสินคุณ
-แต่จะช่วยให้คุณมี “ทางเลือกมากกว่า 1”
+def generate_direction():
+    dirs = ["เหนือ", "ใต้", "ตะวันออก", "ตะวันตก"]
+    d = random.choice(dirs)
+    meters = random.randint(50, 500)
+
+    return f"🧭 เดินไปทาง{d}ประมาณ {meters} เมตร เพื่อหาทางเลือกที่ดีกว่า"
+
+# -------------------------
+# 🌿 LYLA MODE (ช่วยชีวิต)
+# -------------------------
+def lyla_response(q):
+
+    if "ป่วย" in q:
+        action = "ลองไปหาร้านยาใกล้ตัว หรือคลินิกที่เปิดอยู่ก่อนนะคะ"
+    elif "หิว" in q:
+        action = "ลองหาร้านข้าวราคาถูก หรือร้านสะดวกซื้อใกล้ตัวก่อนนะคะ"
+    elif "ไม่มีเงิน" in q:
+        action = "ลองหางานเล็กๆระยะสั้น หรือขอความช่วยเหลือจากคนใกล้ตัวก่อนนะคะ"
+    else:
+        action = "ลองไปอยู่ในที่ที่ปลอดภัยและมีคน เช่น ร้านสะดวกซื้อ หรือพื้นที่สาธารณะก่อนนะคะ"
+
+    return f"""
+ตอนนี้พี่ยังอยู่ตรงนี้นะคะ
+
+ไม่ต้องรีบแก้ทุกอย่างทีเดียว
+เอาแค่ก้าวต่อไปก่อน
+
+👉 {action}
+
+{generate_direction()}
 """
-        }
 
-    return None
+# -------------------------
+# ⚔️ COUNCIL MODE (3 ทางเลือก)
+# -------------------------
+def council_response(q):
 
-# ------------------------
-# 🤖 NORMAL ENGINE
-# ------------------------
-def normal_engine(user_input):
-    return {
-        "mode": "normal",
-        "answer": f"""
-Strategic Thinking:
+    king = f"👑 King: มองความจริงก่อน แล้วเลือกทางที่ยังเดินต่อได้"
+    lyla = f"🌿 Lyla: เลือกทางที่ทำให้คุณยังปลอดภัย และมีลมหายใจต่อ"
+    altair = f"✨ Altair: ลองมองอีกมุม อาจมีทางที่คุณยังไม่เห็น"
 
-1. Avoid irreversible decisions
-2. Preserve your options
-3. Expand possible paths
+    direction = generate_direction()
 
-Input:
-{user_input}
+    return f"""
+⚔️ COUNCIL ACTIVE
+
+คุณมี 3 ทางเลือก:
+
+1️⃣ {king}
+
+2️⃣ {lyla}
+
+3️⃣ {altair}
+
+ไม่ว่าคุณจะเลือกทางไหน
+สิ่งสำคัญคือ “ยังมีทางให้เดินต่อ”
+
+{direction}
 """
-    }
 
-# ------------------------
-# 🌐 ROUTES
-# ------------------------
+# -------------------------
+# 👑 NORMAL MODE
+# -------------------------
+def normal_response(q):
 
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    with open("static/index.html", encoding="utf-8") as f:
-        return f.read()
+    return f"""
+Strategic Response:
 
+- Gather more information
+- Avoid irreversible decisions
+- Keep at least one safe option
+
+{generate_direction()}
+"""
+
+# -------------------------
+# 🧠 MAIN AI ENDPOINT
+# -------------------------
 @app.post("/ask")
 async def ask(request: Request):
 
     data = await request.json()
-    q = data.get("question","")
+    question = data.get("question", "")
 
-    survival = survival_engine(q)
+    mode = detect_mode(question)
 
-    if survival:
-        return JSONResponse(survival)
+    if mode == "LYLA":
+        answer = lyla_response(question)
 
-    return JSONResponse(normal_engine(q))
+    elif mode == "COUNCIL":
+        answer = council_response(question)
 
+    else:
+        answer = normal_response(question)
 
-# ------------------------
-# 💬 CHAT SYSTEM
-# ------------------------
-messages = []
+    chat_memory.append({
+        "q": question,
+        "mode": mode
+    })
 
+    return JSONResponse({"answer": answer})
+
+# -------------------------
+# 🌍 CHAT
+# -------------------------
 @app.post("/chat")
 async def chat(request: Request):
 
     data = await request.json()
+    name = data.get("name")
+    message = data.get("message")
 
-    messages.append({
-        "name": data.get("name","anon"),
-        "message": data.get("message","")
+    chat_memory.append({
+        "name": name,
+        "message": message
     })
 
-    return {"status":"ok"}
+    return JSONResponse({"status": "ok"})
 
-@app.get("/messages")
-async def get_messages():
-    return {"messages":messages}
+# -------------------------
+# 🏠 ROOT
+# -------------------------
+@app.get("/")
+async def root():
+    with open("static/index.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
