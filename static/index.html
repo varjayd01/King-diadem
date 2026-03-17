@@ -1,148 +1,77 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 
 <meta charset="UTF-8">
-
-<!-- 📱 MOBILE APP FEEL -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>KING DIADEM</title>
 
 <style>
-
-*{
-box-sizing:border-box;
-}
 
 body{
 margin:0;
 font-family:Arial;
 background:#05070d;
 color:white;
-overflow:hidden;
+text-align:center;
 }
 
-/* 🌌 HERO */
 .hero{
-text-align:center;
-padding:80px 20px;
+padding:60px 20px;
 }
 
 h1{
-font-size:48px;
-letter-spacing:2px;
-}
-
-.tag{
-color:#8aa0ff;
-}
-
-.core{
-margin-top:20px;
-color:#cfd6ff;
-max-width:600px;
-margin-left:auto;
-margin-right:auto;
-line-height:1.6;
-}
-
-/* 🧠 INPUT */
-.ask{
-margin-top:40px;
+font-size:40px;
 }
 
 input{
-padding:14px;
-width:280px;
+padding:12px;
+width:70%;
+max-width:300px;
 background:#0f132b;
 border:1px solid #2a2f66;
 color:white;
 border-radius:8px;
-transition:0.3s;
-}
-
-/* ✨ focus จากไลล่า */
-input:focus{
-outline:none;
-border-color:#5b7cff;
-box-shadow:0 0 12px rgba(91,124,255,0.4);
+margin:5px;
 }
 
 button{
-padding:14px 20px;
+padding:12px 16px;
 background:#5b7cff;
 border:none;
 color:white;
 border-radius:8px;
-cursor:pointer;
-transition:0.2s;
+margin:5px;
 }
 
-button:hover{
-transform:translateY(-2px);
-background:#7a95ff;
-}
-
-/* 💬 RESPONSE (สำคัญ) */
 #response{
-margin-top:30px;
-max-width:600px;
+margin-top:20px;
+max-width:500px;
 margin-left:auto;
 margin-right:auto;
-padding:20px;
+padding:15px;
 background:#0b0f22;
-border-radius:12px;
-
-border-left:4px solid #5b7cff; /* ทางเลือก */
-transition:all 0.5s ease;
-
-line-height:1.6;
-font-size:15px;
-}
-
-/* 🤖 THINKING */
-#thinking{
-margin-top:20px;
-color:#888;
-font-style:italic;
-}
-
-/* 🌌 GALAXY */
-#galaxy{
-display:block;
-margin:30px auto;
-}
-
-/* 🌍 SIGNAL */
-.signal{
-margin-top:30px;
-text-align:center;
-}
-
-.bar{
-width:260px;
-height:8px;
-background:#222;
-margin:auto;
+border-left:4px solid #5b7cff;
 border-radius:10px;
-overflow:hidden;
 }
 
-.fill{
-height:100%;
-background:#5b7cff;
-width:50%;
-transition:0.5s;
+#thinking{
+color:#aaa;
+margin-top:10px;
 }
 
-footer{
+.card{
+background:#0b0f22;
+padding:20px;
+margin:10px;
+border-radius:10px;
+display:inline-block;
+width:200px;
+}
+
+.login{
 margin-top:40px;
-text-align:center;
-font-size:12px;
-color:#666;
 }
 
 </style>
@@ -155,46 +84,55 @@ color:#666;
 
 <h1>KING DIADEM</h1>
 
-<p class="tag">AI Strategic Command Center</p>
+<p>AI Strategic Command Center</p>
 
-<p class="core">
-A system that preserves choice.<br>
+<p>
 If Choice = 0 → System Failed<br>
 If Choice ≥ 1 → System Alive
 </p>
 
-<div class="ask">
-<input id="question" placeholder="พิมพ์สิ่งที่คุณอยากให้เรามอบทางเลือก">
+<input id="question" placeholder="พิมพ์สิ่งที่คุณกำลังเจอ">
 <button onclick="ask()">ASK</button>
-</div>
+
+<p style="color:#8aa0ff;">
+คุณไม่ได้หมดทางเลือก แค่ยังไม่เห็นมัน
+</p>
 
 <div id="thinking"></div>
 <div id="response"></div>
 
 </div>
 
-<!-- 🌌 GALAXY -->
-<canvas id="galaxy" width="400" height="400"></canvas>
+<!-- LOGIN -->
+<div class="login">
 
-<!-- 🌍 GLOBAL SIGNAL -->
-<div class="signal">
+<h2>Login</h2>
 
-<h3>Global Freedom Signal</h3>
+<button onclick="fakeLogin('Google')">Google</button>
+<button onclick="fakeLogin('Facebook')">Facebook</button>
+<button onclick="fakeLogin('Instagram')">Instagram</button>
 
-<div class="bar">
-<div class="fill" id="signalFill"></div>
-</div>
-
-<p id="signalText">Scanning reality...</p>
+<p id="loginStatus"></p>
 
 </div>
 
-<footer>
-This system does not ignore life — Human · Animal · Nature
-</footer>
+<!-- PRICING -->
+<h2>Pricing</h2>
+
+<div class="card">Premium ฿279</div>
+<div class="card">Pro ฿789</div>
+<div class="card">Sovereign ฿1650</div>
+
+<!-- CHAT -->
+<h2>Network</h2>
+
+<input id="name" placeholder="name">
+<input id="message" placeholder="message">
+<button onclick="send()">Send</button>
+
+<div id="messages"></div>
 
 <script src="/static/app.js"></script>
 
 </body>
-
 </html>
