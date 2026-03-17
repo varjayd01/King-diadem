@@ -1,116 +1,110 @@
 import os
-import stripe
-import uvicorn
-
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-# STATIC
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# ------------------------
+# 🧠 SURVIVAL ENGINE
+# ------------------------
+def survival_engine(user_input):
 
-# STRIPE
+    text = user_input.lower()
 
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+    risk_keywords = [
+        "ไม่มีเงิน","หมดเงิน","อยากตาย","ฆ่าตัวตาย",
+        "ขายตัว","18+","onlyfans","call","เสียว",
+        "หนี้","จน","ทางตัน"
+    ]
 
-PRICE_PREMIUM = os.getenv("STRIPE_PRICE_ID")
-PRICE_PRO = os.getenv("STRIPE_PRICE_PRO")
-PRICE_SOVEREIGN = os.getenv("STRIPE_PRICE_SOVEREIGN")
+    if any(k in text for k in risk_keywords):
 
+        return {
+            "mode": "survival",
+            "answer": """
+คุณไม่ได้อ่อนแอ
+คุณแค่กำลังอยู่ในจุดที่ทางเลือกมันน้อยมาก
 
-# MEMORY
+[ตอนนี้สำคัญสุด]
+อย่าตัดสินใจที่ย้อนกลับไม่ได้
 
-messages = []
+[ทางรอด 24-72 ชม]
+- งานรายวัน (ร้านอาหาร / ส่งของ / ล้างจาน)
+- งานออนไลน์ง่าย (แอดมิน / พิมพ์งาน / ขายของ)
+- ขอความช่วยเหลือจากคนที่ไว้ใจได้
 
+[ทางออกระยะกลาง]
+- สร้างรายได้ที่ไม่ต้องแลกตัว
+- เริ่ม skill ที่ต่อยอดได้
 
-# HOME
+ระบบนี้ไม่ตัดสินคุณ
+แต่จะช่วยให้คุณมี “ทางเลือกมากกว่า 1”
+"""
+        }
 
-@app.get("/")
-def home():
-    return FileResponse("index.html")
+    return None
 
+# ------------------------
+# 🤖 NORMAL ENGINE
+# ------------------------
+def normal_engine(user_input):
+    return {
+        "mode": "normal",
+        "answer": f"""
+Strategic Thinking:
 
-# AI DECISION
+1. Avoid irreversible decisions
+2. Preserve your options
+3. Expand possible paths
+
+Input:
+{user_input}
+"""
+    }
+
+# ------------------------
+# 🌐 ROUTES
+# ------------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    with open("static/index.html", encoding="utf-8") as f:
+        return f.read()
 
 @app.post("/ask")
-async def ask(data: dict):
+async def ask(request: Request):
 
-    question = data.get("question", "")
+    data = await request.json()
+    q = data.get("question","")
 
-    answer = "Strategic response: gather information, avoid irreversible decisions."
+    survival = survival_engine(q)
 
-    return {
-        "answer": answer
-    }
+    if survival:
+        return JSONResponse(survival)
 
-
-# GLOBAL CHAT
-
-@app.post("/world/chat")
-async def chat(data: dict):
-
-    messages.append(data)
-
-    return {"status": "ok"}
+    return JSONResponse(normal_engine(q))
 
 
-@app.get("/world/messages")
-def get_messages():
+# ------------------------
+# 💬 CHAT SYSTEM
+# ------------------------
+messages = []
 
-    return {
-        "messages": messages
-    }
-
-
-# STRIPE CHECKOUT
-
-@app.post("/create-checkout-session")
-async def checkout(request: Request):
+@app.post("/chat")
+async def chat(request: Request):
 
     data = await request.json()
 
-    plan = data.get("plan")
+    messages.append({
+        "name": data.get("name","anon"),
+        "message": data.get("message","")
+    })
 
-    price_map = {
+    return {"status":"ok"}
 
-        "premium": PRICE_PREMIUM,
-        "pro": PRICE_PRO,
-        "sovereign": PRICE_SOVEREIGN
-
-    }
-
-    price = price_map.get(plan)
-
-    session = stripe.checkout.Session.create(
-
-        payment_method_types=["card"],
-
-        line_items=[{
-            "price": price,
-            "quantity": 1
-        }],
-
-        mode="subscription",
-
-        success_url="https://king-diadem.onrender.com/?success=true",
-
-        cancel_url="https://king-diadem.onrender.com/?cancel=true"
-
-    )
-
-    return {"url": session.url}
-
-
-# START
-
-if __name__ == "__main__":
-
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=10000
-    )
+@app.get("/messages")
+async def get_messages():
+    return {"messages":messages}
