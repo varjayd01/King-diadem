@@ -1,263 +1,106 @@
-// =======================================
-// KING DIADEM GLOBAL ENGINE
-// =======================================
-
-// -----------------------------
-// JARVIS THINKING
-// -----------------------------
-
-let thinkingTimer
-
-function startThinking(){
-
-let r=document.getElementById("response")
-let dots=0
-
-thinkingTimer=setInterval(()=>{
-
-dots++
-r.innerText="AI Council thinking"+".".repeat(dots%4)
-
-},350)
-
-}
-
-function stopThinking(){
-
-clearInterval(thinkingTimer)
-
-}
-
-
-// -----------------------------
-// ASK AI
-// -----------------------------
-
+/* 🧠 ASK SYSTEM */
 async function ask(){
 
 let q=document.getElementById("question").value
 
-startThinking()
+if(!q){
+return
+}
+
+let thinking=document.getElementById("thinking")
+
+let dots=0
+
+let interval=setInterval(()=>{
+dots++
+thinking.innerText="AI thinking"+".".repeat(dots%4)
+},300)
+
+try{
 
 let res=await fetch("/ask",{
-
 method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-question:q
-})
-
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({question:q})
 })
 
 let data=await res.json()
 
-stopThinking()
+clearInterval(interval)
+
+thinking.innerText=""
 
 document.getElementById("response").innerText=data.answer
 
-}
+}catch(e){
 
+clearInterval(interval)
 
-// -----------------------------
-// GLOBAL CHAT
-// -----------------------------
+thinking.innerText=""
 
-async function send(){
-
-let name=document.getElementById("name").value
-let message=document.getElementById("message").value
-
-await fetch("/world/chat",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-name:name,
-message:message
-})
-
-})
-
-loadMessages()
+document.getElementById("response").innerText="System error. Try again."
 
 }
-
-async function loadMessages(){
-
-let res=await fetch("/world/messages")
-let data=await res.json()
-
-let html=""
-
-data.messages.forEach(m=>{
-
-html+=`<p><b>${m.name}</b>: ${m.message}</p>`
-
-})
-
-document.getElementById("messages").innerHTML=html
-
-}
-
-loadMessages()
-
-
-// -----------------------------
-// STRIPE UPGRADE
-// -----------------------------
-
-async function upgrade(plan){
-
-let res=await fetch("/create-checkout-session",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-plan:plan
-})
-
-})
-
-let data=await res.json()
-
-window.location=data.url
 
 }
 
 
-// =======================================
-// GALAXY DECISION MAP
-// =======================================
-
-const galaxy=document.getElementById("galaxy")
-
-if(galaxy){
-
-const ctx=galaxy.getContext("2d")
-
-galaxy.width=window.innerWidth
-galaxy.height=420
+/* 🌌 GALAXY ORBIT (ลื่นขึ้น) */
+let canvas=document.getElementById("galaxy")
+let ctx=canvas.getContext("2d")
 
 let nodes=[]
 
-for(let i=0;i<90;i++){
-
+for(let i=0;i<30;i++){
 nodes.push({
-
-x:Math.random()*galaxy.width,
-y:Math.random()*galaxy.height,
-vx:(Math.random()-0.5)*0.4,
-vy:(Math.random()-0.5)*0.4
-
+angle:Math.random()*Math.PI*2,
+radius:60+Math.random()*120,
+speed:0.002+Math.random()*0.004
 })
-
 }
 
-function drawGalaxy(){
+function draw(){
 
-ctx.clearRect(0,0,galaxy.width,galaxy.height)
+ctx.clearRect(0,0,400,400)
+
+let cx=200
+let cy=200
 
 nodes.forEach(n=>{
 
-n.x+=n.vx
-n.y+=n.vy
+n.angle+=n.speed
 
-if(n.x<0||n.x>galaxy.width)n.vx*=-1
-if(n.y<0||n.y>galaxy.height)n.vy*=-1
+let x=cx+Math.cos(n.angle)*n.radius
+let y=cy+Math.sin(n.angle)*n.radius
 
 ctx.beginPath()
-ctx.arc(n.x,n.y,2,0,Math.PI*2)
-ctx.fillStyle="#7a95ff"
+ctx.arc(x,y,2,0,Math.PI*2)
+ctx.fillStyle="#ffffff"
 ctx.fill()
 
 })
 
-requestAnimationFrame(drawGalaxy)
-
+requestAnimationFrame(draw)
 }
 
-drawGalaxy()
-
-}
+draw()
 
 
-// =======================================
-// PLANETARY SIGNAL MONITOR
-// =======================================
+/* 🌍 GLOBAL SIGNAL */
+function updateSignal(){
 
-function planetarySignal(){
+let value=Math.random()*100
 
-let pressure=Math.random()
+document.getElementById("signalFill").style.width=value+"%"
 
-if(pressure>0.8){
-
-console.log("Planetary pressure rising")
-
-}
-
-if(pressure<0.2){
-
-console.log("Planetary stability")
-
+if(value<40){
+document.getElementById("signalText").innerText="Human pressure increasing"
+}else if(value<70){
+document.getElementById("signalText").innerText="System stabilizing"
+}else{
+document.getElementById("signalText").innerText="Choices expanding"
 }
 
 }
 
-setInterval(planetarySignal,10000)
-
-
-// =======================================
-// GLOBAL DECISION HEATMAP
-// =======================================
-
-function generateDecisionMap(problem){
-
-let options=[
-
-"observe situation",
-"gather more information",
-"execute limited action",
-"collaborate with others"
-
-]
-
-return options
-
-}
-
-
-// =======================================
-// CIVILIZATION SIGNAL
-// =======================================
-
-function civilizationSignal(){
-
-let signal=Math.random()
-
-if(signal>0.7){
-
-console.log("Human choice expanding")
-
-}
-
-else{
-
-console.log("Human pressure increasing")
-
-}
-
-}
-
-setInterval(civilizationSignal,15000)
+setInterval(updateSignal,3000)
