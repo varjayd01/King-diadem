@@ -1,181 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>KING DIADEM</title>
+<meta name="viewport" content="width=device-width">
 
 <style>
 
-/* 🌌 GLOBAL */
 body{
 margin:0;
 font-family:Arial;
-background: radial-gradient(circle at center, #0a0f2a, #05070d);
+background:url('/static/hero.jpg') center/cover;
 color:white;
 text-align:center;
-overflow-x:hidden;
 }
 
-/* HERO */
-.hero{
-height:100vh;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-
-background-image: url('/static/hero.jpg');
-background-size: cover;
-background-position: center;
-position:relative;
+/* glass */
+.box{
+background:rgba(0,0,0,0.6);
+padding:20px;
+margin:20px;
+border-radius:15px;
 }
 
-.hero::after{
-content:"";
-position:absolute;
-top:0;
-left:0;
-right:0;
-bottom:0;
-background:rgba(0,0,0,0.65);
-}
-
-.hero-content{
-position:relative;
-z-index:2;
-}
-
-/* TITLE */
-h1{
-font-size:48px;
-margin-bottom:10px;
-
-background: linear-gradient(90deg,#5b7cff,#ff9a3c);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-}
-
-.sub{
-color:#cfd6ff;
-margin-bottom:20px;
-}
-
-/* INPUT */
-input{
-padding:14px;
-width:260px;
-background:#0f132b;
-border:1px solid #2a2f66;
-color:white;
-border-radius:10px;
+/* input */
+input,textarea{
+padding:10px;
 margin:5px;
+border-radius:8px;
+border:none;
+width:80%;
 }
 
+/* button */
 button{
-padding:14px 20px;
+padding:10px;
 background:#5b7cff;
 border:none;
 color:white;
-border-radius:10px;
-cursor:pointer;
-}
-
-/* RESPONSE */
-#response{
-margin-top:20px;
-max-width:500px;
-padding:20px;
-background:#0b0f22;
-border-left:4px solid #5b7cff;
-border-radius:12px;
-margin-left:auto;
-margin-right:auto;
-transition: all 0.4s ease;
-}
-
-/* THINKING */
-#thinking{
-margin-top:10px;
-color:#aaa;
-}
-
-/* COMPASS */
-#compassBox{
-margin-top:20px;
-color:#8aa0ff;
-}
-
-/* QUOTE */
-#quote{
-margin-top:20px;
-font-size:14px;
-color:#aaa;
-white-space:pre-line;
-}
-
-/* SECTION */
-.section{
-padding:60px 20px;
-}
-
-/* CARD */
-.card{
-background:#0b0f22;
-padding:20px;
-margin:10px;
-border-radius:12px;
-display:inline-block;
-width:200px;
-transition:0.3s;
-}
-
-.card:hover{
-transform:translateY(-5px);
+border-radius:8px;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<!-- 🌌 HERO -->
-<div class="hero">
-<div class="hero-content">
+<div class="box">
+
+<img src="/static/logo.png" width="100">
 
 <h1>KING DIADEM</h1>
 
-<p class="sub">
-Planetary Decision Intelligence<br>
-Choice > 0 = Alive
-</p>
-
-<input id="question" placeholder="พิมพ์สิ่งที่คุณกำลังเผชิญอยู่">
+<input id="q" placeholder="ถามสิ่งที่คุณเจอ">
+<br>
 <button onclick="ask()">ASK</button>
 
-<div id="thinking"></div>
-<div id="response"></div>
-
-<!-- 🧭 COMPASS -->
-<div id="compassBox"></div>
-
-<!-- 📿 QUOTE -->
-<div id="quote"></div>
+<div id="res"></div>
 
 </div>
+
+<!-- 📒 SYSTEM -->
+<div class="box">
+
+<h2>📒 Life System</h2>
+
+<textarea id="note"></textarea>
+<button onclick="process()">สรุป</button>
+
+<div id="out"></div>
+
 </div>
 
-<!-- 💰 PRICING -->
-<div class="section">
+<!-- ⚙️ SETTINGS -->
+<div class="box">
 
-<h2>Pricing</h2>
+<h2>⚙️ Persona</h2>
 
-<div class="card">Premium<br>฿279</div>
-<div class="card">Pro<br>฿789</div>
-<div class="card">Sovereign<br>฿1650</div>
+<input id="name" placeholder="ชื่อ">
+<input id="style" placeholder="โทน เช่น สนุก / ลึก">
+
+<button onclick="save()">Save</button>
 
 </div>
 
