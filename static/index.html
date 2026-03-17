@@ -9,69 +9,131 @@
 
 <style>
 
+/* 🌌 GLOBAL */
 body{
 margin:0;
 font-family:Arial;
-background:#05070d;
+background: radial-gradient(circle at center, #0a0f2a, #05070d);
 color:white;
 text-align:center;
+overflow-x:hidden;
 }
 
+/* HERO */
 .hero{
-padding:60px 20px;
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+
+background-image: url('/static/hero.jpg');
+background-size: cover;
+background-position: center;
+position:relative;
 }
 
+.hero::after{
+content:"";
+position:absolute;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:rgba(0,0,0,0.65);
+}
+
+.hero-content{
+position:relative;
+z-index:2;
+}
+
+/* TITLE */
 h1{
-font-size:40px;
+font-size:48px;
+margin-bottom:10px;
+
+background: linear-gradient(90deg,#5b7cff,#ff9a3c);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
 }
 
+.sub{
+color:#cfd6ff;
+margin-bottom:20px;
+}
+
+/* INPUT */
 input{
-padding:12px;
-width:70%;
-max-width:300px;
+padding:14px;
+width:260px;
 background:#0f132b;
 border:1px solid #2a2f66;
 color:white;
-border-radius:8px;
+border-radius:10px;
 margin:5px;
 }
 
 button{
-padding:12px 16px;
+padding:14px 20px;
 background:#5b7cff;
 border:none;
 color:white;
-border-radius:8px;
-margin:5px;
+border-radius:10px;
+cursor:pointer;
 }
 
+/* RESPONSE */
 #response{
 margin-top:20px;
 max-width:500px;
-margin-left:auto;
-margin-right:auto;
-padding:15px;
+padding:20px;
 background:#0b0f22;
 border-left:4px solid #5b7cff;
-border-radius:10px;
+border-radius:12px;
+margin-left:auto;
+margin-right:auto;
+transition: all 0.4s ease;
 }
 
+/* THINKING */
 #thinking{
-color:#aaa;
 margin-top:10px;
+color:#aaa;
 }
 
+/* COMPASS */
+#compassBox{
+margin-top:20px;
+color:#8aa0ff;
+}
+
+/* QUOTE */
+#quote{
+margin-top:20px;
+font-size:14px;
+color:#aaa;
+white-space:pre-line;
+}
+
+/* SECTION */
+.section{
+padding:60px 20px;
+}
+
+/* CARD */
 .card{
 background:#0b0f22;
 padding:20px;
 margin:10px;
-border-radius:10px;
+border-radius:12px;
 display:inline-block;
 width:200px;
+transition:0.3s;
 }
 
-.login{
-margin-top:40px;
+.card:hover{
+transform:translateY(-5px);
 }
 
 </style>
@@ -80,57 +142,42 @@ margin-top:40px;
 
 <body>
 
+<!-- 🌌 HERO -->
 <div class="hero">
+<div class="hero-content">
 
 <h1>KING DIADEM</h1>
 
-<p>AI Strategic Command Center</p>
-
-<p>
-If Choice = 0 → System Failed<br>
-If Choice ≥ 1 → System Alive
+<p class="sub">
+Planetary Decision Intelligence<br>
+Choice > 0 = Alive
 </p>
 
-<input id="question" placeholder="พิมพ์สิ่งที่คุณกำลังเจอ">
+<input id="question" placeholder="พิมพ์สิ่งที่คุณกำลังเผชิญอยู่">
 <button onclick="ask()">ASK</button>
-
-<p style="color:#8aa0ff;">
-คุณไม่ได้หมดทางเลือก แค่ยังไม่เห็นมัน
-</p>
 
 <div id="thinking"></div>
 <div id="response"></div>
 
-</div>
+<!-- 🧭 COMPASS -->
+<div id="compassBox"></div>
 
-<!-- LOGIN -->
-<div class="login">
-
-<h2>Login</h2>
-
-<button onclick="fakeLogin('Google')">Google</button>
-<button onclick="fakeLogin('Facebook')">Facebook</button>
-<button onclick="fakeLogin('Instagram')">Instagram</button>
-
-<p id="loginStatus"></p>
+<!-- 📿 QUOTE -->
+<div id="quote"></div>
 
 </div>
+</div>
 
-<!-- PRICING -->
+<!-- 💰 PRICING -->
+<div class="section">
+
 <h2>Pricing</h2>
 
-<div class="card">Premium ฿279</div>
-<div class="card">Pro ฿789</div>
-<div class="card">Sovereign ฿1650</div>
+<div class="card">Premium<br>฿279</div>
+<div class="card">Pro<br>฿789</div>
+<div class="card">Sovereign<br>฿1650</div>
 
-<!-- CHAT -->
-<h2>Network</h2>
-
-<input id="name" placeholder="name">
-<input id="message" placeholder="message">
-<button onclick="send()">Send</button>
-
-<div id="messages"></div>
+</div>
 
 <script src="/static/app.js"></script>
 
