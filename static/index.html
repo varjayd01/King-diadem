@@ -1,330 +1,200 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<!-- 📱 MOBILE APP FEEL -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
 <title>KING DIADEM</title>
 
 <style>
 
+*{
+box-sizing:border-box;
+}
+
 body{
-background:#050816;
-color:white;
-font-family:Arial,Helvetica,sans-serif;
-text-align:center;
 margin:0;
-padding:0;
+font-family:Arial;
+background:#05070d;
+color:white;
+overflow:hidden;
 }
 
-header{
-padding:40px 20px;
-font-size:32px;
-font-weight:bold;
+/* 🌌 HERO */
+.hero{
+text-align:center;
+padding:80px 20px;
 }
 
-.subtitle{
-color:#9aa4ff;
-margin-bottom:20px;
+h1{
+font-size:48px;
+letter-spacing:2px;
 }
 
-.container{
-max-width:900px;
-margin:auto;
-padding:20px;
+.tag{
+color:#8aa0ff;
+}
+
+.core{
+margin-top:20px;
+color:#cfd6ff;
+max-width:600px;
+margin-left:auto;
+margin-right:auto;
+line-height:1.6;
+}
+
+/* 🧠 INPUT */
+.ask{
+margin-top:40px;
 }
 
 input{
-padding:12px;
-width:60%;
-border:none;
-border-radius:6px;
-margin-right:10px;
+padding:14px;
+width:280px;
+background:#0f132b;
+border:1px solid #2a2f66;
+color:white;
+border-radius:8px;
+transition:0.3s;
+}
+
+/* ✨ focus จากไลล่า */
+input:focus{
+outline:none;
+border-color:#5b7cff;
+box-shadow:0 0 12px rgba(91,124,255,0.4);
 }
 
 button{
-padding:12px 20px;
-border:none;
+padding:14px 20px;
 background:#5b7cff;
+border:none;
 color:white;
-border-radius:6px;
+border-radius:8px;
 cursor:pointer;
+transition:0.2s;
 }
 
 button:hover{
-background:#738fff;
+transform:translateY(-2px);
+background:#7a95ff;
 }
 
-#result{
+/* 💬 RESPONSE (สำคัญ) */
+#response{
 margin-top:30px;
-text-align:left;
+max-width:600px;
+margin-left:auto;
+margin-right:auto;
+padding:20px;
+background:#0b0f22;
+border-radius:12px;
+
+border-left:4px solid #5b7cff; /* ทางเลือก */
+transition:all 0.5s ease;
+
+line-height:1.6;
+font-size:15px;
 }
 
-.option{
-background:#0f1329;
-padding:12px;
-margin:8px 0;
-border-radius:6px;
-}
-
-.section{
-margin-top:50px;
-}
-
-.chatbox{
+/* 🤖 THINKING */
+#thinking{
 margin-top:20px;
+color:#888;
+font-style:italic;
 }
 
-.chatmsg{
-background:#0d1025;
-margin:5px;
-padding:8px;
-border-radius:4px;
+/* 🌌 GALAXY */
+#galaxy{
+display:block;
+margin:30px auto;
+}
+
+/* 🌍 SIGNAL */
+.signal{
+margin-top:30px;
+text-align:center;
+}
+
+.bar{
+width:260px;
+height:8px;
+background:#222;
+margin:auto;
+border-radius:10px;
+overflow:hidden;
+}
+
+.fill{
+height:100%;
+background:#5b7cff;
+width:50%;
+transition:0.5s;
 }
 
 footer{
-margin-top:60px;
-padding:20px;
-font-size:14px;
-color:#aaa;
+margin-top:40px;
+text-align:center;
+font-size:12px;
+color:#666;
 }
 
 </style>
 
 </head>
 
-
 <body>
 
-<header>KING DIADEM</header>
+<div class="hero">
 
-<div class="subtitle">
+<h1>KING DIADEM</h1>
 
-Any system that reduces human choice to zero is a failed system
+<p class="tag">AI Strategic Command Center</p>
+
+<p class="core">
+A system that preserves choice.<br>
+If Choice = 0 → System Failed<br>
+If Choice ≥ 1 → System Alive
+</p>
+
+<div class="ask">
+<input id="question" placeholder="พิมพ์สิ่งที่คุณอยากให้เรามอบทางเลือก">
+<button onclick="ask()">ASK</button>
+</div>
+
+<div id="thinking"></div>
+<div id="response"></div>
 
 </div>
 
+<!-- 🌌 GALAXY -->
+<canvas id="galaxy" width="400" height="400"></canvas>
 
-<div class="container">
+<!-- 🌍 GLOBAL SIGNAL -->
+<div class="signal">
 
-<h2>Strategic Decision Engine</h2>
+<h3>Global Freedom Signal</h3>
 
-<input id="question" placeholder="Ask a strategic question">
-
-<button onclick="askAI()">ASK</button>
-
-<div id="result"></div>
-
+<div class="bar">
+<div class="fill" id="signalFill"></div>
 </div>
 
-
-<div class="container section">
-
-<h2>Planetary Freedom Signal</h2>
-
-<div id="freedom">Loading...</div>
+<p id="signalText">Scanning reality...</p>
 
 </div>
-
-
-<div class="container section">
-
-<h2>Galaxy Decision Network</h2>
-
-<div id="galaxy"></div>
-
-</div>
-
-
-<div class="container section">
-
-<h2>Global Decision Map</h2>
-
-<div id="decisionmap"></div>
-
-</div>
-
-
-<div class="container section">
-
-<h2>Global Decision Network</h2>
-
-<div class="chatbox">
-
-<input id="chatname" placeholder="name">
-
-<input id="chatmsg" placeholder="message">
-
-<button onclick="sendChat()">send</button>
-
-</div>
-
-<div id="chatlog"></div>
-
-</div>
-
 
 <footer>
-
-KING DIADEM Planetary Decision Infrastructure
-
+This system does not ignore life — Human · Animal · Nature
 </footer>
-
-
 
 <script src="/static/app.js"></script>
 
-
-<script>
-
-
-async function askAI(){
-
-const q=document.getElementById("question").value
-
-const res=await fetch("/ask",{
-
-method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({question:q})
-
-})
-
-const data=await res.json()
-
-const result=document.getElementById("result")
-
-result.innerHTML=""
-
-data.options.forEach((o,i)=>{
-
-const div=document.createElement("div")
-
-div.className="option"
-
-div.innerHTML=(i+1)+". "+o
-
-result.appendChild(div)
-
-})
-
-}
-
-
-
-async function loadFreedom(){
-
-const r=await fetch("/freedom")
-
-const d=await r.json()
-
-document.getElementById("freedom").innerHTML=
-
-"Freedom Index: "+d.freedom_index+" ("+d.status+")"
-
-}
-
-
-
-async function loadGalaxy(){
-
-const r=await fetch("/galaxy")
-
-const d=await r.json()
-
-document.getElementById("galaxy").innerHTML=
-
-"Active decision stars: "+d.stars.length
-
-}
-
-
-
-async function loadDecisionMap(){
-
-const r=await fetch("/decision/map")
-
-const d=await r.json()
-
-document.getElementById("decisionmap").innerHTML=
-
-"Decision nodes detected: "+d.nodes.length
-
-}
-
-
-
-async function loadChat(){
-
-const r=await fetch("/world/messages")
-
-const d=await r.json()
-
-const log=document.getElementById("chatlog")
-
-log.innerHTML=""
-
-d.messages.forEach(m=>{
-
-const div=document.createElement("div")
-
-div.className="chatmsg"
-
-div.innerHTML="<b>"+m.user+":</b> "+m.message
-
-log.appendChild(div)
-
-})
-
-}
-
-
-
-async function sendChat(){
-
-const name=document.getElementById("chatname").value
-
-const msg=document.getElementById("chatmsg").value
-
-await fetch("/world/chat",{
-
-method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-user:name,
-
-message:msg
-
-})
-
-})
-
-loadChat()
-
-}
-
-
-
-window.onload=function(){
-
-loadFreedom()
-
-loadGalaxy()
-
-loadDecisionMap()
-
-loadChat()
-
-}
-
-</script>
-
 </body>
+
 </html>
