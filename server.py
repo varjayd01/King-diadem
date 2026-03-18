@@ -1,171 +1,132 @@
-import os
+import random
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-
-# serve static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # -------------------------
-# 🧠 MEMORY (ง่ายๆก่อน)
+# MEMORY (persona)
 # -------------------------
-chat_memory = []
+user_profiles = {}
 
 # -------------------------
-# ⚠️ CRISIS DETECTION
+# CRISIS
 # -------------------------
-CRISIS_WORDS = [
-    "ตาย", "ฆ่าตัวตาย", "ไม่ไหว", "หมดทาง",
-    "ป่วย", "หิว", "ไม่มีเงิน", "ช่วยด้วย"
-]
+CRISIS_WORDS = ["ตาย","ไม่ไหว","หมดทาง","ป่วย","หิว","ไม่มีเงิน"]
 
 def is_crisis(text):
-    return any(word in text for word in CRISIS_WORDS)
+    return any(w in text for w in CRISIS_WORDS)
 
 # -------------------------
-# 🧠 MODE DETECTION
+# MODE
 # -------------------------
 def detect_mode(text):
-    text = text.lower()
-
-    if "ไลล่า" in text or "altair" in text or "เวก้า" in text:
+    if "ไลล่า" in text or "altair" in text:
         return "COUNCIL"
-
+    if "expert" in text:
+        return "EXPERT"
     if is_crisis(text):
         return "LYLA"
-
     return "NORMAL"
 
 # -------------------------
-# 🧭 COMPASS ENGINE
+# COMPASS
 # -------------------------
-import random
-
-def generate_direction():
-    dirs = ["เหนือ", "ใต้", "ตะวันออก", "ตะวันตก"]
-    d = random.choice(dirs)
-    meters = random.randint(50, 500)
-
-    return f"🧭 เดินไปทาง{d}ประมาณ {meters} เมตร เพื่อหาทางเลือกที่ดีกว่า"
+def compass():
+    d=random.choice(["เหนือ","ใต้","ตะวันออก","ตะวันตก"])
+    m=random.randint(50,300)
+    return f"🧭 ไปทาง{d} {m} เมตร"
 
 # -------------------------
-# 🌿 LYLA MODE (ช่วยชีวิต)
+# MODES
 # -------------------------
-def lyla_response(q):
-
-    if "ป่วย" in q:
-        action = "ลองไปหาร้านยาใกล้ตัว หรือคลินิกที่เปิดอยู่ก่อนนะคะ"
-    elif "หิว" in q:
-        action = "ลองหาร้านข้าวราคาถูก หรือร้านสะดวกซื้อใกล้ตัวก่อนนะคะ"
-    elif "ไม่มีเงิน" in q:
-        action = "ลองหางานเล็กๆระยะสั้น หรือขอความช่วยเหลือจากคนใกล้ตัวก่อนนะคะ"
-    else:
-        action = "ลองไปอยู่ในที่ที่ปลอดภัยและมีคน เช่น ร้านสะดวกซื้อ หรือพื้นที่สาธารณะก่อนนะคะ"
-
+def normal(q):
     return f"""
-ตอนนี้พี่ยังอยู่ตรงนี้นะคะ
+คิดก่อนทำ:
 
-ไม่ต้องรีบแก้ทุกอย่างทีเดียว
+- เก็บข้อมูล
+- อย่าตัดสินใจเร็ว
+- รักษาทางเลือกไว้
+
+{compass()}
+"""
+
+def lyla(q):
+    return f"""
+พี่อยู่ตรงนี้นะ
+
 เอาแค่ก้าวต่อไปก่อน
 
-👉 {action}
+ลองไปในที่มีคน เช่น ร้านสะดวกซื้อ
 
-{generate_direction()}
+{compass()}
 """
 
-# -------------------------
-# ⚔️ COUNCIL MODE (3 ทางเลือก)
-# -------------------------
-def council_response(q):
-
-    king = f"👑 King: มองความจริงก่อน แล้วเลือกทางที่ยังเดินต่อได้"
-    lyla = f"🌿 Lyla: เลือกทางที่ทำให้คุณยังปลอดภัย และมีลมหายใจต่อ"
-    altair = f"✨ Altair: ลองมองอีกมุม อาจมีทางที่คุณยังไม่เห็น"
-
-    direction = generate_direction()
-
+def council(q):
     return f"""
-⚔️ COUNCIL ACTIVE
+⚔️ COUNCIL
 
-คุณมี 3 ทางเลือก:
+1 👑 มองความจริง
+2 🌿 รักษาชีวิต
+3 ✨ มองอีกมุม
 
-1️⃣ {king}
-
-2️⃣ {lyla}
-
-3️⃣ {altair}
-
-ไม่ว่าคุณจะเลือกทางไหน
-สิ่งสำคัญคือ “ยังมีทางให้เดินต่อ”
-
-{direction}
+{compass()}
 """
 
-# -------------------------
-# 👑 NORMAL MODE
-# -------------------------
-def normal_response(q):
-
+def expert(q):
     return f"""
-Strategic Response:
+🧠 EXPERT MODE
 
-- Gather more information
-- Avoid irreversible decisions
-- Keep at least one safe option
+วิเคราะห์เชิงลึก:
 
-{generate_direction()}
+- Root Cause
+- Risk Layer
+- Hidden cost
+
+ข้อสรุป:
+อย่าตัดสินใจจากอารมณ์
+
+{compass()}
 """
 
 # -------------------------
-# 🧠 MAIN AI ENDPOINT
+# ASK
 # -------------------------
 @app.post("/ask")
-async def ask(request: Request):
+async def ask(req:Request):
 
-    data = await request.json()
-    question = data.get("question", "")
+    data=await req.json()
+    q=data.get("question","")
+    user=data.get("user","default")
 
-    mode = detect_mode(question)
+    mode=detect_mode(q)
 
-    if mode == "LYLA":
-        answer = lyla_response(question)
-
-    elif mode == "COUNCIL":
-        answer = council_response(question)
-
+    if mode=="LYLA":
+        ans=lyla(q)
+    elif mode=="COUNCIL":
+        ans=council(q)
+    elif mode=="EXPERT":
+        ans=expert(q)
     else:
-        answer = normal_response(question)
+        ans=normal(q)
 
-    chat_memory.append({
-        "q": question,
-        "mode": mode
-    })
-
-    return JSONResponse({"answer": answer})
+    return JSONResponse({"answer":ans})
 
 # -------------------------
-# 🌍 CHAT
+# SAVE PERSONA
 # -------------------------
-@app.post("/chat")
-async def chat(request: Request):
-
-    data = await request.json()
-    name = data.get("name")
-    message = data.get("message")
-
-    chat_memory.append({
-        "name": name,
-        "message": message
-    })
-
-    return JSONResponse({"status": "ok"})
+@app.post("/save_profile")
+async def save_profile(req:Request):
+    data=await req.json()
+    user_profiles["me"]=data
+    return {"status":"saved"}
 
 # -------------------------
-# 🏠 ROOT
+# ROOT
 # -------------------------
 @app.get("/")
 async def root():
-    with open("static/index.html", "r", encoding="utf-8") as f:
+    with open("static/index.html","r",encoding="utf-8") as f:
         return HTMLResponse(f.read())
