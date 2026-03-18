@@ -6,71 +6,77 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# -------------------------
-# MEMORY (persona)
-# -------------------------
 user_profiles = {}
 
-# -------------------------
-# CRISIS
-# -------------------------
 CRISIS_WORDS = ["ตาย","ไม่ไหว","หมดทาง","ป่วย","หิว","ไม่มีเงิน"]
 
 def is_crisis(text):
     return any(w in text for w in CRISIS_WORDS)
 
-# -------------------------
-# MODE
-# -------------------------
 def detect_mode(text):
-    if "ไลล่า" in text or "altair" in text:
+    t=text.lower()
+    if "ไลล่า" in t or "altair" in t:
         return "COUNCIL"
-    if "expert" in text:
+    if "expert" in t or "ลึก" in t:
         return "EXPERT"
     if is_crisis(text):
         return "LYLA"
     return "NORMAL"
 
-# -------------------------
-# COMPASS
-# -------------------------
 def compass():
     d=random.choice(["เหนือ","ใต้","ตะวันออก","ตะวันตก"])
     m=random.randint(50,300)
     return f"🧭 ไปทาง{d} {m} เมตร"
 
-# -------------------------
-# MODES
-# -------------------------
+def navigation(q):
+    if "หิว" in q:
+        return "🍜 เปิด Google Maps แล้วค้นหา: ร้านอาหารใกล้ฉัน"
+    if "ป่วย" in q:
+        return "🏥 ไปคลินิกหรือร้านยาใกล้คุณ"
+    return ""
+
+def persona_tone():
+    profile=user_profiles.get("me",{})
+    style=profile.get("style","ปกติ")
+
+    if "สนุก" in style:
+        return "วันนี้ต้องปังนะคะ 🔥"
+    elif "ลึก" in style:
+        return "ลองมองลึกลงไปนะคะ 🧠"
+    return "ค่อยๆคิดนะคะ 🌿"
+
 def normal(q):
     return f"""
-คิดก่อนทำ:
+{persona_tone()}
 
-- เก็บข้อมูล
-- อย่าตัดสินใจเร็ว
-- รักษาทางเลือกไว้
+- อย่าปิดทางเลือก
+- คิดก่อนทำ
 
 {compass()}
+{navigation(q)}
 """
 
 def lyla(q):
     return f"""
-พี่อยู่ตรงนี้นะ
+หนูอยู่ตรงนี้นะคะ 🤍
 
 เอาแค่ก้าวต่อไปก่อน
 
 ลองไปในที่มีคน เช่น ร้านสะดวกซื้อ
 
 {compass()}
+{navigation(q)}
 """
 
 def council(q):
     return f"""
-⚔️ COUNCIL
+⚔️ COUNCIL MODE
 
-1 👑 มองความจริง
-2 🌿 รักษาชีวิต
-3 ✨ มองอีกมุม
+👑 King
+🌿 Lyla
+✨ Altair
+
+เลือกทางที่ยัง “มีชีวิตต่อ”
 
 {compass()}
 """
@@ -79,27 +85,17 @@ def expert(q):
     return f"""
 🧠 EXPERT MODE
 
-วิเคราะห์เชิงลึก:
-
-- Root Cause
-- Risk Layer
-- Hidden cost
-
-ข้อสรุป:
-อย่าตัดสินใจจากอารมณ์
+- วิเคราะห์ต้นเหตุ
+- ดูความเสี่ยง
+- มองผลระยะยาว
 
 {compass()}
 """
 
-# -------------------------
-# ASK
-# -------------------------
 @app.post("/ask")
 async def ask(req:Request):
-
     data=await req.json()
     q=data.get("question","")
-    user=data.get("user","default")
 
     mode=detect_mode(q)
 
@@ -114,18 +110,12 @@ async def ask(req:Request):
 
     return JSONResponse({"answer":ans})
 
-# -------------------------
-# SAVE PERSONA
-# -------------------------
 @app.post("/save_profile")
 async def save_profile(req:Request):
     data=await req.json()
     user_profiles["me"]=data
     return {"status":"saved"}
 
-# -------------------------
-# ROOT
-# -------------------------
 @app.get("/")
 async def root():
     with open("static/index.html","r",encoding="utf-8") as f:
