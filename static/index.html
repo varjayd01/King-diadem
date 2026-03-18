@@ -4,7 +4,6 @@
 <meta name="viewport" content="width=device-width">
 
 <style>
-
 body{
 margin:0;
 font-family:Arial;
@@ -13,15 +12,13 @@ color:white;
 text-align:center;
 }
 
-/* glass */
 .box{
-background:rgba(0,0,0,0.6);
+background:rgba(0,0,0,0.65);
 padding:20px;
 margin:20px;
 border-radius:15px;
 }
 
-/* input */
 input,textarea{
 padding:10px;
 margin:5px;
@@ -30,15 +27,14 @@ border:none;
 width:80%;
 }
 
-/* button */
 button{
 padding:10px;
 background:#5b7cff;
 border:none;
 color:white;
 border-radius:8px;
+margin:5px;
 }
-
 </style>
 </head>
 
@@ -50,7 +46,7 @@ border-radius:8px;
 
 <h1>KING DIADEM</h1>
 
-<input id="q" placeholder="ถามสิ่งที่คุณเจอ">
+<input id="q" placeholder="พิมพ์สิ่งที่คุณกำลังเจอ">
 <br>
 <button onclick="ask()">ASK</button>
 
@@ -58,27 +54,30 @@ border-radius:8px;
 
 </div>
 
-<!-- 📒 SYSTEM -->
 <div class="box">
-
 <h2>📒 Life System</h2>
 
 <textarea id="note"></textarea>
+<br>
 <button onclick="process()">สรุป</button>
 
 <div id="out"></div>
-
 </div>
 
-<!-- ⚙️ SETTINGS -->
 <div class="box">
-
 <h2>⚙️ Persona</h2>
 
 <input id="name" placeholder="ชื่อ">
 <input id="style" placeholder="โทน เช่น สนุก / ลึก">
 
 <button onclick="save()">Save</button>
+</div>
+
+<div class="box">
+<h2>🎮 Mind Game</h2>
+
+<div id="game"></div>
+<button onclick="startGame()">Start</button>
 
 </div>
 
