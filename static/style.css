@@ -1,48 +1,121 @@
-body{
-  background:#0b0f1a;
-  color:white;
-  font-family:sans-serif;
-  text-align:center;
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.box{
-  max-width:400px;
-  margin:auto;
-  padding:20px;
-}
-
-.logo{
-  width:70px;
-}
-
-input{
-  width:90%;
-  padding:10px;
-  margin:5px;
-  border-radius:8px;
-  border:none;
-}
-
-button{
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:linear-gradient(45deg,#5b9cff,#8f7bff);
-  color:white;
-}
-
-#chat{
-  max-height:150px;
-  overflow:auto;
-  text-align:left;
-}
+/* BODY */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    
-    background: url("/static/hero.png") no-repeat center center fixed;
-    background-size: cover;
-    
-    color: white;
+  font-family: sans-serif;
+  background: radial-gradient(circle at center, #0a0f1f, #000);
+  overflow-x: hidden;
+  color: white;
+}
+
+/* 🔥 BACKGROUND ANIMATION (ลื่นจริง) */
+body::before {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: url("/static/bg.png") no-repeat center/cover;
+  opacity: 0.25;
+  animation: rotateBG 60s linear infinite;
+  z-index: -1;
+  transform: translateZ(0);
+}
+
+@keyframes rotateBG {
+  from {
+    transform: rotate(0deg) scale(1.2);
+  }
+  to {
+    transform: rotate(360deg) scale(1.2);
+  }
+}
+
+/* CONTAINER */
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+/* LOGO */
+.logo {
+  width: 80px;
+  margin-bottom: 10px;
+}
+
+/* TITLE */
+h1 {
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+/* INPUT */
+.input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+/* BUTTON */
+.btn {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+/* DASHBOARD */
+.dashboard {
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: gold;
+  border: none;
+  cursor: pointer;
+}
+
+/* ✨ FADE IN */
+.container * {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 480px) {
+  .container {
+    width: 90%;
+  }
 }
