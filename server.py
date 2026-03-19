@@ -9,7 +9,7 @@ import json, os, uuid
 
 app = FastAPI()
 
-# ------------------- CORS (สำคัญมาก) -------------------
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,120 +18,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ------------------- STATIC -------------------
+# ---------------- STATIC ----------------
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ------------------- MEMORY -------------------
-user_profile = {}
-group_chat = []
+# ---------------- MEMORY ----------------
+user_profiles = {}
+chat_sessions = {}
 
-# chat sessions (เหมือน ChatGPT)
-chat_sessions = {}  # {chat_id: [ {q,a} ]}
+# ---------------- UTILS ----------------
+def path(chat_id):
+    return f"data/{chat_id}.json"
 
-# ------------------- UTILS -------------------
-def load_logs(chat_id):
-    path = f"data/{chat_id}.json"
-    if not os.path.exists(path):
+def load(chat_id):
+    if not os.path.exists(path(chat_id)):
         return []
-    with open(path, "r") as f:
+    with open(path(chat_id), "r") as f:
         return json.load(f)
 
-def save_logs(chat_id, logs):
+def save(chat_id, logs):
     os.makedirs("data", exist_ok=True)
-    path = f"data/{chat_id}.json"
-    with open(path, "w") as f:
+    with open(path(chat_id), "w") as f:
         json.dump(logs, f)
 
-# ------------------- NEW CHAT -------------------
+# ---------------- NEW CHAT ----------------
 @app.post("/new_chat")
 async def new_chat():
     chat_id = str(uuid.uuid4())
     chat_sessions[chat_id] = []
     return {"chat_id": chat_id}
 
-# ------------------- AI CHAT -------------------
+# ---------------- CHAT ----------------
 @app.post("/ask")
 async def ask(req: Request):
-    try:
-        data = await req.json()
-        q = data.get("question", "")
-        chat_id = data.get("chat_id")
+    data = await req.json()
 
-        if not chat_id:
-            return JSONResponse({"error": "chat_id required"}, status_code=400)
+    q = data.get("question", "")
+    chat_id = data.get("chat_id")
 
-        ans = decision_engine(q, user_profile)
+    if not chat_id:
+        return JSONResponse({"error": "no chat_id"}, status_code=400)
 
-        logs = load_logs(chat_id)
-        logs.append({"q": q, "a": ans})
-        save_logs(chat_id, logs)
+    ans = decision_engine(q, user_profiles.get(chat_id, {}))
 
-        return JSONResponse({
-            "answer": ans,
-            "chat_id": chat_id,
-            "length": len(logs)
-        })
+    logs = load(chat_id)
+    logs.append({"q": q, "a": ans})
+    save(chat_id, logs)
 
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+    return {"answer": ans}
 
-# ------------------- GET CHAT HISTORY -------------------
+# ---------------- HISTORY ----------------
 @app.get("/chat/{chat_id}")
-async def get_chat(chat_id: str):
-    logs = load_logs(chat_id)
-    return {"messages": logs}
+async def history(chat_id: str):
+    return {"messages": load(chat_id)}
 
-# ------------------- PERSONA -------------------
-@app.post("/save_profile")
-async def save(req: Request):
-    data = await req.json()
-    user_profile.update(data)
-    return {"status": "ok", "profile": user_profile}
-
-# ------------------- GROUP CHAT -------------------
-@app.post("/group_send")
-async def group_send(req: Request):
-    data = await req.json()
-    msg = data.get("msg", "")
-
-    emo = detect_emotion(msg)
-
-    group_chat.append({
-        "msg": msg,
-        "emotion": emo,
-        "type": "user"
-    })
-
-    # auto AI assist
-    if emo == "crisis":
-        ai = decision_engine(msg, {})
-        group_chat.append({
-            "msg": ai,
-            "emotion": "ai",
-            "type": "ai"
-        })
-
-    return {"status": "ok"}
-
-@app.get("/group_get")
-async def group_get():
-    return {"messages": group_chat[-50:]}
-
-# ------------------- DASHBOARD -------------------
-@app.get("/dashboard")
-async def dash():
-    try:
-        files = os.listdir("data")
-        total = len(files)
-    except:
-        total = 0
-
-    return {
-        "total_chats": total,
-        "system": "KING DIADEM ACTIVE"
-    }
-
-# ------------------- HOME -------------------
+# ---------------- HOME ----------------
 @app.get("/")
 async def root():
     with open("static/index.html", encoding="utf-8") as f:
