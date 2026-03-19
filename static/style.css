@@ -37,3 +37,12 @@ button{
   overflow:auto;
   text-align:left;
 }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    
+    background: url("/static/hero.png") no-repeat center center fixed;
+    background-size: cover;
+    
+    color: white;
+}
