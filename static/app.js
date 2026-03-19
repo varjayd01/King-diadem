@@ -1,65 +1,116 @@
-async function ask(){
-    let q = document.getElementById("q").value
+let chat_id = null
+let chats = []
 
-    let r = await fetch("/ask", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({question:q})
-    })
+// ---------------- INIT ----------------
+window.onload = async () => {
+    chats = JSON.parse(localStorage.getItem("chats") || "[]")
 
-    let d = await r.json()
-    document.getElementById("ans").innerText = d.answer
+    if (chats.length === 0) {
+        await createChat()
+    } else {
+        chat_id = chats[0]
+        loadHistory()
+    }
+
+    renderChatList()
 }
 
-async function save(){
-    let name = document.getElementById("name").value
-    let tone = document.getElementById("tone").value
+// ---------------- CREATE CHAT ----------------
+async function createChat() {
+    const res = await fetch('/new_chat', { method: 'POST' })
+    const data = await res.json()
 
-    await fetch("/save_profile", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({name, tone})
-    })
+    chat_id = data.chat_id
 
-    alert("saved")
+    chats.unshift(chat_id)
+    localStorage.setItem("chats", JSON.stringify(chats))
+
+    document.getElementById("chatBox").innerHTML = ""
+
+    renderChatList()
 }
 
-async function send(){
-    let msg = document.getElementById("g").value
-
-    await fetch("/group_send", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({msg})
-    })
-
-    load()
+// ---------------- SWITCH CHAT ----------------
+function switchChat(id) {
+    chat_id = id
+    loadHistory()
 }
 
-async function load(){
-    let r = await fetch("/group_get")
-    let d = await r.json()
+// ---------------- RENDER SIDEBAR ----------------
+function renderChatList() {
+    const list = document.getElementById("chatList")
+    list.innerHTML = ""
 
-    let box = document.getElementById("chat")
+    chats.forEach(id => {
+        const div = document.createElement("div")
+        div.innerText = "Chat " + id.slice(0, 4)
+        div.onclick = () => switchChat(id)
+        list.appendChild(div)
+    })
+}
+
+// ---------------- LOAD HISTORY ----------------
+async function loadHistory() {
+    const res = await fetch(`/chat/${chat_id}`)
+    const data = await res.json()
+
+    const box = document.getElementById("chatBox")
     box.innerHTML = ""
 
-    d.messages.forEach(m=>{
-        let p = document.createElement("p")
-
-        if(m.emotion=="crisis") p.style.color="red"
-        if(m.emotion=="low") p.style.color="orange"
-
-        p.innerText = m.msg
-        box.appendChild(p)
+    data.messages.forEach(m => {
+        addMessage("user", m.q)
+        addMessage("ai", m.a)
     })
 }
 
-setInterval(load, 3000)
+// ---------------- SEND ----------------
+async function send() {
+    const input = document.getElementById("input")
+    const text = input.value
 
-async function dash(){
-    let r = await fetch("/dashboard")
-    let d = await r.json()
+    if (!text) return
 
-    document.getElementById("dash").innerText =
-        JSON.stringify(d, null, 2)
+    addMessage("user", text)
+
+    const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            question: text,
+            chat_id: chat_id
+        })
+    })
+
+    const data = await res.json()
+
+    addMessage("ai", data.answer)
+
+    input.value = ""
 }
+
+// ---------------- 120FPS RENDER ----------------
+let queue = []
+
+function addMessage(role, text) {
+    queue.push({ role, text })
+}
+
+function loop() {
+    const box = document.getElementById("chatBox")
+
+    while (queue.length > 0) {
+        const { role, text } = queue.shift()
+
+        const div = document.createElement("div")
+        div.className = role
+        div.innerText = text
+
+        box.appendChild(div)
+    }
+
+    box.scrollTop = box.scrollHeight
+
+    requestAnimationFrame(loop)
+}
+
+loop()
