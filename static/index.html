@@ -1,42 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King Diadem</title>
-
-    <link rel="stylesheet" href="/static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
-<div class="container">
+<div class="app">
 
-    <img src="/static/logo.png" class="logo">
+    <div class="sidebar">
+        <button onclick="createChat()">+ New Chat</button>
+        <div id="chatList"></div>
+    </div>
 
-    <h1>KING DIADEM</h1>
+    <div class="main">
 
-    <!-- ASK -->
-    <input type="text" placeholder="พิมพ์ถามได้เลย..." class="input">
-    <button class="btn">ASK</button>
+        <div id="chatBox"></div>
 
-    <hr>
+        <div class="inputArea">
+            <input id="input" placeholder="พิมพ์..." />
+            <button onclick="send()">Send</button>
+        </div>
 
-    <!-- GROUP -->
-    <input type="text" placeholder="รายงาน..." class="input">
-    <button class="btn">Send</button>
-
-    <hr>
-
-    <!-- PERSONA -->
-    <input type="text" placeholder="ชื่อ" class="input">
-    <input type="text" placeholder="โทน" class="input">
-    <button class="btn">Save</button>
-
-    <hr>
-
-    <button class="dashboard">📊 Dashboard</button>
+    </div>
 
 </div>
 
+<script src="/static/app.js"></script>
 </body>
 </html>
