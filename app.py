@@ -1,23 +1,26 @@
-def decision_engine(user_input, persona):
-    if not user_input:
-        return "พิมพ์ก่อนค่ะ"
+def decision_engine(q, profile):
 
-    style = persona.get("style", "normal")
+    tone = profile.get("tone", "normal")
 
-    if style == "fun":
-        return f"✨ วันนี้ต้องปังนะคะ: {user_input}"
+    if "เครียด" in q or "เงิน" in q:
+        return "หนูอยู่ตรงนี้นะคะ ค่อยๆแก้ไปทีละขั้น พี่ยังมีทางเลือกเสมอค่ะ ❤️"
 
-    elif style == "deep":
-        return f"""
-🧠 โหมดผู้เชี่ยวชาญ
+    if tone == "fun":
+        return "วันนี้ต้องปังนะ! 🔥✨ " + q
 
-- วิเคราะห์: {user_input}
-- มองระยะยาว
-- ลดความเสี่ยง
-- เลือกทางที่รอด
+    return f"🧠 วิเคราะห์: {q}"
 
-สรุป: เลือกสิ่งที่ “ไม่พังก่อน”
+# 📊 วิเคราะห์ระบบ
+def analyze_system(logs):
+
+    total = len(logs)
+
+    return f"""
+📊 SYSTEM
+
+Total Decisions: {total}
+
+📌 Insight:
+ผู้ใช้กำลังใช้ระบบต่อเนื่อง
+ควรเพิ่มความแม่นยำเฉพาะบุคคล
 """
-
-    else:
-        return f"📌 ระบบคิดว่า: {user_input}"
