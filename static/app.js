@@ -1,15 +1,14 @@
 async function ask(){
     let q = document.getElementById("q").value
 
-    let res = await fetch("/ask", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
+    let r = await fetch("/ask", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
         body: JSON.stringify({question:q})
     })
 
-    let data = await res.json()
-
-    document.getElementById("ans").innerText = data.answer
+    let d = await r.json()
+    document.getElementById("ans").innerText = d.answer
 }
 
 async function save(){
@@ -22,19 +21,11 @@ async function save(){
         body: JSON.stringify({name, tone})
     })
 
-    alert("Saved")
+    alert("saved")
 }
 
-async function loadDash(){
-    let res = await fetch("/dashboard")
-    let data = await res.json()
-
-    document.getElementById("dash").innerText =
-        JSON.stringify(data, null, 2)
-}
-
-async function sendGroup(){
-    let msg = document.getElementById("gmsg").value
+async function send(){
+    let msg = document.getElementById("g").value
 
     await fetch("/group_send", {
         method:"POST",
@@ -42,22 +33,33 @@ async function sendGroup(){
         body: JSON.stringify({msg})
     })
 
-    loadGroup()
+    load()
 }
 
-async function loadGroup(){
-    let res = await fetch("/group_get")
-    let data = await res.json()
+async function load(){
+    let r = await fetch("/group_get")
+    let d = await r.json()
 
-    let box = document.getElementById("groupBox")
-
+    let box = document.getElementById("chat")
     box.innerHTML = ""
 
-    data.messages.forEach(m=>{
+    d.messages.forEach(m=>{
         let p = document.createElement("p")
-        p.innerText = m
+
+        if(m.emotion=="crisis") p.style.color="red"
+        if(m.emotion=="low") p.style.color="orange"
+
+        p.innerText = m.msg
         box.appendChild(p)
     })
 }
 
-setInterval(loadGroup, 3000)
+setInterval(load, 3000)
+
+async function dash(){
+    let r = await fetch("/dashboard")
+    let d = await r.json()
+
+    document.getElementById("dash").innerText =
+        JSON.stringify(d, null, 2)
+}
