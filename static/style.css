@@ -1,41 +1,39 @@
-body {
-  background: radial-gradient(circle, #0a0f1f, #000);
-  color: white;
-  font-family: sans-serif;
-  text-align: center;
+body{
+  background:#0b0f1a;
+  color:white;
+  font-family:sans-serif;
+  text-align:center;
 }
 
-.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 20px;
+.box{
+  max-width:400px;
+  margin:auto;
+  padding:20px;
 }
 
-.logo {
-  width: 80px;
+.logo{
+  width:70px;
 }
 
-.card {
-  background: #1c2233;
-  padding: 15px;
-  margin: 15px 0;
-  border-radius: 10px;
+input{
+  width:90%;
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
+  border:none;
 }
 
-.emergency {
-  border: 2px solid red;
+button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:linear-gradient(45deg,#5b9cff,#8f7bff);
+  color:white;
 }
 
-input {
-  width: 80%;
-  padding: 10px;
-  margin: 5px;
-}
-
-button {
-  padding: 10px;
-  background: #3b82f6;
-  border: none;
-  color: white;
-  border-radius: 5px;
+#chat{
+  max-height:150px;
+  overflow:auto;
+  text-align:left;
 }
