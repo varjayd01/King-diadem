@@ -1,26 +1,26 @@
+def detect_emotion(q):
+
+    if any(w in q for w in ["ไม่ไหว","พัง","หมดทาง","อยากตาย"]):
+        return "crisis"
+
+    if any(w in q for w in ["เครียด","เหนื่อย","ท้อ"]):
+        return "low"
+
+    return "normal"
+
+
 def decision_engine(q, profile):
 
     tone = profile.get("tone", "normal")
+    emo = detect_emotion(q)
 
-    if "เครียด" in q or "เงิน" in q:
-        return "หนูอยู่ตรงนี้นะคะ ค่อยๆแก้ไปทีละขั้น พี่ยังมีทางเลือกเสมอค่ะ ❤️"
+    if emo == "crisis":
+        return "หนูอยู่ตรงนี้นะคะ ❤️ ค่อยๆหายใจ พี่ยังมีทางเลือก หนูช่วยคิดให้ค่ะ"
+
+    if emo == "low":
+        return "เหนื่อยได้ค่ะ แต่พี่ยังไปต่อได้นะ เดี๋ยวหนูช่วยวางทาง 💙"
 
     if tone == "fun":
-        return "วันนี้ต้องปังนะ! 🔥✨ " + q
+        return "วันนี้ต้องปังนะ 🔥 " + q
 
     return f"🧠 วิเคราะห์: {q}"
-
-# 📊 วิเคราะห์ระบบ
-def analyze_system(logs):
-
-    total = len(logs)
-
-    return f"""
-📊 SYSTEM
-
-Total Decisions: {total}
-
-📌 Insight:
-ผู้ใช้กำลังใช้ระบบต่อเนื่อง
-ควรเพิ่มความแม่นยำเฉพาะบุคคล
-"""
