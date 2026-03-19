@@ -1,44 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>KING DIADEM</title>
-<link rel="stylesheet" href="/static/style.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King Diadem</title>
 
+    <link rel="stylesheet" href="/static/style.css">
+</head>
 <body>
 
-<div class="box">
+<div class="container">
 
-<img src="/static/logo.png" class="logo">
-<h2>KING DIADEM</h2>
+    <img src="/static/logo.png" class="logo">
 
-<input id="q" placeholder="พิมพ์ตอนนี้เลย..." />
-<button onclick="ask()">ASK</button>
-<p id="ans"></p>
+    <h1>KING DIADEM</h1>
 
-<hr>
+    <!-- ASK -->
+    <input type="text" placeholder="พิมพ์ถามได้เลย..." class="input">
+    <button class="btn">ASK</button>
 
-<h3>🌍 Group</h3>
-<input id="g" placeholder="ระบาย..." />
-<button onclick="send()">Send</button>
+    <hr>
 
-<div id="chat"></div>
+    <!-- GROUP -->
+    <input type="text" placeholder="รายงาน..." class="input">
+    <button class="btn">Send</button>
 
-<hr>
+    <hr>
 
-<h3>⚙️ Persona</h3>
-<input id="name" placeholder="ชื่อ">
-<input id="tone" placeholder="โทน">
-<button onclick="save()">Save</button>
+    <!-- PERSONA -->
+    <input type="text" placeholder="ชื่อ" class="input">
+    <input type="text" placeholder="โทน" class="input">
+    <button class="btn">Save</button>
 
-<hr>
+    <hr>
 
-<button onclick="dash()">📊 Dashboard</button>
-<pre id="dash"></pre>
+    <button class="dashboard">📊 Dashboard</button>
 
 </div>
 
-<script src="/static/app.js"></script>
 </body>
 </html>
