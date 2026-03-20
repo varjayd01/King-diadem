@@ -3,6 +3,12 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 import uuid, os, json
+import google.generativeai as genai
+
+# 🔑 ใส่ API KEY ตรงนี้
+genai.configure(api_key="YOUR_GEMINI_API_KEY")
+
+model = genai.GenerativeModel("gemini-pro")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -46,7 +52,11 @@ async def ask(req: Request):
     chat_id = data["chat_id"]
     q = data["question"]
 
-    ans = f"AI: {q}"
+    try:
+        response = model.generate_content(q)
+        ans = response.text
+    except:
+        ans = "AI error"
 
     logs = load(chat_id)
     logs.append({"q": q, "a": ans})
