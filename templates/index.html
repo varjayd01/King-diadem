@@ -1,58 +1,18 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>KING DIADEM</title>
-
-<link rel="stylesheet" href="/static/style.css">
+  <title>King AI</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
-<div class="app">
 
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-title">KING DIADEM</div>
-      <div class="brand-sub">Choice-preserving AI</div>
-    </div>
+<div id="chat"></div>
 
-    <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
-
-    <div class="sidebar-section">
-      <div class="section-label">Chats</div>
-      <div id="chatList" class="chat-list"></div>
-    </div>
-  </aside>
-
-  <main class="main">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="eyebrow">DriftZero • Governance-first</div>
-        <h1 id="chatTitle">New Chat</h1>
-      </div>
-
-      <div class="topbar-right">
-        <div class="status-dot"></div>
-        <div class="status-text">Long-press a message to reveal time</div>
-      </div>
-    </header>
-
-    <section id="chatBox" class="chat-box" aria-live="polite"></section>
-
-    <div id="typing" class="typing hidden">
-      <span></span><span></span><span></span>
-    </div>
-
-    <footer class="composer">
-      <textarea id="input" rows="1" placeholder="พิมพ์ข้อความ..." autocomplete="off"></textarea>
-      <button id="sendBtn" class="send-btn">Send</button>
-    </footer>
-  </main>
-
+<div class="input-bar">
+  <input id="input" placeholder="พิมพ์..." />
+  <button onclick="send()">Send</button>
 </div>
 
-<script src="/static/app.js?v=8"></script>
+<script src="/static/app.js"></script>
 </body>
 </html>
