@@ -47,24 +47,42 @@ def save(chat_id, data):
         json.dump(data, f)
 
 # =========================
-# 🧠 FALLBACK ENGINE
+# 🧠 INTENT ENGINE
 # =========================
-def fallback_engine(q):
+def intent_engine(q):
     q = q.lower()
 
-    if "สวัสดี" in q:
-        return "สวัสดีครับ 👑 ระบบยังออนไลน์ (Fallback Mode)"
+    if any(x in q for x in ["ไม่มีทางเลือก", "จน", "แย่", "ล้ม", "หมดทาง"]):
+        return "SURVIVAL"
 
-    if "ใคร" in q:
-        return "ผมคือ KING DIADEM — ระบบตัดสินใจ ไม่ใช่แค่ AI"
+    if any(x in q for x in ["ทำยังไง", "ควร", "แนะนำ"]):
+        return "DECISION"
 
-    if "ช่วย" in q:
-        return "ตอนนี้ AI อาจมีปัญหา แต่ระบบยังช่วยวิเคราะห์พื้นฐานได้"
+    if any(x in q for x in ["คืออะไร", "อธิบาย"]):
+        return "LEARN"
 
-    if "ทำไง" in q:
-        return "ให้เริ่มจากลดความเสี่ยงก่อน แล้วค่อยขยายทางเลือก"
+    return "GENERAL"
 
-    return "⚠️ AI ไม่พร้อมใช้งาน แต่ระบบยังทำงานอยู่"
+# =========================
+# ⚖️ DECISION ENGINE
+# =========================
+def decision_engine(intent, q):
+    if intent == "SURVIVAL":
+        return "เริ่มจากลดความเสี่ยงก่อน แล้วค่อยสร้างทางเลือกใหม่"
+
+    if intent == "DECISION":
+        return "แยกทางเลือก → ประเมิน downside → เลือกทางที่รอดก่อน"
+
+    if intent == "LEARN":
+        return "นี่คือคำอธิบายแบบสั้น กระชับ และใช้ได้จริง"
+
+    return None
+
+# =========================
+# 🛟 FALLBACK ENGINE
+# =========================
+def fallback_engine(q):
+    return "⚠️ AI ไม่พร้อมใช้งาน แต่ระบบยังคงทำงานเพื่อให้คุณมีทางเลือก"
 
 # =========================
 # 🌐 ROUTES
@@ -86,29 +104,43 @@ async def chats():
 async def chat(chat_id: str):
     return {"messages": load(chat_id)}
 
+# =========================
+# 💥 CORE: /ask (หัวใจระบบ)
+# =========================
 @app.post("/ask")
 async def ask(req: Request):
     data = await req.json()
     chat_id = data["chat_id"]
     q = data["question"]
 
-    # =========================
-    # 🤖 AI + FALLBACK SYSTEM
-    # =========================
+    intent = intent_engine(q)
+    decision = decision_engine(intent, q)
+
     try:
         if USE_AI:
-            response = model.generate_content(q)
-            ans = response.text if response.text else fallback_engine(q)
+            system_prompt = f"""
+You are KING DIADEM AI.
+
+Intent: {intent}
+
+Rules:
+- Answer real, sharp, usable
+- No fluff
+- Focus on survival & decision
+- If user risk high → reduce risk first
+
+User: {q}
+"""
+            response = model.generate_content(system_prompt)
+            ans = response.text if response.text else decision or fallback_engine(q)
         else:
-            ans = fallback_engine(q)
+            ans = decision or fallback_engine(q)
 
     except Exception as e:
         print("AI FAIL:", e)
-        ans = fallback_engine(q)
+        ans = decision or fallback_engine(q)
 
-    # =========================
-    # 💾 SAVE
-    # =========================
+    # 💾 SAVE CHAT
     logs = load(chat_id)
     logs.append({"q": q, "a": ans})
     save(chat_id, logs)
