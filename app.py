@@ -1,15 +1,13 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-import uuid, json, os
+import uuid, os, json
 
 app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+# ---------- storage ----------
 def path(chat_id):
     return f"data/{chat_id}.json"
 
@@ -24,6 +22,7 @@ def save(chat_id, data):
     with open(path(chat_id), "w") as f:
         json.dump(data, f)
 
+# ---------- routes ----------
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -53,4 +52,4 @@ async def ask(req: Request):
     logs.append({"q": q, "a": ans})
     save(chat_id, logs)
 
-    return {"answer": ans}
+    return JSONResponse({"answer": ans})
