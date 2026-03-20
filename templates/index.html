@@ -3,210 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>KING DIADEM</title>
 
-<style>
-body {
-    margin: 0;
-    background: #020617;
-    color: white;
-    font-family: Arial;
-}
-
-.app {
-    display: flex;
-    height: 100vh;
-}
-
-.sidebar {
-    width: 240px;
-    background: #0f172a;
-    padding: 10px;
-    overflow-y: auto;
-}
-
-.sidebar button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #2563eb;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-}
-
-.chat-item {
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 5px;
-}
-
-.chat-item:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-.main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.header {
-    padding: 15px;
-    font-size: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-#chatBox {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.msg {
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 70%;
-}
-
-.user {
-    background: #2563eb;
-    margin-left: auto;
-}
-
-.ai {
-    background: #10b981;
-}
-
-.inputArea {
-    display: flex;
-    padding: 10px;
-}
-
-input {
-    flex: 1;
-    padding: 10px;
-}
-
-button.send {
-    margin-left: 10px;
-    padding: 10px 20px;
-}
-</style>
-
+<link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-
 <div class="app">
 
-    <div class="sidebar">
-        <button onclick="createChat()">+ New Chat</button>
-        <div id="chatList"></div>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">KING DIADEM</div>
+      <div class="brand-sub">Choice-preserving AI</div>
     </div>
 
-    <div class="main">
+    <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
 
-        <div class="header">👑 KING DIADEM</div>
-
-        <div id="chatBox"></div>
-
-        <div class="inputArea">
-            <input id="input" placeholder="พิมพ์..." onkeydown="if(event.key==='Enter') send()" />
-            <button class="send" onclick="send()">Send</button>
-        </div>
-
+    <div class="sidebar-section">
+      <div class="section-label">Chats</div>
+      <div id="chatList" class="chat-list"></div>
     </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="eyebrow">DriftZero • Governance-first</div>
+        <h1 id="chatTitle">New Chat</h1>
+      </div>
+
+      <div class="topbar-right">
+        <div class="status-dot"></div>
+        <div class="status-text">Long-press a message to reveal time</div>
+      </div>
+    </header>
+
+    <section id="chatBox" class="chat-box" aria-live="polite"></section>
+
+    <div id="typing" class="typing hidden">
+      <span></span><span></span><span></span>
+    </div>
+
+    <footer class="composer">
+      <textarea id="input" rows="1" placeholder="พิมพ์ข้อความ..." autocomplete="off"></textarea>
+      <button id="sendBtn" class="send-btn">Send</button>
+    </footer>
+  </main>
 
 </div>
 
-<script>
-let chat_id = null
-
-window.onload = async () => {
-    await loadChats()
-    await createChat()
-}
-
-async function loadChats() {
-    const res = await fetch('/chats')
-    const data = await res.json()
-
-    const list = document.getElementById("chatList")
-    list.innerHTML = ""
-
-    data.chats.reverse().forEach(id => {
-        const div = document.createElement("div")
-        div.className = "chat-item"
-        div.innerText = "Chat " + id.substring(0,6)
-        div.onclick = () => openChat(id)
-        list.appendChild(div)
-    })
-}
-
-async function createChat() {
-    const res = await fetch('/new_chat', { method: 'POST' })
-    const data = await res.json()
-
-    chat_id = data.chat_id
-    document.getElementById("chatBox").innerHTML = ""
-
-    await loadChats()
-}
-
-async function openChat(id) {
-    chat_id = id
-
-    const res = await fetch(`/chat/${id}`)
-    const data = await res.json()
-
-    const box = document.getElementById("chatBox")
-    box.innerHTML = ""
-
-    data.messages.forEach(m => {
-        add("user", m.q)
-        add("ai", m.a)
-    })
-}
-
-async function send() {
-    const input = document.getElementById("input")
-    const text = input.value
-
-    if (!text) return
-
-    add("user", text)
-
-    const res = await fetch('/ask', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            question: text,
-            chat_id: chat_id
-        })
-    })
-
-    const data = await res.json()
-    add("ai", data.answer)
-
-    input.value = ""
-    await loadChats()
-}
-
-function add(role, text) {
-    const box = document.getElementById("chatBox")
-
-    const div = document.createElement("div")
-    div.className = "msg " + role
-    div.innerText = text
-
-    box.appendChild(div)
-    box.scrollTop = box.scrollHeight
-}
-</script>
-
+<script src="/static/app.js?v=8"></script>
 </body>
 </html>
