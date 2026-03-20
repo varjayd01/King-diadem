@@ -3,6 +3,11 @@ let chats = []
 
 // ---------------- INIT ----------------
 window.onload = async () => {
+    console.log("APP START")
+
+    document.getElementById("newChatBtn").onclick = createChat
+    document.getElementById("sendBtn").onclick = send
+
     chats = JSON.parse(localStorage.getItem("chats") || "[]")
 
     if (chats.length === 0) {
@@ -17,17 +22,23 @@ window.onload = async () => {
 
 // ---------------- CREATE CHAT ----------------
 async function createChat() {
-    const res = await fetch('/new_chat', { method: 'POST' })
-    const data = await res.json()
+    console.log("NEW CHAT CLICK")
 
-    chat_id = data.chat_id
+    try {
+        const res = await fetch('/new_chat', { method: 'POST' })
+        const data = await res.json()
 
-    chats.unshift(chat_id)
-    localStorage.setItem("chats", JSON.stringify(chats))
+        chat_id = data.chat_id
 
-    document.getElementById("chatBox").innerHTML = ""
+        chats.unshift(chat_id)
+        localStorage.setItem("chats", JSON.stringify(chats))
 
-    renderChatList()
+        document.getElementById("chatBox").innerHTML = ""
+
+        renderChatList()
+    } catch (e) {
+        console.error("CREATE CHAT ERROR", e)
+    }
 }
 
 // ---------------- SWITCH CHAT ----------------
@@ -36,7 +47,7 @@ function switchChat(id) {
     loadHistory()
 }
 
-// ---------------- RENDER SIDEBAR ----------------
+// ---------------- SIDEBAR ----------------
 function renderChatList() {
     const list = document.getElementById("chatList")
     list.innerHTML = ""
@@ -44,23 +55,29 @@ function renderChatList() {
     chats.forEach(id => {
         const div = document.createElement("div")
         div.innerText = "Chat " + id.slice(0, 4)
+
         div.onclick = () => switchChat(id)
+
         list.appendChild(div)
     })
 }
 
-// ---------------- LOAD HISTORY ----------------
+// ---------------- LOAD ----------------
 async function loadHistory() {
-    const res = await fetch(`/chat/${chat_id}`)
-    const data = await res.json()
+    try {
+        const res = await fetch(`/chat/${chat_id}`)
+        const data = await res.json()
 
-    const box = document.getElementById("chatBox")
-    box.innerHTML = ""
+        const box = document.getElementById("chatBox")
+        box.innerHTML = ""
 
-    data.messages.forEach(m => {
-        addMessage("user", m.q)
-        addMessage("ai", m.a)
-    })
+        data.messages.forEach(m => {
+            addMessage("user", m.q)
+            addMessage("ai", m.a)
+        })
+    } catch (e) {
+        console.error("LOAD ERROR", e)
+    }
 }
 
 // ---------------- SEND ----------------
@@ -72,23 +89,28 @@ async function send() {
 
     addMessage("user", text)
 
-    const res = await fetch('/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            question: text,
-            chat_id: chat_id
+    try {
+        const res = await fetch('/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: text,
+                chat_id: chat_id
+            })
         })
-    })
 
-    const data = await res.json()
+        const data = await res.json()
 
-    addMessage("ai", data.answer)
+        addMessage("ai", data.answer)
+
+    } catch (e) {
+        console.error("SEND ERROR", e)
+    }
 
     input.value = ""
 }
 
-// ---------------- 120FPS RENDER ----------------
+// ---------------- RENDER ----------------
 let queue = []
 
 function addMessage(role, text) {
