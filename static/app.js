@@ -1,4 +1,4 @@
-console.log("NEW VERSION LOADED")
+console.log("APP LOADED V3")
 
 let chat_id = null
 
@@ -41,8 +41,10 @@ async function send() {
 
 function add(role, text) {
     const box = document.getElementById("chatBox")
+
     const div = document.createElement("div")
     div.innerText = text
     div.className = role
+
     box.appendChild(div)
 }
