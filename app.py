@@ -1,176 +1,306 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-import uuid, os, json, datetime
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
-# =========================
-# 🔐 GEMINI CONFIG
-# =========================
-API_KEY = os.getenv("GEMINI_API_KEY")
+from pathlib import Path
+from datetime import datetime
+import os
+import json
+import uuid
+import re
 
-USE_AI = True
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
 
-if not API_KEY:
-    print("❌ No GEMINI_API_KEY → Fallback Mode")
-    USE_AI = False
-else:
-    try:
-        genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel("gemini-pro")
-    except Exception as e:
-        print("❌ Gemini init error:", e)
-        USE_AI = False
-
-# =========================
-# 🚀 APP INIT
-# =========================
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# =========================
-# 💾 STORAGE
-# =========================
-def path(chat_id):
-    return f"data/{chat_id}.json"
+API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-def load(chat_id):
-    if not os.path.exists(path(chat_id)):
-        return []
-    with open(path(chat_id), "r") as f:
-        return json.load(f)
+USE_AI = False
+client = None
 
-def save(chat_id, data):
-    os.makedirs("data", exist_ok=True)
-    with open(path(chat_id), "w") as f:
-        json.dump(data, f)
+if API_KEY:
+    try:
+        client = genai.Client(api_key=API_KEY)
+        USE_AI = True
+    except Exception as e:
+        print("Gemini init error:", e)
+        USE_AI = False
 
-# =========================
-# 🧠 INTENT ENGINE
-# =========================
-def intent_engine(q):
-    q = q.lower()
 
-    if any(x in q for x in ["ไม่มีทางเลือก", "จน", "แย่", "หมดทาง"]):
+def now_iso() -> str:
+    return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+def safe_title(text: str) -> str:
+    tokens = re.findall(r"[A-Za-z0-9ก-๙]+", text)
+    title = " ".join(tokens[:5]).strip()
+    return title[:48] if title else "New Chat"
+
+
+def chat_path(chat_id: str) -> Path:
+    return DATA_DIR / f"{chat_id}.json"
+
+
+def default_chat(chat_id: str) -> dict:
+    ts = now_iso()
+    return {
+        "id": chat_id,
+        "title": "New Chat",
+        "created_at": ts,
+        "updated_at": ts,
+        "messages": []
+    }
+
+
+def load_chat(chat_id: str) -> dict:
+    path = chat_path(chat_id)
+    if not path.exists():
+        return default_chat(chat_id)
+
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if "messages" not in data:
+        data["messages"] = []
+    if "title" not in data:
+        data["title"] = "New Chat"
+    if "created_at" not in data:
+        data["created_at"] = now_iso()
+    if "updated_at" not in data:
+        data["updated_at"] = now_iso()
+
+    return data
+
+
+def save_chat(chat: dict) -> None:
+    chat["updated_at"] = now_iso()
+    path = chat_path(chat["id"])
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(chat, f, ensure_ascii=False, indent=2)
+
+
+def list_chats() -> list[dict]:
+    items = []
+    for path in DATA_DIR.glob("*.json"):
+        try:
+            chat = load_chat(path.stem)
+            last_msg = chat["messages"][-1]["content"] if chat["messages"] else ""
+            preview = last_msg[:90]
+            items.append({
+                "id": chat["id"],
+                "title": chat["title"],
+                "updated_at": chat["updated_at"],
+                "count": len(chat["messages"]),
+                "preview": preview,
+            })
+        except Exception:
+            continue
+
+    items.sort(key=lambda x: x["updated_at"], reverse=True)
+    return items
+
+
+def detect_intent(text: str) -> str:
+    q = text.lower()
+
+    if any(x in q for x in ["ไม่มีทางเลือก", "หมดทาง", "จน", "ไม่ไหว", "พัง"]):
         return "SURVIVAL"
 
-    if any(x in q for x in ["ทำยังไง", "ควร", "แนะนำ"]):
+    if any(x in q for x in ["ควร", "ทำยังไง", "แนะนำ", "เลือกอะไร"]):
         return "DECISION"
 
-    if any(x in q for x in ["คืออะไร", "อธิบาย"]):
+    if any(x in q for x in ["คืออะไร", "อธิบาย", "ทำไม"]):
         return "LEARN"
 
     return "GENERAL"
 
-# =========================
-# ⚖️ DECISION ENGINE
-# =========================
-def decision_engine(intent):
+
+def decision_engine(intent: str, question: str) -> str | None:
     if intent == "SURVIVAL":
-        return "เริ่มจากลดความเสี่ยงก่อน แล้วค่อยสร้างทางเลือก"
+        return "เริ่มจากลดความเสี่ยงก่อน ค่อยหาทางเลือกใหม่ทีละก้าว"
 
     if intent == "DECISION":
-        return "แยกทางเลือก → ดู downside → เลือกทางที่รอดก่อน"
+        return "แยกทางเลือก ประเมิน downside แล้วเลือกทางที่รอดก่อน"
 
     if intent == "LEARN":
-        return "นี่คือคำอธิบายแบบสั้น กระชับ และใช้ได้จริง"
+        return "อธิบายให้สั้น ชัด และใช้ได้จริง"
+
+    if len(question.strip()) <= 2:
+        return "ลองพิมพ์เพิ่มอีกนิดนะคะ หนูจะช่วยจับเจตนาให้แม่นขึ้น"
 
     return None
 
-# =========================
-# 🛟 FALLBACK
-# =========================
-def fallback_engine():
-    return "⚠️ AI ไม่พร้อมใช้งาน แต่ระบบยังคงทำงาน"
 
-# =========================
-# 🧠 CONTEXT BUILDER
-# =========================
-def build_context(messages, limit=10):
+def fallback_engine(intent: str, question: str) -> str:
+    if intent == "SURVIVAL":
+        return "ตอนนี้อย่าพึ่งตัดสินใจแรง ๆ เอาแค่ทำให้มีทางเลือกเหลืออย่างน้อย 1 ทางก่อน"
+
+    if intent == "DECISION":
+        return "ถ้าอยากตัดสินใจให้ดี ให้เริ่มจาก downside ก่อน แล้วค่อยดูทางที่คุ้มที่สุด"
+
+    if intent == "LEARN":
+        return "ถ้าอยากให้หนูอธิบาย ลองบอกเพิ่มอีกนิดนะคะ"
+
+    return "ระบบยังทำงานอยู่ค่ะ แต่ AI ยังไม่พร้อมตอบเต็มรูปแบบ"
+
+
+def build_context(messages: list[dict], limit: int = 12) -> str:
     recent = messages[-limit:]
-    history = ""
-
+    lines = []
     for m in recent:
-        history += f"[{m['time']}] User: {m['q']}\n"
-        history += f"[{m['time']}] AI: {m['a']}\n"
+        t = m.get("timestamp", "")
+        role = m.get("role", "user")
+        content = m.get("content", "")
+        lines.append(f"[{t}] {role.upper()}: {content}")
+    return "\n".join(lines)
 
-    return history
 
-# =========================
-# 🌐 ROUTES
-# =========================
+def gemini_answer(question: str, context: str, intent: str) -> str:
+    if not USE_AI or client is None:
+        raise RuntimeError("Gemini not configured")
+
+    system_instruction = """
+You are KING DIADEM, an intelligent chat system with governance-first behavior.
+
+Core rules:
+- Preserve human choice.
+- Answer clearly, sharply, and usefully.
+- Be warm, calm, and direct.
+- If the user is in survival mode, reduce risk first.
+- If appropriate, give 3 practical options.
+- Avoid fluff and empty praise.
+- Keep answers readable on mobile.
+"""
+
+    prompt = f"""
+Conversation history:
+{context}
+
+User intent:
+{intent}
+
+User message:
+{question}
+"""
+
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            temperature=0.7,
+        ),
+    )
+
+    text = getattr(response, "text", None)
+    if text and text.strip():
+        return text.strip()
+
+    raise RuntimeError("Empty Gemini response")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/new_chat")
-async def new_chat():
-    return {"chat_id": str(uuid.uuid4())}
 
 @app.get("/chats")
 async def chats():
-    os.makedirs("data", exist_ok=True)
-    return {"chats": [f.replace(".json","") for f in os.listdir("data")]}
+    return {"chats": list_chats()}
+
+
+@app.post("/new_chat")
+async def new_chat():
+    chat_id = str(uuid.uuid4())
+    chat = default_chat(chat_id)
+    save_chat(chat)
+    return {"chat_id": chat_id, "title": chat["title"]}
+
 
 @app.get("/chat/{chat_id}")
-async def chat(chat_id: str):
-    return {"messages": load(chat_id)}
+async def get_chat(chat_id: str):
+    chat = load_chat(chat_id)
+    return {"chat": chat}
 
-# =========================
-# 💥 CORE /ask
-# =========================
+
+@app.post("/rename_chat/{chat_id}")
+async def rename_chat(chat_id: str, req: Request):
+    chat = load_chat(chat_id)
+    data = await req.json()
+    title = str(data.get("title", "")).strip()
+
+    if not title:
+        raise HTTPException(status_code=400, detail="title required")
+
+    chat["title"] = title[:48]
+    save_chat(chat)
+    return {"status": "ok", "title": chat["title"]}
+
+
+@app.delete("/chat/{chat_id}")
+async def delete_chat(chat_id: str):
+    path = chat_path(chat_id)
+    if path.exists():
+        path.unlink()
+    return {"status": "ok"}
+
+
 @app.post("/ask")
 async def ask(req: Request):
     data = await req.json()
-    chat_id = data["chat_id"]
-    q = data["question"]
+    chat_id = str(data.get("chat_id", "")).strip()
+    question = str(data.get("question", "")).strip()
 
-    now = datetime.datetime.now().strftime("%H:%M")
+    if not chat_id:
+        raise HTTPException(status_code=400, detail="chat_id required")
 
-    logs = load(chat_id)
+    if not question:
+        raise HTTPException(status_code=400, detail="question required")
 
-    intent = intent_engine(q)
-    decision = decision_engine(intent)
+    chat = load_chat(chat_id)
+    intent = detect_intent(question)
 
-    context = build_context(logs)
+    user_msg = {
+        "role": "user",
+        "content": question,
+        "timestamp": now_iso(),
+    }
+    chat["messages"].append(user_msg)
+    save_chat(chat)
+
+    context = build_context(chat["messages"])
 
     try:
-        if USE_AI:
-            prompt = f"""
-You are KING DIadem AI.
-
-Conversation history:
-{context}
-
-Intent: {intent}
-
-Rules:
-- Answer sharp, real, usable
-- No fluff
-- Focus on survival & decision
-- Keep it short but powerful
-
-User: {q}
-"""
-            response = model.generate_content(prompt)
-            ans = response.text if response.text else decision or fallback_engine()
-        else:
-            ans = decision or fallback_engine()
-
+        answer = gemini_answer(question, context, intent)
     except Exception as e:
-        print("AI FAIL:", e)
-        ans = decision or fallback_engine()
+        print("Gemini failed:", e)
+        answer = decision_engine(intent, question) or fallback_engine(intent, question)
 
-    # 💾 SAVE พร้อมเวลา
-    logs.append({
-        "q": q,
-        "a": ans,
-        "time": now
-    })
-    save(chat_id, logs)
+    if chat["title"] == "New Chat" and len(chat["messages"]) <= 2:
+        chat["title"] = safe_title(question)
+
+    ai_msg = {
+        "role": "assistant",
+        "content": answer,
+        "timestamp": now_iso(),
+        "intent": intent,
+    }
+    chat["messages"].append(ai_msg)
+    save_chat(chat)
 
     return JSONResponse({
-        "answer": ans,
-        "time": now
+        "answer": answer,
+        "timestamp": ai_msg["timestamp"],
+        "intent": intent,
+        "chat_id": chat_id,
+        "title": chat["title"],
     })
