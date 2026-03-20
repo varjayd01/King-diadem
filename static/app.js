@@ -7,35 +7,38 @@ async function init(){
 }
 init();
 
+function addBubble(text,type){
+  let div = document.createElement("div");
+  div.className = "bubble "+type;
+  div.innerText = text;
+  document.getElementById("chat").appendChild(div);
+  return div;
+}
+
 async function send(){
   let input = document.getElementById("input");
   let text = input.value;
   input.value="";
 
   addBubble(text,"user");
+  let bubble = addBubble("...","ai");
 
-  let res = await fetch("/ask",{
+  let res = await fetch("/ask_stream",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({chat_id,question:text})
   });
 
-  let data = await res.json();
-  addBubble(data.answer,"ai");
-}
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
 
-function addBubble(text,type){
-  let div = document.createElement("div");
-  div.className = "bubble "+type;
-  div.innerText = text;
+  let result = "";
 
-  let time = document.createElement("div");
-  time.className = "time";
-  time.innerText = new Date().toLocaleTimeString();
-  div.appendChild(time);
+  while(true){
+    const {done,value} = await reader.read();
+    if(done) break;
 
-  div.onmousedown = ()=> time.style.display="block";
-  div.onmouseup = ()=> time.style.display="none";
-
-  document.getElementById("chat").appendChild(div);
+    result += decoder.decode(value);
+    bubble.innerText = result;
+  }
 }
