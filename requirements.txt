@@ -1,10 +1,4 @@
 fastapi
 uvicorn
-pydantic
-stripe
-deep-translator
-numpy
-python-multipart
 jinja2
-google-generativeai
 google-genai
