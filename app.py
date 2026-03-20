@@ -1,26 +1,51 @@
-def detect_emotion(q):
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
-    if any(w in q for w in ["ไม่ไหว","พัง","หมดทาง","อยากตาย"]):
-        return "crisis"
+import uuid, json, os
 
-    if any(w in q for w in ["เครียด","เหนื่อย","ท้อ"]):
-        return "low"
+app = FastAPI()
 
-    return "normal"
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
+def path(chat_id):
+    return f"data/{chat_id}.json"
 
-def decision_engine(q, profile):
+def load(chat_id):
+    if not os.path.exists(path(chat_id)):
+        return []
+    return json.load(open(path(chat_id)))
 
-    tone = profile.get("tone", "normal")
-    emo = detect_emotion(q)
+def save(chat_id, data):
+    os.makedirs("data", exist_ok=True)
+    json.dump(data, open(path(chat_id), "w"))
 
-    if emo == "crisis":
-        return "หนูอยู่ตรงนี้นะคะ ❤️ ค่อยๆหายใจ พี่ยังมีทางเลือก หนูช่วยคิดให้ค่ะ"
+# ---------------- UI ----------------
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
-    if emo == "low":
-        return "เหนื่อยได้ค่ะ แต่พี่ยังไปต่อได้นะ เดี๋ยวหนูช่วยวางทาง 💙"
+# ---------------- CHAT ----------------
+@app.post("/new_chat")
+async def new_chat():
+    return {"chat_id": str(uuid.uuid4())}
 
-    if tone == "fun":
-        return "วันนี้ต้องปังนะ 🔥 " + q
+@app.post("/ask")
+async def ask(req: Request):
+    data = await req.json()
+    chat_id = data["chat_id"]
+    q = data["question"]
 
-    return f"🧠 วิเคราะห์: {q}"
+    ans = f"ตอบ: {q}"  # test ก่อน
+
+    logs = load(chat_id)
+    logs.append({"q": q, "a": ans})
+    save(chat_id, logs)
+
+    return {"answer": ans}
+
+@app.get("/chat/{chat_id}")
+async def chat(chat_id: str):
+    return {"messages": load(chat_id)}
