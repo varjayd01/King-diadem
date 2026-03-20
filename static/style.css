@@ -9,32 +9,29 @@ body{
 }
 
 .bubble{
-  padding:12px;
-  margin:8px;
-  border-radius:12px;
-  max-width:70%;
-  position:relative;
-  transition:all 0.2s ease;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+  max-width:80%;
 }
 
 .user{
-  background:#2563eb;
+  background:#2d6cdf;
   margin-left:auto;
 }
 
 .ai{
-  background:#10b981;
+  background:#1abc9c;
 }
 
-.time{
-  display:none;
-  font-size:10px;
-  opacity:0.5;
-}
-
-.input-bar{
+.input{
   position:fixed;
   bottom:0;
   width:100%;
   display:flex;
+}
+
+input{
+  flex:1;
+  padding:10px;
 }
