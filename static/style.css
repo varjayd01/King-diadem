@@ -10,49 +10,36 @@ body {
     height: 100vh;
 }
 
-/* SIDEBAR */
 .sidebar {
-    width: 240px;
+    width: 200px;
     background: #111;
     padding: 10px;
-    overflow-y: auto;
 }
 
-/* MAIN */
 .main {
     flex: 1;
     display: flex;
     flex-direction: column;
+    padding: 20px;
 }
 
-/* CHAT */
 #chatBox {
     flex: 1;
-    padding: 20px;
     overflow-y: auto;
-
-    will-change: transform;
-    transform: translateZ(0);
 }
 
-/* MESSAGE */
 .user {
     text-align: right;
-    margin: 8px;
     color: #60a5fa;
 }
 
 .ai {
     text-align: left;
-    margin: 8px;
     color: #34d399;
 }
 
-/* INPUT */
 .inputArea {
     display: flex;
-    padding: 10px;
-    background: #111;
 }
 
 input {
