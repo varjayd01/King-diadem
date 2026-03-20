@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-import uuid, os, json
+import uuid, os, json, datetime
 import google.generativeai as genai
 
 # =========================
@@ -52,7 +52,7 @@ def save(chat_id, data):
 def intent_engine(q):
     q = q.lower()
 
-    if any(x in q for x in ["ไม่มีทางเลือก", "จน", "แย่", "ล้ม", "หมดทาง"]):
+    if any(x in q for x in ["ไม่มีทางเลือก", "จน", "แย่", "หมดทาง"]):
         return "SURVIVAL"
 
     if any(x in q for x in ["ทำยังไง", "ควร", "แนะนำ"]):
@@ -66,12 +66,12 @@ def intent_engine(q):
 # =========================
 # ⚖️ DECISION ENGINE
 # =========================
-def decision_engine(intent, q):
+def decision_engine(intent):
     if intent == "SURVIVAL":
-        return "เริ่มจากลดความเสี่ยงก่อน แล้วค่อยสร้างทางเลือกใหม่"
+        return "เริ่มจากลดความเสี่ยงก่อน แล้วค่อยสร้างทางเลือก"
 
     if intent == "DECISION":
-        return "แยกทางเลือก → ประเมิน downside → เลือกทางที่รอดก่อน"
+        return "แยกทางเลือก → ดู downside → เลือกทางที่รอดก่อน"
 
     if intent == "LEARN":
         return "นี่คือคำอธิบายแบบสั้น กระชับ และใช้ได้จริง"
@@ -79,10 +79,23 @@ def decision_engine(intent, q):
     return None
 
 # =========================
-# 🛟 FALLBACK ENGINE
+# 🛟 FALLBACK
 # =========================
-def fallback_engine(q):
-    return "⚠️ AI ไม่พร้อมใช้งาน แต่ระบบยังคงทำงานเพื่อให้คุณมีทางเลือก"
+def fallback_engine():
+    return "⚠️ AI ไม่พร้อมใช้งาน แต่ระบบยังคงทำงาน"
+
+# =========================
+# 🧠 CONTEXT BUILDER
+# =========================
+def build_context(messages, limit=10):
+    recent = messages[-limit:]
+    history = ""
+
+    for m in recent:
+        history += f"[{m['time']}] User: {m['q']}\n"
+        history += f"[{m['time']}] AI: {m['a']}\n"
+
+    return history
 
 # =========================
 # 🌐 ROUTES
@@ -105,7 +118,7 @@ async def chat(chat_id: str):
     return {"messages": load(chat_id)}
 
 # =========================
-# 💥 CORE: /ask (หัวใจระบบ)
+# 💥 CORE /ask
 # =========================
 @app.post("/ask")
 async def ask(req: Request):
@@ -113,36 +126,51 @@ async def ask(req: Request):
     chat_id = data["chat_id"]
     q = data["question"]
 
+    now = datetime.datetime.now().strftime("%H:%M")
+
+    logs = load(chat_id)
+
     intent = intent_engine(q)
-    decision = decision_engine(intent, q)
+    decision = decision_engine(intent)
+
+    context = build_context(logs)
 
     try:
         if USE_AI:
-            system_prompt = f"""
-You are KING DIADEM AI.
+            prompt = f"""
+You are KING DIadem AI.
+
+Conversation history:
+{context}
 
 Intent: {intent}
 
 Rules:
-- Answer real, sharp, usable
+- Answer sharp, real, usable
 - No fluff
 - Focus on survival & decision
-- If user risk high → reduce risk first
+- Keep it short but powerful
 
 User: {q}
 """
-            response = model.generate_content(system_prompt)
-            ans = response.text if response.text else decision or fallback_engine(q)
+            response = model.generate_content(prompt)
+            ans = response.text if response.text else decision or fallback_engine()
         else:
-            ans = decision or fallback_engine(q)
+            ans = decision or fallback_engine()
 
     except Exception as e:
         print("AI FAIL:", e)
-        ans = decision or fallback_engine(q)
+        ans = decision or fallback_engine()
 
-    # 💾 SAVE CHAT
-    logs = load(chat_id)
-    logs.append({"q": q, "a": ans})
+    # 💾 SAVE พร้อมเวลา
+    logs.append({
+        "q": q,
+        "a": ans,
+        "time": now
+    })
     save(chat_id, logs)
 
-    return JSONResponse({"answer": ans})
+    return JSONResponse({
+        "answer": ans,
+        "time": now
+    })
