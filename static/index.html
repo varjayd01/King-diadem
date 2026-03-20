@@ -9,18 +9,20 @@
 
 <div class="app">
 
+    <!-- SIDEBAR -->
     <div class="sidebar">
-        <button onclick="createChat()">+ New Chat</button>
+        <button id="newChatBtn">+ New Chat</button>
         <div id="chatList"></div>
     </div>
 
+    <!-- MAIN -->
     <div class="main">
 
         <div id="chatBox"></div>
 
         <div class="inputArea">
             <input id="input" placeholder="พิมพ์..." />
-            <button onclick="send()">Send</button>
+            <button id="sendBtn">Send</button>
         </div>
 
     </div>
