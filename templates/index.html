@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>KING DIADEM</title>
 
 <style>
@@ -14,13 +13,11 @@ body {
     font-family: Arial;
 }
 
-/* layout */
 .app {
     display: flex;
     height: 100vh;
 }
 
-/* sidebar */
 .sidebar {
     width: 240px;
     background: #0f172a;
@@ -50,7 +47,6 @@ body {
     background: rgba(255,255,255,0.1);
 }
 
-/* main */
 .main {
     flex: 1;
     display: flex;
@@ -63,7 +59,6 @@ body {
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* chat */
 #chatBox {
     flex: 1;
     overflow-y: auto;
@@ -75,7 +70,6 @@ body {
     padding: 10px;
     border-radius: 10px;
     max-width: 70%;
-    line-height: 1.4;
 }
 
 .user {
@@ -87,29 +81,19 @@ body {
     background: #10b981;
 }
 
-/* input */
 .inputArea {
     display: flex;
     padding: 10px;
-    border-top: 1px solid rgba(255,255,255,0.1);
 }
 
 input {
     flex: 1;
     padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
 }
 
 button.send {
     margin-left: 10px;
     padding: 10px 20px;
-    background: #2563eb;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
 }
 </style>
 
@@ -119,13 +103,11 @@ button.send {
 
 <div class="app">
 
-    <!-- SIDEBAR -->
     <div class="sidebar">
         <button onclick="createChat()">+ New Chat</button>
         <div id="chatList"></div>
     </div>
 
-    <!-- MAIN -->
     <div class="main">
 
         <div class="header">👑 KING DIADEM</div>
@@ -133,7 +115,7 @@ button.send {
         <div id="chatBox"></div>
 
         <div class="inputArea">
-            <input id="input" placeholder="พิมพ์ข้อความ..." />
+            <input id="input" placeholder="พิมพ์..." onkeydown="if(event.key==='Enter') send()" />
             <button class="send" onclick="send()">Send</button>
         </div>
 
@@ -149,64 +131,47 @@ window.onload = async () => {
     await createChat()
 }
 
-/* โหลด list แชท */
 async function loadChats() {
-    try {
-        const res = await fetch('/chats')
-        const data = await res.json()
+    const res = await fetch('/chats')
+    const data = await res.json()
 
-        const list = document.getElementById("chatList")
-        list.innerHTML = ""
+    const list = document.getElementById("chatList")
+    list.innerHTML = ""
 
-        data.chats.reverse().forEach(id => {
-            const div = document.createElement("div")
-            div.className = "chat-item"
-            div.innerText = "Chat " + id.substring(0,6)
-            div.onclick = () => openChat(id)
-
-            list.appendChild(div)
-        })
-    } catch (e) {
-        console.error("loadChats error", e)
-    }
+    data.chats.reverse().forEach(id => {
+        const div = document.createElement("div")
+        div.className = "chat-item"
+        div.innerText = "Chat " + id.substring(0,6)
+        div.onclick = () => openChat(id)
+        list.appendChild(div)
+    })
 }
 
-/* สร้างแชทใหม่ */
 async function createChat() {
-    try {
-        const res = await fetch('/new_chat', { method: 'POST' })
-        const data = await res.json()
+    const res = await fetch('/new_chat', { method: 'POST' })
+    const data = await res.json()
 
-        chat_id = data.chat_id
-        document.getElementById("chatBox").innerHTML = ""
+    chat_id = data.chat_id
+    document.getElementById("chatBox").innerHTML = ""
 
-        await loadChats()
-    } catch (e) {
-        console.error("createChat error", e)
-    }
+    await loadChats()
 }
 
-/* เปิดแชทเก่า */
 async function openChat(id) {
-    try {
-        chat_id = id
+    chat_id = id
 
-        const res = await fetch(`/chat/${id}`)
-        const data = await res.json()
+    const res = await fetch(`/chat/${id}`)
+    const data = await res.json()
 
-        const box = document.getElementById("chatBox")
-        box.innerHTML = ""
+    const box = document.getElementById("chatBox")
+    box.innerHTML = ""
 
-        data.messages.forEach(m => {
-            add("user", m.q)
-            add("ai", m.a)
-        })
-    } catch (e) {
-        console.error("openChat error", e)
-    }
+    data.messages.forEach(m => {
+        add("user", m.q)
+        add("ai", m.a)
+    })
 }
 
-/* ส่งข้อความ */
 async function send() {
     const input = document.getElementById("input")
     const text = input.value
@@ -215,30 +180,22 @@ async function send() {
 
     add("user", text)
 
-    try {
-        const res = await fetch('/ask', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                question: text,
-                chat_id: chat_id
-            })
+    const res = await fetch('/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            question: text,
+            chat_id: chat_id
         })
+    })
 
-        const data = await res.json()
-        add("ai", data.answer)
-
-        await loadChats()
-
-    } catch (e) {
-        add("ai", "❌ server error")
-        console.error(e)
-    }
+    const data = await res.json()
+    add("ai", data.answer)
 
     input.value = ""
+    await loadChats()
 }
 
-/* render message */
 function add(role, text) {
     const box = document.getElementById("chatBox")
 
