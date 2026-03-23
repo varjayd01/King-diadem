@@ -1,19 +1,26 @@
-async function run(mode) {
-  const input = document.getElementById("input").value;
+async function send() {
+    const input = document.getElementById("input");
+    const chat = document.getElementById("chat");
+    const mode = document.getElementById("mode").value;
 
-  const res = await fetch("/decision", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      input: input,
-      mode: mode
-    })
-  });
+    const text = input.value;
 
-  const data = await res.json();
+    chat.innerHTML += `<div class="bubble user">${text}</div>`;
 
-  document.getElementById("output").innerText =
-    data.final;
+    const res = await fetch("/decision", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            input: text,
+            mode: mode
+        })
+    });
+
+    const data = await res.json();
+
+    chat.innerHTML += `<div class="bubble ai">${data.result}</div>`;
+
+    input.value = "";
 }
