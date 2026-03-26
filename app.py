@@ -3,6 +3,7 @@ import os
 
 app = Flask(__name__, static_folder='static')
 
+
 # ======================
 # ROUTE: HOME
 # ======================
@@ -12,24 +13,70 @@ def index():
 
 
 # ======================
-# ROUTE: DECISION ENGINE
+# CORE: DECISION ENGINE
+# ======================
+def decision_engine(user_input):
+    text = user_input.lower()
+
+    # ===== Survival Mode =====
+    if "หิว" in text or "ไม่ได้กิน" in text:
+        return {
+            "mode": "survival",
+            "result": "ไปกินอะไรก่อนทันที อย่าฝืน ระบบไม่ให้คิดต่อถ้ายังหิว"
+        }
+
+    if "ไม่มีเงิน" in text or "จน" in text:
+        return {
+            "mode": "survival",
+            "result": "ลดรายจ่ายทันที + หาเงินระยะสั้นก่อน เช่น งานรายวัน / ขายของ / รับจ้าง"
+        }
+
+    if "เครียด" in text or "ท้อ" in text:
+        return {
+            "mode": "stabilize",
+            "result": "หยุดก่อน หายใจลึก 5 ครั้ง แล้วค่อยตัดสินใจ อย่าฝืนตอนสติไม่เต็ม"
+        }
+
+    # ===== Risk Detection =====
+    if "เมา" in text or "ไม่ปลอดภัย" in text:
+        return {
+            "mode": "danger",
+            "result": "เรียกรถกลับทันที อย่าอยู่ต่อ ความปลอดภัยมาก่อน"
+        }
+
+    # ===== Default Thinking =====
+    return {
+        "mode": "normal",
+        "result": f"วิเคราะห์แล้ว: {user_input}"
+    }
+
+
+# ======================
+# ROUTE: DECISION
 # ======================
 @app.route('/decision', methods=['POST'])
 def decision():
     data = request.get_json()
+
+    if not data or "input" not in data:
+        return jsonify({
+            "status": "error",
+            "message": "No input provided"
+        }), 400
+
     user_input = data.get("input", "")
 
-    # ===== KING DIadem CORE =====
-    result = f"KING DIADEM PROCESSED: {user_input}"
+    result = decision_engine(user_input)
 
     return jsonify({
         "status": "success",
-        "result": result
+        "mode": result["mode"],
+        "result": result["result"]
     })
 
 
 # ======================
-# HEALTH CHECK (สำคัญมาก)
+# HEALTH CHECK
 # ======================
 @app.route('/health')
 def health():
