@@ -1,58 +1,43 @@
 from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
 import os
-import requests
 
 app = Flask(__name__, static_folder='static')
-CORS(app)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
+# ======================
+# ROUTE: HOME
+# ======================
 @app.route('/')
 def index():
-    return send_from_directory('static', 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 
-def decision_engine(user_input):
-
-    # ✅ กันพัง
-    if not GEMINI_API_KEY:
-        return "ERROR: ไม่มี GEMINI_API_KEY"
-
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
-
-        payload = {
-            "contents": [{
-                "parts": [{"text": user_input}]
-            }]
-        }
-
-        res = requests.post(url, json=payload)
-
-        # ✅ เช็ค response
-        if res.status_code != 200:
-            return f"API ERROR: {res.text}"
-
-        data = res.json()
-
-        reply = data['candidates'][0]['content']['parts'][0]['text']
-
-        return reply
-
-    except Exception as e:
-        return f"SYSTEM ERROR: {str(e)}"
-
-
+# ======================
+# ROUTE: DECISION ENGINE
+# ======================
 @app.route('/decision', methods=['POST'])
 def decision():
-    data = request.json
+    data = request.get_json()
     user_input = data.get("input", "")
 
-    result = decision_engine(user_input)
+    # ===== KING DIadem CORE =====
+    result = f"KING DIADEM PROCESSED: {user_input}"
 
-    return jsonify({"result": result})
+    return jsonify({
+        "status": "success",
+        "result": result
+    })
 
 
+# ======================
+# HEALTH CHECK (สำคัญมาก)
+# ======================
+@app.route('/health')
+def health():
+    return "OK", 200
+
+
+# ======================
+# RUN LOCAL ONLY
+# ======================
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(host='0.0.0.0', port=5000)
