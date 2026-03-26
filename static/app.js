@@ -1,17 +1,16 @@
-const API_URL = "https://king-diadem.onrender.com/decision"; // ใส่ลิงก์พี่
-
-async function send() {
+async function sendInput() {
     const input = document.getElementById("input").value;
 
-    const res = await fetch(API_URL, {
+    const res = await fetch("/decision", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ input })
+        body: JSON.stringify({ input: input })
     });
 
     const data = await res.json();
 
-    document.getElementById("output").innerText = data.result;
+    document.getElementById("output").innerText = 
+        `[${data.mode}] ${data.result}`;
 }
