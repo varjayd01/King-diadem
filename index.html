@@ -2,26 +2,21 @@
 <html>
 <head>
     <title>KING DIADEM</title>
-    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <h1>👑 KING DIADEM</h1>
 
-<div>
-    <select id="mode">
-        <option value="normal">Normal</option>
-        <option value="council">Council</option>
-    </select>
-</div>
+<select id="mode">
+    <option>Normal</option>
+</select>
 
-<div id="chat"></div>
+<input id="input" placeholder="พิมพ์คำถาม..." />
+<button onclick="sendInput()">Send</button>
 
-<div class="input">
-    <input id="input" placeholder="พิมพ์คำถาม...">
-    <button onclick="send()">Send</button>
-</div>
+<p id="output"></p>
 
-<script src="/static/app.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
