@@ -1,16 +1,15 @@
 async function sendInput() {
     const input = document.getElementById("input").value;
 
-    const res = await fetch("/decision", {
+    const res = await fetch("/api/decision", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ input: input })
+        body: JSON.stringify({ input })
     });
 
     const data = await res.json();
 
-    document.getElementById("output").innerText = 
-        `[${data.mode}] ${data.result}`;
+    document.getElementById("output").innerText = data.output;
 }
