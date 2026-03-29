@@ -1,78 +1,44 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from flask import Flask, request, jsonify, send_from_directory
 import os
-from google import genai
 
-app = FastAPI()
+app = Flask(__name__, static_folder="static")
 
-# ===== GEMINI CLIENT =====
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# ===== CORE LOGIC (Minimal Kernel) =====
+def process_input(user_input):
+    if not user_input:
+        return "คุณยังไม่ได้พิมพ์อะไร"
 
-# ===== STATIC =====
-app.mount("/static", StaticFiles(directory="static"), name="static")
+    # SIMPLE SCL-7 STYLE RESPONSE
+    return f"""
+[รับสภาพ]
+สิ่งที่คุณกำลังคิด มันมีน้ำหนักจริง
 
-# ===== ROOT =====
-@app.get("/", response_class=HTMLResponse)
-async def index():
-    with open("index.html", "r", encoding="utf-8") as f:
-        return f.read()
+[โครงสร้าง]
+ตอนนี้สิ่งที่เกิดขึ้นคือ:
+{user_input}
 
-# ===== HEALTH =====
-@app.get("/system/health")
-async def health():
-    return {
-        "status": "OK",
-        "engine": "KING DIADEM",
-        "mode": "ACTIVE"
-    }
-
-# ===== DECISION ENGINE =====
-def king_filter(text):
-    # 🔥 ปติจสมุปบาท filter (basic)
-    illusion_words = ["อยาก", "ต้องมี", "กูต้องได้"]
-    for w in illusion_words:
-        if w in text:
-            return "⚠️ ตรวจพบอุปาทาน → ลดแรงยึดก่อนตัดสินใจ"
-    return None
-
-def run_gemini(prompt):
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
-    )
-    return response.text
+[ทางเลือก]
+คุณยังไม่จำเป็นต้องรีบตัดสินใจ
+ลองอยู่กับมันก่อนก็ได้
+"""
 
 # ===== API =====
-@app.post("/decision")
-async def decision(request: Request):
-    data = await request.json()
+@app.route("/api/process", methods=["POST"])
+def process():
+    data = request.json
     user_input = data.get("input", "")
-    mode = data.get("mode", "normal")
 
-    # 🔥 Layer 1: Reality filter
-    check = king_filter(user_input)
-    if check:
-        return {"result": check}
+    result = process_input(user_input)
 
-    # ===== MODE =====
-    if mode == "council":
-        prompts = [
-            f"[KING DIADEM] วิเคราะห์เชิงโครงสร้าง:\n{user_input}",
-            f"[LYLA] มองเชิงโอกาส:\n{user_input}",
-            f"[VEGA] มองความเสี่ยง:\n{user_input}",
-            f"[FATE] ทางเลือกที่เหลือ:\n{user_input}"
-        ]
+    return jsonify({"output": result})
 
-        results = [run_gemini(p) for p in prompts]
 
-        return {
-            "result": "\n\n".join(results)
-        }
+# ===== FRONTEND =====
+@app.route("/")
+def index():
+    return send_from_directory("static", "index.html")
 
-    # ===== NORMAL =====
-    reply = run_gemini(user_input)
 
-    return {
-        "result": f"KING DIADEM:\n{reply}"
-    }
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
