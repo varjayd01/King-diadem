@@ -1,8 +1,8 @@
 fastapi
 uvicorn
 jinja2
-google-genai
 flask
 flask-cors
 requests
 gunicorn
+google-genai
