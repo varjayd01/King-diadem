@@ -1,4 +1,4 @@
-async function sendInput() {
+async function send() {
     const input = document.getElementById("input").value;
 
     const res = await fetch("/api/decision", {
@@ -11,5 +11,5 @@ async function sendInput() {
 
     const data = await res.json();
 
-    document.getElementById("output").innerText = data.output;
+    document.getElementById("result").innerText = data.output;
 }
