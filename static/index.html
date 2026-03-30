@@ -2,15 +2,56 @@
 <html>
 <head>
     <title>King Diadem AI</title>
-</head>
-<body>
+    <style>
+        body {
+            margin:0;
+            font-family: Arial;
+            background:#0f172a;
+            color:white;
+        }
 
-<h2>👑 King Diadem</h2>
+        #chat {
+            height:90vh;
+            overflow:auto;
+            padding:20px;
+        }
+
+        .msg {
+            margin:10px 0;
+        }
+
+        .user { color:#38bdf8; }
+        .ai { color:#22c55e; }
+
+        #inputBox {
+            position:fixed;
+            bottom:0;
+            width:100%;
+            display:flex;
+        }
+
+        input {
+            flex:1;
+            padding:15px;
+            border:none;
+        }
+
+        button {
+            padding:15px;
+            background:#22c55e;
+            border:none;
+        }
+    </style>
+</head>
+
+<body>
 
 <div id="chat"></div>
 
-<input id="msg" placeholder="พิมพ์..." />
-<button onclick="send()">Send</button>
+<div id="inputBox">
+    <input id="msg" placeholder="พิมพ์..." />
+    <button onclick="send()">ส่ง</button>
+</div>
 
 <script src="app.js"></script>
 
