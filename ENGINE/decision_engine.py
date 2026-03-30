@@ -1,109 +1,121 @@
-import os, requests
+import os
+from google import genai
 
 from INTELLIGENCE.pattern_engine import analyze_patterns
 from INTELLIGENCE.risk_engine import evaluate_risk
 from INTELLIGENCE.decision_intelligence import intelligence_layer
 
+from ENGINE.future_simulator import forecast
+from ENGINE.collapse_predictor import predict_collapse
+from ENGINE.choice_optimizer import optimize_choice
+from ENGINE.persona_engine import get_persona
+from ENGINE.world_model import build_world_state
+from ENGINE.world_intelligence import build_risk_map, build_resource_map
+
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 class KingDiademEngine:
 
-    # ====== Layer 0: Reality Filter (ปฏิจสมุปบาท / FATE) ======
     def reality_filter(self, text):
         illusion_keywords = ["อยากได้ทันที", "รวยเร็ว", "ทางลัด", "ชนะ 100%"]
 
-        filtered = text
-        flags = []
-
-        for k in illusion_keywords:
-            if k in text:
-                flags.append(k)
+        flags = [k for k in illusion_keywords if k in text]
 
         return {
-            "filtered_input": filtered,
+            "filtered_input": text,
             "illusion_flags": flags
         }
 
-    # ====== Layer External AI ======
     def call_gemini(self, prompt):
-        if not GEMINI_API_KEY:
-            return "Gemini not configured"
-
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
-
-            payload = {
-                "contents": [{
-                    "parts": [{"text": prompt}]
-                }]
-            }
-
-            res = requests.post(url, json=payload, timeout=10)
-            data = res.json()
-
-            return data['candidates'][0]['content']['parts'][0]['text']
-
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt
+            )
+            return response.text
         except Exception as e:
             return f"AI ERROR: {str(e)}"
 
-    # ====== Council Mode ======
-    def council_mode(self, user_input, internal, ai):
-        return f"""
-[COUNCIL MODE]
+    def run(self, user_input, mode="normal", persona_mode=None):
 
-👑 KING (Core Logic):
-{internal}
-
-🌌 GEMINI (External Intelligence):
-{ai}
-
-⚖️ SYNTHESIS:
-Combine internal structure + external insight.
-Reject illusion. Preserve real choice.
-"""
-
-    # ====== MAIN ======
-    def run(self, user_input, mode="normal"):
-
-        # 1. Reality Filter
+        # ===== 1. Reality =====
         reality = self.reality_filter(user_input)
-        clean_input = reality["filtered_input"]
+        clean = reality["filtered_input"]
 
-        # 2. Pattern + Risk
-        patterns = analyze_patterns(clean_input)
-        risk = evaluate_risk(clean_input)
+        # ===== 2. Pattern / Risk =====
+        patterns = analyze_patterns(clean)
+        risk = evaluate_risk(clean)
 
-        # 3. Internal decision
-        base_decision = f"Structured analysis of: {clean_input}"
+        # ===== 3. World =====
+        world = build_world_state()
+        risk_map = build_risk_map()
+        resource_map = build_resource_map()
 
-        # 4. External AI
-        ai = self.call_gemini(clean_input)
+        # ===== 4. Simulation =====
+        future = forecast()
+        collapse = predict_collapse(risk["risk_level"])
 
-        # 5. Intelligence layer
-        intelligence = intelligence_layer(base_decision, patterns, risk, ai)
+        # ===== 5. External AI =====
+        ai = self.call_gemini(clean)
 
-        # 6. Mode switch
-        if mode == "council":
-            final = self.council_mode(clean_input, base_decision, ai)
-        else:
-            final = f"""
-[KING DIADEM OUTPUT]
+        # ===== 6. Core Intelligence =====
+        base = f"Structured analysis of: {clean}"
+        intelligence = intelligence_layer(base, patterns, risk, ai)
 
-Input: {clean_input}
+        # ===== 7. Persona =====
+        persona = get_persona(persona_mode)
 
-Signal: {intelligence['system_signal']}
-Risk: {risk['risk_level']}
+        # ===== 8. Choices =====
+        actions = [
+            "reduce risk",
+            "increase resource",
+            "wait",
+            "move location"
+        ]
 
-Internal:
-{base_decision}
+        ranked = optimize_choice(actions)
 
-External:
+        # ===== FINAL OUTPUT =====
+        final = f"""
+[KING DIADEM FULL SYSTEM]
+
+🧠 Input:
+{clean}
+
+⚠️ Illusion Flags:
+{reality['illusion_flags']}
+
+📊 Risk Level:
+{risk.get('risk_level')}
+
+🌍 World Nodes:
+{world.get('total_nodes')}
+
+📉 Collapse:
+{collapse}
+
+🔮 Future:
+{future}
+
+🎯 Best Action:
+{ranked[0] if ranked else "NONE"}
+
+🧬 Persona:
+{persona}
+
+🤖 Gemini Insight:
 {ai}
 """
 
         return {
             "reality": reality,
-            "intelligence": intelligence,
+            "risk": risk,
+            "future": future,
+            "collapse": collapse,
+            "choices": ranked,
+            "persona": persona,
             "final": final
         }
