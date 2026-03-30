@@ -1,35 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>KING DIADEM</title>
+    <title>KING DIADEM (Public)</title>
 </head>
 <body>
-    <h1>KING DIADEM</h1>
 
-    <input id="drift" placeholder="drift"><br>
-    <input id="exposure" placeholder="exposure"><br>
-    <input id="choice" placeholder="choice"><br>
+<h1>Public Access</h1>
 
-    <button onclick="run()">Analyze</button>
+<input id="input" />
+<button onclick="send()">Send</button>
 
-    <pre id="result"></pre>
+<p id="result"></p>
 
 <script>
-async function run(){
-    const data = {
-        drift: document.getElementById("drift").value,
-        exposure: document.getElementById("exposure").value,
-        choice: document.getElementById("choice").value
-    }
+async function send() {
+    const input = document.getElementById("input").value;
 
-    const res = await fetch('/analyze', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-    })
+    const res = await fetch("https://king-diadem.onrender.com/api/decision", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ input })
+    });
 
-    const json = await res.json()
-    document.getElementById("result").innerText = JSON.stringify(json, null, 2)
+    const data = await res.json();
+
+    document.getElementById("result").innerText = data.output;
 }
 </script>
 
