@@ -1,19 +1,27 @@
-async function send() {
+async function send(){
+    const msg = document.getElementById("msg").value
+    const chat = document.getElementById("chat")
 
-    const msg = document.getElementById("msg").value;
+    chat.innerHTML += `<div class="msg user">YOU: ${msg}</div>`
 
     const res = await fetch("/chat", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ message: msg })
-    });
+        body: JSON.stringify({
+            message: msg,
+            location: "unknown",
+            food: 0,
+            money: 0,
+            risk: 0
+        })
+    })
 
-    const data = await res.json();
+    const data = await res.json()
 
-    const chat = document.getElementById("chat");
+    chat.innerHTML += `<div class="msg ai">AI: ${data.reply}</div>`
 
-    chat.innerHTML += `<p><b>YOU:</b> ${msg}</p>`;
-    chat.innerHTML += `<p><b>AI:</b> ${data.reply}</p>`;
+    document.getElementById("msg").value = ""
+    chat.scrollTop = chat.scrollHeight
 }
