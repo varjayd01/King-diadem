@@ -1,34 +1,62 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 
-def calculate_risk(drift, exposure, choice):
-    if choice <= 0:
-        return float('inf')
-    return (drift * exposure) / choice
-
-def evaluate(drift, exposure, choice):
-    risk = calculate_risk(drift, exposure, choice)
-
-    if choice <= 1:
-        return {"status": "CRITICAL", "action": "STOP", "risk": risk}
-    elif risk > 10:
-        return {"status": "HIGH RISK", "action": "REDUCE EXPOSURE", "risk": risk}
-    elif risk > 5:
-        return {"status": "WARNING", "action": "MONITOR", "risk": risk}
-    else:
-        return {"status": "STABLE", "action": "CONTINUE", "risk": risk}
-
-@app.route('/')
+# =========================
+# ROOT (TEST SERVER)
+# =========================
+@app.route("/")
 def home():
     return "KING DIADEM RUNNING"
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
+# =========================
+# API DECISION (CORE)
+# =========================
+@app.route("/api/decision", methods=["POST"])
+def decision():
     data = request.json
-    drift = float(data.get("drift", 0))
-    exposure = float(data.get("exposure", 0))
-    choice = float(data.get("choice", 1))
+    user_input = data.get("input", "")
 
-    result = evaluate(drift, exposure, choice)
-    return jsonify(result)
+    # 🔥 ตรงนี้พี่จะเอา ENGINE จริงมาเสียบทีหลัง
+    response = f"[AI]: วิเคราะห์ -> {user_input}"
+
+    return jsonify({
+        "status": "ok",
+        "input": user_input,
+        "output": response
+    })
+
+# =========================
+# WALLET API (เชื่อมของพี่)
+# =========================
+@app.route("/wallet/topup", methods=["POST"])
+def wallet_topup():
+    data = request.json
+    email = data.get("email")
+    amount = data.get("amount")
+
+    return jsonify({
+        "status": "success",
+        "message": f"Topup {amount} to {email}"
+    })
+
+# =========================
+# SERVE STATIC (Render)
+# =========================
+@app.route("/app")
+def serve_app():
+    return send_from_directory("static", "index.html")
+
+# =========================
+# STATIC FILES
+# =========================
+@app.route("/static/<path:path>")
+def serve_static(path):
+    return send_from_directory("static", path)
+
+# =========================
+# RUN LOCAL
+# =========================
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
