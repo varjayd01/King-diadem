@@ -1,59 +1,54 @@
-def run(self, user_input, mode="normal", persona_mode=None):
+import os
+from google import genai
 
-    reality = self.reality_filter(user_input)
-    clean = reality["filtered_input"]
+from core.brain import run_brain
 
-    patterns = analyze_patterns(clean)
-    risk = evaluate_risk(clean)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-    world = build_world_state()
-    risk_map = build_risk_map()
-    resource_map = build_resource_map()
 
-    future = forecast()
-    collapse = predict_collapse(risk["risk_level"])
+class KingDiademEngine:
 
-    # 🔥 STOP THE LINE
-    if collapse or risk["risk_level"] >= 0.95:
+    def call_gemini(self, text):
+        try:
+            res = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=text
+            )
+            return res.text
+        except Exception as e:
+            return f"AI ERROR: {str(e)}"
+
+    # 🟢 CHAT MODE (AI คุยจริง)
+    def chat_mode(self, text):
+        ai = self.call_gemini(text)
+
+        if not ai or "ERROR" in ai:
+            return "⚠️ AI ไม่ตอบ"
+
+        return ai
+
+    # 🔴 DECISION MODE
+    def decision_mode(self, text):
+        return run_brain(text)
+
+    # 🔥 ROUTER (ตัวเดียวจบ)
+    def run(self, text, mode="chat"):
+
+        if mode == "chat":
+            return {
+                "type": "chat",
+                "reply": self.chat_mode(text)
+            }
+
+        if mode == "decision":
+            result = self.decision_mode(text)
+            return {
+                "type": "decision",
+                "reply": result
+            }
+
         return {
-            "text": "⛔ SYSTEM STOP — high collapse risk",
-            "risk": risk["risk_level"],
-            "choices": ["STOP", "WAIT", "EXIT"]
+            "type": "chat",
+            "reply": "unknown mode"
         }
-
-    # 🔥 AI (controlled)
-    ai = self.call_gemini(clean)
-    if "ERROR" in ai:
-        ai = "AI unavailable"
-
-    if risk["risk_level"] > 0.8:
-        ai = "High risk — AI ignored"
-
-    base = f"Structured analysis: {clean}"
-    intelligence = intelligence_layer(base, patterns, risk, ai)
-
-    persona = get_persona(persona_mode)
-
-    actions = [
-        "reduce risk",
-        "increase resource",
-        "wait",
-        "move location"
-    ]
-
-    ranked = optimize_choice(
-        actions,
-        risk=risk,
-        collapse=collapse,
-        world=world
-    )
-
-    return {
-        "text": intelligence,
-        "risk": risk["risk_level"],
-        "collapse": collapse,
-        "future": future,
-        "persona": persona,
-        "choices": ranked,
-        "best_action": ranked[0] if ranked else None
-    }
