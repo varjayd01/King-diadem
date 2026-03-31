@@ -1,41 +1,34 @@
 # core/brain.py
 
-def run_brain(message: str):
+def decision_engine(message: str):
+
     if not message or message.strip() == "":
         return {
-            "text": "ไม่มีข้อมูลให้วิเคราะห์",
+            "text": "ไม่มีข้อมูล",
             "risk": 0,
             "choices": []
         }
 
-    if "เสี่ยง" in message:
-        return {
-            "text": "ตรวจพบความเสี่ยง",
-            "risk": 0.8,
-            "choices": [
-                "หยุดก่อน",
-                "ลดความเสี่ยง",
-                "หาทางเลือกใหม่"
-            ]
-        }
+    risk = 0.2
+    choices = []
 
-    if "เงิน" in message:
-        return {
-            "text": "เกี่ยวข้องกับทรัพยากร",
-            "risk": 0.5,
-            "choices": [
-                "เก็บเงิน",
-                "ลงทุนแบบระวัง",
-                "ลดรายจ่าย"
-            ]
-        }
+    if "เสี่ยง" in message:
+        risk = 0.8
+        choices = ["หยุด", "ถอย", "หาทางใหม่"]
+
+    elif "เงิน" in message:
+        risk = 0.5
+        choices = ["เก็บ", "ลดรายจ่าย", "ลงทุนแบบระวัง"]
+
+    else:
+        choices = ["A", "B", "C"]
 
     return {
         "text": f"วิเคราะห์: {message}",
-        "risk": 0.2,
-        "choices": [
-            "ทางเลือก A",
-            "ทางเลือก B",
-            "ทางเลือก C"
-        ]
+        "risk": risk,
+        "choices": choices
     }
+
+
+def run_brain(message: str):
+    return decision_engine(message)
