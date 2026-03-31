@@ -1,39 +1,25 @@
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-import os
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
-from core.orchestrator import Orchestrator
+app = FastAPI()
 
-app = Flask(__name__, static_folder="static")
-CORS(app)
+# mount static
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-orch = Orchestrator()
+# serve หน้าเว็บ
+@app.get("/")
+def root():
+    return FileResponse("static/index.html")
 
+# schema
+class Input(BaseModel):
+    message: str
 
-# ===== FRONTEND =====
-@app.route("/")
-def home():
-    return send_from_directory("static", "index.html")
-
-
-# ===== CHAT =====
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-
-    result = orch.run(
-        user_input=data.get("message"),
-        context=data
-    )
-
-    return jsonify(result)
-
-
-# ===== HEALTH =====
-@app.route("/health")
-def health():
-    return {"status": "ok"}
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+# decision endpoint
+@app.post("/decision")
+def decision(data: Input):
+    return {
+        "reply": f"KING DIADEM: {data.message}"
+    }
