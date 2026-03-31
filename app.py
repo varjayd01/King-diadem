@@ -5,10 +5,10 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# mount static
+# serve static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# serve หน้าเว็บ
+# หน้าเว็บหลัก
 @app.get("/")
 def root():
     return FileResponse("static/index.html")
@@ -17,9 +17,17 @@ def root():
 class Input(BaseModel):
     message: str
 
-# decision endpoint
+# API
 @app.post("/decision")
 def decision(data: Input):
-    return {
-        "reply": f"KING DIADEM: {data.message}"
-    }
+    msg = data.message
+
+    # logic ง่ายๆ (พัฒนาเพิ่มได้)
+    if "เสี่ยง" in msg:
+        reply = "⚠️ Risk detected"
+    elif "ทางเลือก" in msg:
+        reply = "คุณยังมีอย่างน้อย 1 ทางเสมอ"
+    else:
+        reply = f"KING DIADEM: {msg}"
+
+    return {"reply": reply}
