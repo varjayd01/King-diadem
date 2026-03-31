@@ -1,32 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>KING DIADEM (Public)</title>
+    <title>KING DIADEM</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        #chat {
+            height: 70vh;
+            overflow-y: auto;
+            padding: 20px;
+            background: #020617;
+        }
+
+        .msg {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            text-align: right;
+            color: #38bdf8;
+        }
+
+        .bot {
+            text-align: left;
+            color: #22c55e;
+        }
+
+        #inputArea {
+            display: flex;
+            padding: 10px;
+            background: #020617;
+        }
+
+        #msg {
+            flex: 1;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px;
+            background: #22c55e;
+            border: none;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Public Access</h1>
+<h1>👑 KING DIADEM</h1>
 
-<input id="input" />
-<button onclick="send()">Send</button>
+<div id="chat"></div>
 
-<p id="result"></p>
+<div id="inputArea">
+    <input id="msg" placeholder="พิมพ์..." />
+    <button onclick="send()">Send</button>
+</div>
 
 <script>
 async function send() {
-    const input = document.getElementById("input").value;
+    const input = document.getElementById("msg")
+    const chat = document.getElementById("chat")
+    const msg = input.value.trim()
 
-    const res = await fetch("https://king-diadem.onrender.com/api/decision", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ input })
-    });
+    if (!msg) return
 
-    const data = await res.json();
+    // user message
+    chat.innerHTML += `<div class="msg user">🧑 ${msg}</div>`
 
-    document.getElementById("result").innerText = data.output;
+    input.value = ""
+    chat.scrollTop = chat.scrollHeight
+
+    try {
+        const res = await fetch("/decision", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: msg })
+        })
+
+        const data = await res.json()
+
+        // bot message
+        chat.innerHTML += `<div class="msg bot">👑 ${data.reply}</div>`
+        chat.scrollTop = chat.scrollHeight
+
+    } catch (err) {
+        chat.innerHTML += `<div class="msg bot">❌ ระบบมีปัญหา</div>`
+    }
 }
 </script>
 
