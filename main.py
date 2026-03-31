@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 import json
 import os
 import uuid
@@ -10,14 +12,16 @@ app = FastAPI()
 # -----------------------------
 # Static Web Interface
 # -----------------------------
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+def root_page():
+    return FileResponse("static/index.html")
 
 
 # -----------------------------
 # Database
 # -----------------------------
-
 USERS_FILE = "data/users.json"
 
 
@@ -46,41 +50,85 @@ def find_user_by_api(api_key, users):
 
 
 # -----------------------------
-# Root
+# Schema
 # -----------------------------
+class AuthInput(BaseModel):
+    email: str
+    password: str
 
-@app.get("/")
-def root():
+
+class DecisionInput(BaseModel):
+    api_key: str
+    question: str
+
+
+class TopupInput(BaseModel):
+    api_key: str
+    amount: int = 10
+
+
+# -----------------------------
+# CORE BRAIN (🔥 จุดสำคัญ)
+# -----------------------------
+def run_brain(question: str):
+    """
+    นี่คือสมองกลางของระบบ
+    ต่อ AI จริงในอนาคตได้ตรงนี้
+    """
+
+    if not question or question.strip() == "":
+        return {
+            "analysis": "ไม่มีข้อมูลให้วิเคราะห์",
+            "choices": []
+        }
+
+    # 🔥 ตัวอย่าง logic จริง (ขยายได้)
+    if "เสี่ยง" in question:
+        return {
+            "analysis": "ตรวจพบความเสี่ยง",
+            "choices": [
+                "หยุดก่อน",
+                "ลดความเสี่ยง",
+                "หาทางเลือกใหม่"
+            ]
+        }
+
+    if "เงิน" in question:
+        return {
+            "analysis": "เกี่ยวข้องกับทรัพยากร",
+            "choices": [
+                "เก็บเงิน",
+                "ลงทุนอย่างระวัง",
+                "ลดรายจ่าย"
+            ]
+        }
+
+    # default
     return {
-        "system": "KING DIADEM",
-        "status": "online",
-        "engine": "active",
-        "version": "1.1"
+        "analysis": "กำลังประเมินทางเลือกที่ปลอดภัยที่สุด",
+        "choices": [
+            "ทางเลือก A",
+            "ทางเลือก B",
+            "ทางเลือก C"
+        ]
     }
 
 
 # -----------------------------
 # Signup
 # -----------------------------
-
 @app.post("/signup")
-def signup(data: dict):
-
-    email = data.get("email")
-    password = data.get("password")
-
-    if not email or not password:
-        raise HTTPException(status_code=400, detail="Missing email or password")
+def signup(data: AuthInput):
 
     users = load_users()
 
-    if email in users:
+    if data.email in users:
         raise HTTPException(status_code=400, detail="User already exists")
 
     api_key = "kd_" + uuid.uuid4().hex
 
-    users[email] = {
-        "password": hash_password(password),
+    users[data.email] = {
+        "password": hash_password(data.password),
         "credits": 10,
         "api_key": api_key
     }
@@ -97,41 +145,32 @@ def signup(data: dict):
 # -----------------------------
 # Login
 # -----------------------------
-
 @app.post("/login")
-def login(data: dict):
-
-    email = data.get("email")
-    password = data.get("password")
+def login(data: AuthInput):
 
     users = load_users()
 
-    if email not in users:
+    if data.email not in users:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    if users[email]["password"] != hash_password(password):
+    if users[data.email]["password"] != hash_password(data.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     return {
         "message": "Login success",
-        "api_key": users[email]["api_key"],
-        "credits": users[email]["credits"]
+        "api_key": users[data.email]["api_key"],
+        "credits": users[data.email]["credits"]
     }
 
 
 # -----------------------------
-# Decision Engine
+# Decision Engine (เชื่อม Brain แล้ว)
 # -----------------------------
-
 @app.post("/decision")
-def decision(data: dict):
-
-    api_key = data.get("api_key")
-    question = data.get("question")
+def decision(data: DecisionInput):
 
     users = load_users()
-
-    user_email = find_user_by_api(api_key, users)
+    user_email = find_user_by_api(data.api_key, users)
 
     if not user_email:
         raise HTTPException(status_code=401, detail="Invalid API key")
@@ -146,18 +185,14 @@ def decision(data: dict):
     users[user_email]["credits"] -= 1
     save_users(users)
 
-    # Placeholder Decision Engine
-    choices = [
-        "ทางเลือก A",
-        "ทางเลือก B",
-        "ทางเลือก C"
-    ]
+    # 🔥 เรียกสมองจริง
+    brain_output = run_brain(data.question)
 
     return {
         "system": "KING DIADEM",
-        "question": question,
-        "analysis": "กำลังประเมินทางเลือกที่ปลอดภัยที่สุด",
-        "choices": choices,
+        "question": data.question,
+        "analysis": brain_output["analysis"],
+        "choices": brain_output["choices"],
         "credits_left": users[user_email]["credits"]
     }
 
@@ -165,21 +200,16 @@ def decision(data: dict):
 # -----------------------------
 # Topup Credits
 # -----------------------------
-
 @app.post("/topup")
-def topup(data: dict):
-
-    api_key = data.get("api_key")
-    amount = data.get("amount", 10)
+def topup(data: TopupInput):
 
     users = load_users()
-
-    user_email = find_user_by_api(api_key, users)
+    user_email = find_user_by_api(data.api_key, users)
 
     if not user_email:
         raise HTTPException(status_code=401, detail="Invalid API key")
 
-    users[user_email]["credits"] += amount
+    users[user_email]["credits"] += data.amount
     save_users(users)
 
     return {
@@ -191,11 +221,10 @@ def topup(data: dict):
 # -----------------------------
 # Emergency Mode
 # -----------------------------
-
 @app.post("/emergency")
 def emergency(data: dict):
 
-    situation = data.get("situation")
+    situation = data.get("situation", "unknown")
 
     return {
         "mode": "EMERGENCY",
@@ -210,9 +239,8 @@ def emergency(data: dict):
 
 
 # -----------------------------
-# Future Expansion Hook
+# Roadmap
 # -----------------------------
-
 @app.get("/system/roadmap")
 def roadmap():
 
