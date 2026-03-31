@@ -2,32 +2,23 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>KING DIADEM</title>
 <style>
-body {margin:0;background:#020617;color:white;font-family:sans-serif;}
-#brain {position:fixed;z-index:0;}
-#chat {position:relative;z-index:1;height:80vh;overflow:auto;padding:10px;}
-#inputArea {position:fixed;bottom:0;width:100%;display:flex;}
+body{margin:0;background:#020617;color:white;font-family:sans-serif;}
+#chat{height:85vh;overflow:auto;padding:10px;}
+#input{position:fixed;bottom:0;width:100%;display:flex;}
 input{flex:1;padding:10px;}
-button{padding:10px;background:green;color:white;border:none;}
-.user{text-align:right;color:#38bdf8;}
-.bot{text-align:left;color:#22c55e;}
+button{padding:10px;}
 </style>
 </head>
-
 <body>
-
-<canvas id="brain"></canvas>
 
 <div id="chat"></div>
 
-<div id="inputArea">
-<input id="msg" placeholder="พิมพ์..." />
+<div id="input">
+<input id="msg">
 <button onclick="send()">Send</button>
 </div>
 
-<script src="/static/ai_brain.js"></script>
 <script src="/static/app.js"></script>
-
 </body>
 </html>
