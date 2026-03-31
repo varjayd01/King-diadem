@@ -2,17 +2,104 @@
 <html>
 <head>
     <title>KING DIADEM</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        #chat {
+            height: 70vh;
+            overflow-y: auto;
+            padding: 20px;
+            background: #020617;
+        }
+
+        .msg {
+            margin-bottom: 10px;
+        }
+
+        .user {
+            text-align: right;
+            color: #38bdf8;
+        }
+
+        .bot {
+            text-align: left;
+            color: #22c55e;
+        }
+
+        #inputArea {
+            display: flex;
+            padding: 10px;
+            background: #020617;
+        }
+
+        #msg {
+            flex: 1;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px;
+            background: #22c55e;
+            border: none;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
-<h1>KING DIADEM</h1>
+<h1>👑 KING DIADEM</h1>
 
-<input id="msg" placeholder="พิมพ์...">
-<button onclick="send()">Send</button>
+<div id="chat"></div>
 
-<div id="out"></div>
+<div id="inputArea">
+    <input id="msg" placeholder="พิมพ์..." />
+    <button onclick="send()">Send</button>
+</div>
 
-<script src="/static/app.js"></script>
+<script>
+async function send() {
+    const input = document.getElementById("msg")
+    const chat = document.getElementById("chat")
+    const msg = input.value.trim()
+
+    if (!msg) return
+
+    // user message
+    chat.innerHTML += `<div class="msg user">🧑 ${msg}</div>`
+
+    input.value = ""
+    chat.scrollTop = chat.scrollHeight
+
+    try {
+        const res = await fetch("/decision", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: msg })
+        })
+
+        const data = await res.json()
+
+        // bot message
+        chat.innerHTML += `<div class="msg bot">👑 ${data.reply}</div>`
+        chat.scrollTop = chat.scrollHeight
+
+    } catch (err) {
+        chat.innerHTML += `<div class="msg bot">❌ error</div>`
+    }
+}
+</script>
 
 </body>
 </html>
