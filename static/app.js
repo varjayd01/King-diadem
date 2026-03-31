@@ -1,40 +1,38 @@
-async function send() {
-    const input = document.getElementById("msg")
-    const output = document.getElementById("out")
+const API_KEY = "ใส่ api_key";
 
-    const msg = input.value.trim()
+async function send(){
 
-    if (!msg) {
-        output.innerText = "⚠️ กรุณาพิมพ์ข้อความก่อน"
-        return
-    }
+const input=document.getElementById("msg")
+const chat=document.getElementById("chat")
 
-    // 🔒 lock ปุ่มกัน spam
-    input.disabled = true
+const msg=input.value.trim()
+if(!msg)return
 
-    try {
-        const res = await fetch("/decision", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: msg })
-        })
+chat.innerHTML+=`<div class="user">🧑 ${msg}</div>`
+input.value=""
 
-        if (!res.ok) {
-            throw new Error(`Server error: ${res.status}`)
-        }
+const res=await fetch("/decision",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+api_key:API_KEY,
+question:msg
+})
+})
 
-        const data = await res.json()
+const data=await res.json()
+const r=data.reply
 
-        output.innerText = data.reply || "⚠️ ไม่มีคำตอบจากระบบ"
+chat.innerHTML+=`
+<div class="bot">
+👑 ${r.text}<br>
+⚖️ risk: ${r.risk}<br>
+🧭 ${r.choices.join(", ")}
+</div>
+`
 
-    } catch (err) {
-        output.innerText = "❌ ระบบมีปัญหา ลองใหม่อีกครั้ง"
-        console.error("ERROR:", err)
-    } finally {
-        // 🔓 unlock
-        input.disabled = false
-        input.value = ""
-    }
+// 🔥 connect visualization
+updateBrain(r.risk)
+
+chat.scrollTop=chat.scrollHeight
 }
