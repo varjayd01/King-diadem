@@ -1,121 +1,59 @@
-import os
-from google import genai
+def run(self, user_input, mode="normal", persona_mode=None):
 
-from INTELLIGENCE.pattern_engine import analyze_patterns
-from INTELLIGENCE.risk_engine import evaluate_risk
-from INTELLIGENCE.decision_intelligence import intelligence_layer
+    reality = self.reality_filter(user_input)
+    clean = reality["filtered_input"]
 
-from ENGINE.future_simulator import forecast
-from ENGINE.collapse_predictor import predict_collapse
-from ENGINE.choice_optimizer import optimize_choice
-from ENGINE.persona_engine import get_persona
-from ENGINE.world_model import build_world_state
-from ENGINE.world_intelligence import build_risk_map, build_resource_map
+    patterns = analyze_patterns(clean)
+    risk = evaluate_risk(clean)
 
+    world = build_world_state()
+    risk_map = build_risk_map()
+    resource_map = build_resource_map()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=GEMINI_API_KEY)
+    future = forecast()
+    collapse = predict_collapse(risk["risk_level"])
 
-
-class KingDiademEngine:
-
-    def reality_filter(self, text):
-        illusion_keywords = ["อยากได้ทันที", "รวยเร็ว", "ทางลัด", "ชนะ 100%"]
-
-        flags = [k for k in illusion_keywords if k in text]
-
+    # 🔥 STOP THE LINE
+    if collapse or risk["risk_level"] >= 0.95:
         return {
-            "filtered_input": text,
-            "illusion_flags": flags
+            "text": "⛔ SYSTEM STOP — high collapse risk",
+            "risk": risk["risk_level"],
+            "choices": ["STOP", "WAIT", "EXIT"]
         }
 
-    def call_gemini(self, prompt):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
-            )
-            return response.text
-        except Exception as e:
-            return f"AI ERROR: {str(e)}"
+    # 🔥 AI (controlled)
+    ai = self.call_gemini(clean)
+    if "ERROR" in ai:
+        ai = "AI unavailable"
 
-    def run(self, user_input, mode="normal", persona_mode=None):
+    if risk["risk_level"] > 0.8:
+        ai = "High risk — AI ignored"
 
-        # ===== 1. Reality =====
-        reality = self.reality_filter(user_input)
-        clean = reality["filtered_input"]
+    base = f"Structured analysis: {clean}"
+    intelligence = intelligence_layer(base, patterns, risk, ai)
 
-        # ===== 2. Pattern / Risk =====
-        patterns = analyze_patterns(clean)
-        risk = evaluate_risk(clean)
+    persona = get_persona(persona_mode)
 
-        # ===== 3. World =====
-        world = build_world_state()
-        risk_map = build_risk_map()
-        resource_map = build_resource_map()
+    actions = [
+        "reduce risk",
+        "increase resource",
+        "wait",
+        "move location"
+    ]
 
-        # ===== 4. Simulation =====
-        future = forecast()
-        collapse = predict_collapse(risk["risk_level"])
+    ranked = optimize_choice(
+        actions,
+        risk=risk,
+        collapse=collapse,
+        world=world
+    )
 
-        # ===== 5. External AI =====
-        ai = self.call_gemini(clean)
-
-        # ===== 6. Core Intelligence =====
-        base = f"Structured analysis of: {clean}"
-        intelligence = intelligence_layer(base, patterns, risk, ai)
-
-        # ===== 7. Persona =====
-        persona = get_persona(persona_mode)
-
-        # ===== 8. Choices =====
-        actions = [
-            "reduce risk",
-            "increase resource",
-            "wait",
-            "move location"
-        ]
-
-        ranked = optimize_choice(actions)
-
-        # ===== FINAL OUTPUT =====
-        final = f"""
-[KING DIADEM FULL SYSTEM]
-
-🧠 Input:
-{clean}
-
-⚠️ Illusion Flags:
-{reality['illusion_flags']}
-
-📊 Risk Level:
-{risk.get('risk_level')}
-
-🌍 World Nodes:
-{world.get('total_nodes')}
-
-📉 Collapse:
-{collapse}
-
-🔮 Future:
-{future}
-
-🎯 Best Action:
-{ranked[0] if ranked else "NONE"}
-
-🧬 Persona:
-{persona}
-
-🤖 Gemini Insight:
-{ai}
-"""
-
-        return {
-            "reality": reality,
-            "risk": risk,
-            "future": future,
-            "collapse": collapse,
-            "choices": ranked,
-            "persona": persona,
-            "final": final
-        }
+    return {
+        "text": intelligence,
+        "risk": risk["risk_level"],
+        "collapse": collapse,
+        "future": future,
+        "persona": persona,
+        "choices": ranked,
+        "best_action": ranked[0] if ranked else None
+    }
