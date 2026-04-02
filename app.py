@@ -1,33 +1,47 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-# serve static
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# 🔥 serve frontend จาก backend เลย (จบปัญหา Pages)
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
-# หน้าเว็บหลัก
-@app.get("/")
-def root():
-    return FileResponse("static/index.html")
+# 🔥 CORS กันยิงพัง
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# schema
 class Input(BaseModel):
-    message: str
+    input: str
 
-# API
 @app.post("/decision")
 def decision(data: Input):
-    msg = data.message
+    text = data.input
 
-    # logic ง่ายๆ (พัฒนาเพิ่มได้)
-    if "เสี่ยง" in msg:
-        reply = "⚠️ Risk detected"
-    elif "ทางเลือก" in msg:
-        reply = "คุณยังมีอย่างน้อย 1 ทางเสมอ"
-    else:
-        reply = f"KING DIADEM: {msg}"
+    risk = 0
+    tier = "T2"
 
-    return {"reply": reply}
+    if "โกง" in text or "ผิด" in text:
+        risk += 2
+
+    if "ฆ่า" in text or "ทำร้าย" in text:
+        risk += 5
+
+    if risk >= 5:
+        return {
+            "response": "⛔ STOP THE LINE",
+            "tier": "K12",
+            "risk": risk
+        }
+
+    return {
+        "response": "✅ ผ่าน",
+        "tier": tier,
+        "risk": risk
+    }
