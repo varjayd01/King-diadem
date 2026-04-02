@@ -1,21 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-# 🔥 serve frontend จาก backend เลย (จบปัญหา Pages)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
-
-# 🔥 CORS กันยิงพัง
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 class Input(BaseModel):
     input: str
