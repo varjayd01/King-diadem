@@ -1,91 +1,124 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>KING DIADEM</title>
+from fastapi import FastAPI, HTTPException, Header
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import json, os, uuid, hashlib
 
-<style>
-body{
-    margin:0;
-    background:#343541;
-    font-family:sans-serif;
-    color:white;
-}
+app = FastAPI()
 
-#chat{
-    height:85vh;
-    overflow-y:auto;
-    padding:20px;
-}
+# ===== CORS (สำคัญมาก) =====
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-.msg{
-    margin:10px 0;
-    padding:12px;
-    border-radius:10px;
-    max-width:80%;
-}
+# ===== DATABASE =====
+USERS_FILE = "data/users.json"
+os.makedirs("data", exist_ok=True)
 
-.user{
-    background:#2563eb;
-    margin-left:auto;
-}
+def load_users():
+    if not os.path.exists(USERS_FILE): return {}
+    try:
+        with open(USERS_FILE) as f: return json.load(f)
+    except: return {}
 
-.bot{
-    background:#444654;
-}
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
 
-#input{
-    display:flex;
-    padding:10px;
-    background:#40414f;
-}
+def hash_password(p):
+    return hashlib.sha256(p.encode()).hexdigest()
 
-input{
-    flex:1;
-    padding:12px;
-    border:none;
-    border-radius:5px;
-}
+def get_user(api_key):
+    users = load_users()
+    for email in users:
+        if users[email].get("api_key") == api_key:
+            return email, users
+    return None, users
 
-button{
-    margin-left:10px;
-    padding:12px;
-}
-</style>
-</head>
+# ===== MODELS =====
+class Auth(BaseModel):
+    email: str
+    password: str
 
-<body>
+class DecisionReq(BaseModel):
+    question: str
 
-<div id="chat"></div>
+# ===== AUTH =====
+@app.post("/signup")
+def signup(data: Auth):
+    users = load_users()
+    if data.email in users:
+        raise HTTPException(400, "User exists")
 
-<div id="input">
-<input id="msg" placeholder="พิมพ์..." onkeypress="if(event.key==='Enter')send()">
-<button onclick="send()">ส่ง</button>
-</div>
+    key = "kd_" + uuid.uuid4().hex
 
-<script>
-async function send(){
-    const input = document.getElementById("msg");
-    const chat = document.getElementById("chat");
+    users[data.email] = {
+        "password": hash_password(data.password),
+        "credits": 10,
+        "api_key": key
+    }
 
-    const text = input.value.trim();
-    if(!text) return;
+    save_users(users)
+    return {"api_key": key, "credits": 10}
 
-    chat.innerHTML += `<div class="msg user">${text}</div>`;
-    input.value="";
+@app.post("/login")
+def login(data: Auth):
+    users = load_users()
 
-    const res = await fetch("/decision",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({question:text})
-    });
+    if data.email not in users or users[data.email]["password"] != hash_password(data.password):
+        raise HTTPException(401, "Invalid credentials")
 
-    const data = await res.json();
+    return users[data.email]
 
-    chat.innerHTML += `<div class="msg bot">${data.response}</div>`;
-    chat.scrollTop = chat.scrollHeight;
-}
-</script>
+# ===== STATUS =====
+@app.get("/status")
+def status(api_key: str = Header(None)):
+    email, users = get_user(api_key)
+    if not email:
+        raise HTTPException(401, "Invalid key")
 
-</body>
-</html>
+    return {"credits": users[email]["credits"]}
+
+# ===== TOPUP =====
+@app.post("/topup")
+def topup(amount: dict, api_key: str = Header(None)):
+    email, users = get_user(api_key)
+    if not email:
+        raise HTTPException(401, "Unauthorized")
+
+    amt = amount.get("amount", 0)
+    users[email]["credits"] += amt
+    save_users(users)
+
+    return {"credits": users[email]["credits"]}
+
+# ===== DECISION =====
+@app.post("/decision")
+def decision(req: DecisionReq, api_key: str = Header(None)):
+    email, users = get_user(api_key)
+
+    if not email:
+        return {"response": "กรุณาล็อกอินก่อน"}
+
+    if users[email]["credits"] <= 0:
+        return {"response": "เครดิตหมด"}
+
+    users[email]["credits"] -= 1
+    save_users(users)
+
+    q = req.question.lower()
+
+    if "เงิน" in q:
+        ans = "รักษาเงินก่อน อย่าเสี่ยง"
+    elif "เสี่ยง" in q:
+        ans = "ลด exposure ก่อน"
+    else:
+        ans = "เลือกทางที่ยังมีทางหนี"
+
+    return {
+        "response": ans,
+        "credits": users[email]["credits"]
+    }
