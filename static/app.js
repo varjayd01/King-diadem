@@ -1,28 +1,39 @@
+const chat = document.getElementById("chat");
+
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.innerText = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
 async function run() {
-  const text = document.getElementById("input").value;
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if (!text) return;
 
-  const res = await fetch("/decision", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ input: text })
-  });
+  addMessage("👤 " + text, "user");
+  input.value = "";
 
-  const data = await res.json();
+  try {
+    const res = await fetch("/decision", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
+    });
 
-  // 🔥 FIX ตัวที่พี่พัง
-  document.getElementById("tier").innerText = "Tier: " + (data.tier || "N/A");
-  document.getElementById("risk").innerText = "Risk: " + (data.risk ?? 0);
+    const data = await res.json();
 
-  log(data.response || "NO RESPONSE");
+    addMessage("🤖 " + data.response, "ai");
+
+  } catch (err) {
+    addMessage("❌ ระบบมีปัญหา", "ai");
+  }
 }
 
 function stop() {
-  log("⛔ STOP");
-}
-
-function log(msg) {
-  const box = document.getElementById("log");
-  box.innerHTML += "<div>> " + msg + "</div>";
+  addMessage("⛔ STOPPED", "ai");
 }
