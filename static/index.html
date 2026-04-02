@@ -1,25 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>KING DIADEM</title>
-<link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <title>KING DIADEM™ | Sovereign Interface</title>
+    <style>
+        :root { --neon: #00ffcc; --dark: #050505; }
+        body { background: var(--dark); color: white; font-family: monospace; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 300px; background: #111; padding: 20px; border-right: 1px solid var(--neon); }
+        .main { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; }
+        .terminal { flex-grow: 1; background: black; border: 1px solid #333; padding: 20px; overflow-y: auto; color: var(--neon); margin-bottom: 20px; }
+        .btn { background: var(--neon); color: black; border: none; padding: 10px; cursor: pointer; font-weight: bold; width: 100%; border-radius: 4px; }
+        input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; margin-bottom: 10px; }
+    </style>
 </head>
-
 <body>
-
-<canvas id="bg"></canvas>
-
-<div class="panel">
-    <h1>👑 KING DIADEM</h1>
-
-    <textarea id="msg" placeholder="พิมพ์คำสั่ง..."></textarea>
-
-    <button onclick="run()">⚡ RUN</button>
-
-    <pre id="out"></pre>
-</div>
-
-<script src="/static/app.js"></script>
+    <div class="sidebar">
+        <h2>LYLA KERNEL</h2>
+        <p>Status: <span style="color:var(--neon)">ONLINE</span></p>
+        <hr>
+        <h3>TOP UP (STRIPE)</h3>
+        <form action="/create-checkout-session" method="POST">
+            <input type="number" name="amount" value="500" min="20" placeholder="จำนวนเงิน (THB)">
+            <button type="submit" class="btn">เติมเงินผ่าน Stripe</button>
+        </form>
+    </div>
+    <div class="main">
+        <div class="terminal" id="term">> [READY] WAITING FOR COMMAND...</div>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="cmd" placeholder="รันสัจธรรมของพี่ชาย..." onkeypress="if(event.key=='Enter') run()">
+            <button class="btn" style="width:150px;" onclick="run()">EXECUTE</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
