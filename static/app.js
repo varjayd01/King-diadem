@@ -1,42 +1,25 @@
-const API_KEY = "ใส่_api_key_พี่";
-const MODE = "chat"; // chat หรือ decision
+async function run() {
+  const text = document.getElementById("input").value;
 
-async function send(){
+  const res = await fetch("/decision", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({input: text})
+  });
 
-const msgInput = document.getElementById("msg")
-const chat = document.getElementById("chat")
+  const data = await res.json();
 
-const text = msgInput.value
-if(!text) return
+  document.getElementById("tier").innerText = "Tier: " + data.tier;
+  document.getElementById("risk").innerText = "Risk: " + data.risk;
 
-// user
-chat.innerHTML += `<div class="msg user">🧑 ${text}</div>`
-
-msgInput.value=""
-
-// scroll
-chat.scrollTop = chat.scrollHeight
-
-// call API
-const res = await fetch("/decision", {
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-api_key:API_KEY,
-question:text,
-mode:MODE
-})
-})
-
-const data = await res.json()
-
-// bot
-if(data.type === "chat"){
-chat.innerHTML += `<div class="msg bot">🤖 ${data.reply}</div>`
-}else{
-chat.innerHTML += `<div class="msg bot">👑 ${data.reply.text}</div>`
+  log(data.response);
 }
 
-// scroll
-chat.scrollTop = chat.scrollHeight
+function stop() {
+  log("⛔ STOP");
+}
+
+function log(msg) {
+  const box = document.getElementById("log");
+  box.innerHTML += "<div>> " + msg + "</div>";
 }
