@@ -1,37 +1,24 @@
-body{
-  background:#0b0f1a;
-  color:white;
-  font-family:sans-serif;
+body {
+  background: #0a0f1a;
+  color: white;
+  font-family: monospace;
+  padding: 20px;
 }
 
-#chat{
-  padding:20px;
+textarea {
+  width: 100%;
+  min-height: 150px;
+  font-size: 16px;
+  padding: 10px;
+  background: #111;
+  color: white;
+  border: 1px solid #333;
 }
 
-.bubble{
-  margin:10px;
-  padding:10px;
-  border-radius:10px;
-  max-width:80%;
-}
-
-.user{
-  background:#2d6cdf;
-  margin-left:auto;
-}
-
-.ai{
-  background:#1abc9c;
-}
-
-.input{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  display:flex;
-}
-
-input{
-  flex:1;
-  padding:10px;
+button {
+  margin: 5px;
+  padding: 10px;
+  background: #1f6feb;
+  border: none;
+  color: white;
 }
