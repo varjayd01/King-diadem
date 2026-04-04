@@ -1,36 +1,15 @@
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-import json, os, uuid, hashlib, importlib
+import json, os, uuid, hashlib
 
-# =========================
-# OPTIONAL AI (Gemini)
-# =========================
-try:
-    import google.generativeai as genai
-
-    GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
-
-    if GEMINI_KEY:
-        genai.configure(api_key=GEMINI_KEY)
-        ai_model = genai.GenerativeModel("gemini-1.5-flash")
-    else:
-        ai_model = None
-except:
-    ai_model = None
-
-# =========================
-# APP
-# =========================
 app = FastAPI()
 
-# =========================
-# STORAGE
-# =========================
-DATA_DIR = "data"
-USERS_FILE = f"{DATA_DIR}/users.json"
-
-os.makedirs(DATA_DIR, exist_ok=True)
+# -------------------------
+# DATABASE
+# -------------------------
+USERS_FILE = "data/users.json"
+os.makedirs("data", exist_ok=True)
 
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -55,21 +34,9 @@ def get_user(api_key):
             return email, users
     return None, users
 
-
-# =========================
-# ENGINE LOADER
-# =========================
-def load_engine():
-    try:
-        module = importlib.import_module("ENGINE.decision_engine")
-        return module.decision_engine
-    except:
-        return None
-
-
-# =========================
-# MODELS
-# =========================
+# -------------------------
+# MODEL
+# -------------------------
 class Auth(BaseModel):
     email: str
     password: str
@@ -77,90 +44,199 @@ class Auth(BaseModel):
 class DecisionReq(BaseModel):
     question: str
 
-
-# =========================
-# FRONTEND (Launch UI)
-# =========================
+# -------------------------
+# FRONTEND (UI แบบ ChatGPT)
+# -------------------------
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
-    <html>
-    <body style="background:black;color:#00f2ff;font-family:sans-serif">
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+    margin:0;
+    font-family:sans-serif;
+    background:#0b0b0b;
+    color:white;
+}
 
-    <h1>👑 KING DIADEM</h1>
+.container {
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+}
 
-    <input id="email" placeholder="email"><br>
-    <input id="pass" placeholder="password"><br><br>
+.topbar {
+    padding:15px;
+    border-bottom:1px solid #222;
+    font-size:18px;
+    font-weight:bold;
+    color:#00f2ff;
+}
 
-    <button onclick="signup()">Signup</button>
-    <button onclick="login()">Login</button>
+.chat {
+    flex:1;
+    overflow:auto;
+    padding:15px;
+}
 
-    <hr>
+.msg {
+    margin:10px 0;
+    padding:12px;
+    border-radius:10px;
+    max-width:80%;
+}
 
-    <textarea id="q" placeholder="Ask the system..." style="width:300px;height:100px"></textarea>
-    <br>
-    <button onclick="send()">EXECUTE</button>
+.user {
+    background:#0055ff;
+    align-self:flex-end;
+}
 
-    <pre id="out"></pre>
+.bot {
+    background:#222;
+    align-self:flex-start;
+}
 
-    <script>
+.input-area {
+    display:flex;
+    padding:10px;
+    border-top:1px solid #222;
+}
 
-    async function signup(){
-        const email = email.value;
-        const password = pass.value;
+textarea {
+    flex:1;
+    height:50px;
+    border-radius:10px;
+    border:none;
+    padding:10px;
+}
 
-        const res = await fetch("/signup",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({email,password})
-        });
+button {
+    margin-left:10px;
+    padding:10px 15px;
+    border:none;
+    border-radius:10px;
+    background:#00f2ff;
+    color:black;
+    font-weight:bold;
+}
 
-        const data = await res.json();
+.auth {
+    padding:10px;
+    border-bottom:1px solid #222;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="topbar">👑 KING DIADEM</div>
+
+<div class="auth">
+<input id="email" placeholder="email">
+<input id="pass" placeholder="password">
+<button onclick="signup()">Signup</button>
+<button onclick="login()">Login</button>
+</div>
+
+<div id="chat" class="chat"></div>
+
+<div class="input-area">
+<textarea id="q" placeholder="Ask anything..."></textarea>
+<button onclick="send()">Send</button>
+</div>
+
+</div>
+
+<script>
+
+function addMsg(text, type){
+    const div = document.createElement("div");
+    div.className = "msg " + type;
+    div.innerText = text;
+    document.getElementById("chat").appendChild(div);
+    document.getElementById("chat").scrollTop = 999999;
+}
+
+async function signup(){
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pass").value;
+
+    const res = await fetch("/signup",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({email,password})
+    });
+
+    const data = await res.json();
+
+    if(data.api_key){
         localStorage.setItem("key", data.api_key);
-        alert("created");
+        alert("Signup success");
+    }else{
+        alert(JSON.stringify(data));
     }
+}
 
-    async function login(){
-        const email = email.value;
-        const password = pass.value;
+async function login(){
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pass").value;
 
-        const res = await fetch("/login",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({email,password})
-        });
+    const res = await fetch("/login",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({email,password})
+    });
 
-        const data = await res.json();
+    const data = await res.json();
+
+    if(data.api_key){
         localStorage.setItem("key", data.api_key);
-        alert("login success");
+        alert("Login success");
+    }else{
+        alert(JSON.stringify(data));
+    }
+}
+
+async function send(){
+
+    const key = localStorage.getItem("key");
+
+    if(!key){
+        alert("login ก่อน");
+        return;
     }
 
-    async function send(){
-        const q = document.getElementById("q").value;
+    const q = document.getElementById("q").value;
 
-        const res = await fetch("/decision",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                "api_key": localStorage.getItem("key")
-            },
-            body: JSON.stringify({question:q})
-        });
+    addMsg(q,"user");
 
-        const data = await res.json();
-        document.getElementById("out").innerText =
-            JSON.stringify(data,null,2);
-    }
+    const res = await fetch("/decision",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "api_key": key
+        },
+        body: JSON.stringify({question:q})
+    });
 
-    </script>
-    </body>
-    </html>
+    const data = await res.json();
+
+    addMsg(data.response || JSON.stringify(data),"bot");
+}
+
+</script>
+
+</body>
+</html>
     """
 
-
-# =========================
-# AUTH
-# =========================
+# -------------------------
+# SIGNUP
+# -------------------------
 @app.post("/signup")
 def signup(data: Auth):
     users = load_users()
@@ -180,7 +256,9 @@ def signup(data: Auth):
 
     return {"api_key": key, "credits": 10}
 
-
+# -------------------------
+# LOGIN
+# -------------------------
 @app.post("/login")
 def login(data: Auth):
     users = load_users()
@@ -193,15 +271,14 @@ def login(data: Auth):
 
     return users[data.email]
 
-
-# =========================
-# DECISION CORE
-# =========================
+# -------------------------
+# DECISION ENGINE
+# -------------------------
 @app.post("/decision")
 def decision(req: DecisionReq, api_key: str = Header(None)):
 
     if not api_key:
-        return {"error": "no api key"}
+        return {"error":"no api key"}
 
     email, users = get_user(api_key)
 
@@ -209,75 +286,21 @@ def decision(req: DecisionReq, api_key: str = Header(None)):
         raise HTTPException(401, "bad key")
 
     if users[email]["credits"] <= 0:
-        return {"msg": "no credits"}
+        return {"response":"เครดิตหมด"}
 
     users[email]["credits"] -= 1
     save_users(users)
 
-    # ------------------
-    # 1. ENGINE
-    # ------------------
-    engine = load_engine()
-
-    if engine:
-        try:
-            result = engine(req.question)
-            return {
-                "source": "ENGINE",
-                "result": result,
-                "credits_left": users[email]["credits"]
-            }
-        except:
-            pass
-
-    # ------------------
-    # 2. GEMINI (LYLA)
-    # ------------------
-    if ai_model:
-        try:
-            prompt = f"""
-You are LYLA KERNEL inside KING DIADEM system.
-Answer like a strategic AI.
-Keep it real, short, and survival-focused.
-
-Question: {req.question}
-"""
-            response = ai_model.generate_content(prompt)
-
-            return {
-                "source": "LYLA",
-                "response": response.text,
-                "credits_left": users[email]["credits"]
-            }
-        except:
-            pass
-
-    # ------------------
-    # 3. FALLBACK (ไม่ตาย)
-    # ------------------
     text = req.question.lower()
 
     if "เงิน" in text:
-        answer = "เริ่มเล็กก่อน รักษาสภาพคล่อง"
+        answer = "เริ่มเล็ก รอดก่อน แล้วค่อยขยาย"
     elif "เสี่ยง" in text:
-        answer = "ลดความเสี่ยงก่อน แล้วค่อยขยาย"
+        answer = "ลด risk ก่อน แล้วค่อย move"
     else:
-        answer = "อย่าเลือกทางที่ตัดอนาคต"
+        answer = "เลือกทางที่ไม่ตัดทางเลือกอนาคต"
 
     return {
-        "source": "fallback",
         "response": answer,
         "credits_left": users[email]["credits"]
     }
-
-
-# =========================
-# SYSTEM STATUS
-# =========================
-@app.get("/system")
-def system():
-    return {
-        "system": "KING DIADEM",
-        "status": "ONLINE",
-        "engine": "AUTO"
-}
