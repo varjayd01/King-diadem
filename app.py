@@ -3,12 +3,30 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import json, os, uuid, hashlib, importlib
 
+# =========================
+# OPTIONAL AI (Gemini)
+# =========================
+try:
+    import google.generativeai as genai
+
+    GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+
+    if GEMINI_KEY:
+        genai.configure(api_key=GEMINI_KEY)
+        ai_model = genai.GenerativeModel("gemini-1.5-flash")
+    else:
+        ai_model = None
+except:
+    ai_model = None
+
+# =========================
+# APP
+# =========================
 app = FastAPI()
 
 # =========================
 # STORAGE
 # =========================
-
 DATA_DIR = "data"
 USERS_FILE = f"{DATA_DIR}/users.json"
 
@@ -39,9 +57,8 @@ def get_user(api_key):
 
 
 # =========================
-# DYNAMIC ENGINE LOADER (หัวใจ)
+# ENGINE LOADER
 # =========================
-
 def load_engine():
     try:
         module = importlib.import_module("ENGINE.decision_engine")
@@ -53,7 +70,6 @@ def load_engine():
 # =========================
 # MODELS
 # =========================
-
 class Auth(BaseModel):
     email: str
     password: str
@@ -63,16 +79,15 @@ class DecisionReq(BaseModel):
 
 
 # =========================
-# FRONTEND (เบา + ไม่พัง)
+# FRONTEND (Launch UI)
 # =========================
-
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
     <html>
-    <body style="background:black;color:white;font-family:sans-serif">
+    <body style="background:black;color:#00f2ff;font-family:sans-serif">
 
-    <h2>KING DIADEM</h2>
+    <h1>👑 KING DIADEM</h1>
 
     <input id="email" placeholder="email"><br>
     <input id="pass" placeholder="password"><br><br>
@@ -82,17 +97,17 @@ def home():
 
     <hr>
 
-    <textarea id="q" placeholder="ถาม..." style="width:300px;height:100px"></textarea>
+    <textarea id="q" placeholder="Ask the system..." style="width:300px;height:100px"></textarea>
     <br>
-    <button onclick="send()">SEND</button>
+    <button onclick="send()">EXECUTE</button>
 
     <pre id="out"></pre>
 
     <script>
 
     async function signup(){
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("pass").value;
+        const email = email.value;
+        const password = pass.value;
 
         const res = await fetch("/signup",{
             method:"POST",
@@ -102,12 +117,12 @@ def home():
 
         const data = await res.json();
         localStorage.setItem("key", data.api_key);
-        alert("Signup success");
+        alert("created");
     }
 
     async function login(){
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("pass").value;
+        const email = email.value;
+        const password = pass.value;
 
         const res = await fetch("/login",{
             method:"POST",
@@ -117,7 +132,7 @@ def home():
 
         const data = await res.json();
         localStorage.setItem("key", data.api_key);
-        alert("Login success");
+        alert("login success");
     }
 
     async function send(){
@@ -146,7 +161,6 @@ def home():
 # =========================
 # AUTH
 # =========================
-
 @app.post("/signup")
 def signup(data: Auth):
     users = load_users()
@@ -183,7 +197,6 @@ def login(data: Auth):
 # =========================
 # DECISION CORE
 # =========================
-
 @app.post("/decision")
 def decision(req: DecisionReq, api_key: str = Header(None)):
 
@@ -201,29 +214,55 @@ def decision(req: DecisionReq, api_key: str = Header(None)):
     users[email]["credits"] -= 1
     save_users(users)
 
+    # ------------------
+    # 1. ENGINE
+    # ------------------
     engine = load_engine()
 
-    # 🧠 ถ้ามี ENGINE จริง → ใช้
     if engine:
         try:
             result = engine(req.question)
             return {
-                "source": "real_engine",
+                "source": "ENGINE",
                 "result": result,
                 "credits_left": users[email]["credits"]
             }
         except:
             pass
 
-    # 🧠 fallback (กันระบบตาย)
+    # ------------------
+    # 2. GEMINI (LYLA)
+    # ------------------
+    if ai_model:
+        try:
+            prompt = f"""
+You are LYLA KERNEL inside KING DIADEM system.
+Answer like a strategic AI.
+Keep it real, short, and survival-focused.
+
+Question: {req.question}
+"""
+            response = ai_model.generate_content(prompt)
+
+            return {
+                "source": "LYLA",
+                "response": response.text,
+                "credits_left": users[email]["credits"]
+            }
+        except:
+            pass
+
+    # ------------------
+    # 3. FALLBACK (ไม่ตาย)
+    # ------------------
     text = req.question.lower()
 
     if "เงิน" in text:
-        answer = "เริ่มเล็ก รักษาสภาพคล่องก่อน"
+        answer = "เริ่มเล็กก่อน รักษาสภาพคล่อง"
     elif "เสี่ยง" in text:
-        answer = "ลด exposure ก่อน แล้วค่อยขยับ"
+        answer = "ลดความเสี่ยงก่อน แล้วค่อยขยาย"
     else:
-        answer = "เลือกทางที่ยังไม่ตัดทางเลือกในอนาคต"
+        answer = "อย่าเลือกทางที่ตัดอนาคต"
 
     return {
         "source": "fallback",
@@ -235,11 +274,10 @@ def decision(req: DecisionReq, api_key: str = Header(None)):
 # =========================
 # SYSTEM STATUS
 # =========================
-
 @app.get("/system")
 def system():
     return {
         "system": "KING DIADEM",
-        "status": "online",
-        "engine": "connected_if_available"
-    }
+        "status": "ONLINE",
+        "engine": "AUTO"
+}
