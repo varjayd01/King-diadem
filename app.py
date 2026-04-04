@@ -1,89 +1,245 @@
-import os
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-from dotenv import load_dotenv
-import google.generativeai as genai
+from fastapi import FastAPI, HTTPException, Header
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+import json, os, uuid, hashlib, importlib
 
-# [IMPORT CUSTOM MODULES] - ดึงไฟล์ที่พี่ทำไว้ใน GitHub มาใช้งานจริง
-# หมายเหตุ: ชื่อไฟล์ต้องตรงกับใน Repo ของพี่นะตะ
-try:
-    from AUTH.auth_system import AuthManager
-    from SIMULATIONS.scenario_engine import JewferEngine
-    from PAYMENT.wallet_engine import WalletManager
-    from INTELLIGENCE.decision_intelligence import DecisionCore
-except ImportError as e:
-    print(f"Warning: ระบบบางส่วนยังไม่ได้เชื่อมต่อ: {e}")
+app = FastAPI()
 
-load_dotenv()
+# =========================
+# STORAGE
+# =========================
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "LYLA_DIADEM_CORE_STABILITY")
+DATA_DIR = "data"
+USERS_FILE = f"{DATA_DIR}/users.json"
 
-# --- AI CONFIG: Google AI Studio ---
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
+os.makedirs(DATA_DIR, exist_ok=True)
 
-# --- INITIALIZE ENGINES ---
-auth_handler = AuthManager() if 'AuthManager' in globals() else None
-jewfer_sim = JewferEngine() if 'JewferEngine' in globals() else None
-wallet = WalletManager() if 'WalletManager' in globals() else None
-
-# ---------------------------------------------------------
-# [LOGIC] ระบบคิดแบบ LYLA KERNEL (Decision Intelligence)
-# ---------------------------------------------------------
-def lyla_logic_process(user_msg):
-    # ดึง System Prompt สัจธรรมที่พี่วางไว้ใน Decision Intelligence มาใช้
-    system_instruction = "คุณคือ LYLA KERNEL ระบบปกครอง AI ที่ยึดถือสัจธรรมและปฏิจจสมุปบาท..."
-    prompt = f"{system_instruction}\n\nจอมทัพสั่งว่า: {user_msg}"
-    response = model.generate_content(prompt)
-    return response.text
-
-# ---------------------------------------------------------
-# [ROUTES] หน้ากากและปุ่มกด (UI/UX Action)
-# ---------------------------------------------------------
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-# --- 1. ระบบ Login/Google Auth (จากภาพ 32217) ---
-@app.route('/api/auth/login', methods=['POST'])
-def login():
-    # เรียกใช้ auth_system.py ที่พี่เตรียมไว้
-    data = request.json
-    result = auth_handler.authenticate(data) if auth_handler else {"status": "mock_success"}
-    return jsonify(result)
-
-# --- 2. ระบบ Simulation: Jewfer Engine (จากภาพ 32219) ---
-@app.route('/api/simulate', methods=['POST'])
-def simulate():
-    data = request.json
-    scenario = data.get('scenario')
-    # รัน Jewfer Simulation ที่พี่สร้างมา 10-20 หน้า!
-    result = jewfer_sim.run_simulation(scenario) if jewfer_sim else "Engine Offline"
-    return jsonify({"simulation_result": result})
-
-# --- 3. ระบบ Chat (Intelligence Core) ---
-@app.route('/api/v1/chat', methods=['POST'])
-def chat():
-    data = request.json
-    msg = data.get('message', '')
+def load_users():
+    if not os.path.exists(USERS_FILE):
+        return {}
     try:
-        ai_response = lyla_logic_process(msg)
-    except Exception as e:
-        ai_response = f"FAILED: ระบบขัดข้องเนื่องจาก {e}"
-    return jsonify({"operator": "LYLA KERNEL", "response": ai_response})
+        with open(USERS_FILE) as f:
+            return json.load(f)
+    except:
+        return {}
 
-# --- 4. ระบบ Payment/Wallet (จากภาพ 32216) ---
-@app.route('/api/payment/checkout', methods=['POST'])
-def checkout():
-    plan = request.json.get('plan') # 299, 789, 2000
-    checkout_url = wallet.create_session(plan) if wallet else "#"
-    return jsonify({"url": checkout_url})
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
 
-# ---------------------------------------------------------
-# [STABILITY CHECK]
-# ---------------------------------------------------------
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
-        
+def hash_password(p):
+    return hashlib.sha256(p.encode()).hexdigest()
+
+def get_user(api_key):
+    users = load_users()
+    for email in users:
+        if users[email]["api_key"] == api_key:
+            return email, users
+    return None, users
+
+
+# =========================
+# DYNAMIC ENGINE LOADER (หัวใจ)
+# =========================
+
+def load_engine():
+    try:
+        module = importlib.import_module("ENGINE.decision_engine")
+        return module.decision_engine
+    except:
+        return None
+
+
+# =========================
+# MODELS
+# =========================
+
+class Auth(BaseModel):
+    email: str
+    password: str
+
+class DecisionReq(BaseModel):
+    question: str
+
+
+# =========================
+# FRONTEND (เบา + ไม่พัง)
+# =========================
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return """
+    <html>
+    <body style="background:black;color:white;font-family:sans-serif">
+
+    <h2>KING DIADEM</h2>
+
+    <input id="email" placeholder="email"><br>
+    <input id="pass" placeholder="password"><br><br>
+
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+
+    <hr>
+
+    <textarea id="q" placeholder="ถาม..." style="width:300px;height:100px"></textarea>
+    <br>
+    <button onclick="send()">SEND</button>
+
+    <pre id="out"></pre>
+
+    <script>
+
+    async function signup(){
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("pass").value;
+
+        const res = await fetch("/signup",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({email,password})
+        });
+
+        const data = await res.json();
+        localStorage.setItem("key", data.api_key);
+        alert("Signup success");
+    }
+
+    async function login(){
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("pass").value;
+
+        const res = await fetch("/login",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({email,password})
+        });
+
+        const data = await res.json();
+        localStorage.setItem("key", data.api_key);
+        alert("Login success");
+    }
+
+    async function send(){
+        const q = document.getElementById("q").value;
+
+        const res = await fetch("/decision",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "api_key": localStorage.getItem("key")
+            },
+            body: JSON.stringify({question:q})
+        });
+
+        const data = await res.json();
+        document.getElementById("out").innerText =
+            JSON.stringify(data,null,2);
+    }
+
+    </script>
+    </body>
+    </html>
+    """
+
+
+# =========================
+# AUTH
+# =========================
+
+@app.post("/signup")
+def signup(data: Auth):
+    users = load_users()
+
+    if data.email in users:
+        raise HTTPException(400, "exists")
+
+    key = "kd_" + uuid.uuid4().hex
+
+    users[data.email] = {
+        "password": hash_password(data.password),
+        "credits": 10,
+        "api_key": key
+    }
+
+    save_users(users)
+
+    return {"api_key": key, "credits": 10}
+
+
+@app.post("/login")
+def login(data: Auth):
+    users = load_users()
+
+    if data.email not in users:
+        raise HTTPException(401, "invalid")
+
+    if users[data.email]["password"] != hash_password(data.password):
+        raise HTTPException(401, "invalid")
+
+    return users[data.email]
+
+
+# =========================
+# DECISION CORE
+# =========================
+
+@app.post("/decision")
+def decision(req: DecisionReq, api_key: str = Header(None)):
+
+    if not api_key:
+        return {"error": "no api key"}
+
+    email, users = get_user(api_key)
+
+    if not email:
+        raise HTTPException(401, "bad key")
+
+    if users[email]["credits"] <= 0:
+        return {"msg": "no credits"}
+
+    users[email]["credits"] -= 1
+    save_users(users)
+
+    engine = load_engine()
+
+    # 🧠 ถ้ามี ENGINE จริง → ใช้
+    if engine:
+        try:
+            result = engine(req.question)
+            return {
+                "source": "real_engine",
+                "result": result,
+                "credits_left": users[email]["credits"]
+            }
+        except:
+            pass
+
+    # 🧠 fallback (กันระบบตาย)
+    text = req.question.lower()
+
+    if "เงิน" in text:
+        answer = "เริ่มเล็ก รักษาสภาพคล่องก่อน"
+    elif "เสี่ยง" in text:
+        answer = "ลด exposure ก่อน แล้วค่อยขยับ"
+    else:
+        answer = "เลือกทางที่ยังไม่ตัดทางเลือกในอนาคต"
+
+    return {
+        "source": "fallback",
+        "response": answer,
+        "credits_left": users[email]["credits"]
+    }
+
+
+# =========================
+# SYSTEM STATUS
+# =========================
+
+@app.get("/system")
+def system():
+    return {
+        "system": "KING DIADEM",
+        "status": "online",
+        "engine": "connected_if_available"
+    }
