@@ -1,34 +1,76 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+# =========================
+# KING DIADEM - MAIN APP
+# =========================
 
-from engine import KingDiademEngine
+from fastapi import FastAPI
+import traceback
 
-app = FastAPI()
-engine = KingDiademEngine()
+app = FastAPI(title="KING DIADEM", version="1.0")
 
-# -------------------------
-# MODEL
-# -------------------------
-class RequestModel(BaseModel):
-    text: str
-    mode: str = "chat"  # chat | decision
+# =========================
+# SAFE IMPORT ZONE
+# =========================
+
+engine_status = {
+    "engine": False,
+    "decision": False,
+    "kernel": False
+}
+
+try:
+    from ENGINE.decision_engine import KingDiademEngine
+    engine = KingDiademEngine()
+    engine_status["engine"] = True
+except Exception as e:
+    print("❌ ENGINE LOAD FAIL:", e)
+    engine = None
+
+try:
+    from decision import make_decision
+    engine_status["decision"] = True
+except Exception as e:
+    print("❌ DECISION LOAD FAIL:", e)
+    make_decision = None
+
+try:
+    from KING_DIadem_core import KingDiademCore
+    core = KingDiademCore()
+    engine_status["kernel"] = True
+except Exception as e:
+    print("❌ CORE LOAD FAIL:", e)
+    core = None
 
 
-# -------------------------
-# HEALTH CHECK
-# -------------------------
+# =========================
+# ROOT
+# =========================
+
 @app.get("/")
-def home():
-    return {"status": "KING DIADEM ONLINE"}
+def root():
+    return {
+        "system": "KING DIADEM",
+        "status": "RUNNING",
+        "engines": engine_status
+    }
 
 
-# -------------------------
-# CORE ENDPOINT (ตัวเดียวจบ)
-# -------------------------
-@app.post("/run")
-def run(req: RequestModel):
+# =========================
+# DECISION API
+# =========================
+
+@app.post("/decision")
+def decision_api(data: dict):
     try:
-        result = engine.run(req.text, req.mode)
+        result = {}
+
+        if make_decision:
+            result["decision"] = make_decision(data)
+
+        if engine:
+            result["engine"] = engine.process(data)
+
+        if core:
+            result["core"] = core.evaluate(data)
 
         return {
             "status": "ok",
@@ -37,11 +79,19 @@ def run(req: RequestModel):
 
     except Exception as e:
         return {
-            "status": "fallback",
-            "error": str(e),
-            "options": [
-                "ลองใหม่อีกครั้ง",
-                "ลดความซับซ้อนของคำถาม",
-                "หยุดพัก (SYSTEM PAUSE)"
-            ]
+            "status": "error",
+            "message": str(e),
+            "trace": traceback.format_exc()
         }
+
+
+# =========================
+# HEALTH CHECK
+# =========================
+
+@app.get("/health")
+def health():
+    return {
+        "alive": True,
+        "engines": engine_status
+    }
