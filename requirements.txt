@@ -1,6 +1,7 @@
-flask
-flask-cors
-gunicorn
+
 requests
 google-genai
 openai
+fastapi
+uvicorn[standard]
+jinja2
