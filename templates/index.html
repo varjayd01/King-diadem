@@ -1,101 +1,273 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>King Diadem</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>King Diadem</title>
+  <style>
+    :root{
+      --bg1:#04040a;
+      --bg2:#081022;
+      --bg3:#120f2f;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.12);
+      --text:#f4f7ff;
+      --muted:rgba(244,247,255,.72);
+      --line:rgba(255,255,255,.14);
+      --accent:#8b7dff;
+      --accent2:#4dd7ff;
+      --good:#35e39a;
+      --bad:#ff6b81;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--text);
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(77,215,255,.18), transparent 24%),
+        radial-gradient(circle at 80% 18%, rgba(139,125,255,.16), transparent 22%),
+        radial-gradient(circle at 50% 82%, rgba(255,255,255,.08), transparent 18%),
+        linear-gradient(180deg,var(--bg1),var(--bg2) 55%, var(--bg3));
+    }
+    .stars,.stars:before,.stars:after{
+      position:fixed; inset:0; content:"";
+      background-image:
+        radial-gradient(1px 1px at 10px 20px,#fff,transparent),
+        radial-gradient(1px 1px at 80px 120px,#fff,transparent),
+        radial-gradient(1px 1px at 140px 60px,#fff,transparent),
+        radial-gradient(1px 1px at 220px 180px,#fff,transparent),
+        radial-gradient(1px 1px at 300px 90px,#fff,transparent),
+        radial-gradient(1px 1px at 380px 200px,#fff,transparent),
+        radial-gradient(1px 1px at 460px 40px,#fff,transparent),
+        radial-gradient(1px 1px at 520px 160px,#fff,transparent),
+        radial-gradient(1px 1px at 620px 70px,#fff,transparent);
+      background-size:680px 260px;
+      opacity:.38;
+      animation: drift 28s linear infinite;
+      pointer-events:none;
+    }
+    .stars:before{transform:translateY(-120px); opacity:.22}
+    .stars:after{transform:translateY(120px); opacity:.16}
+    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(260px)}}
 
-<style>
-body {
-  margin:0;
-  font-family:sans-serif;
-  background:black;
-  color:white;
-}
+    .wrap{
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding:14px 14px 16px;
+      gap:12px;
+      position:relative;
+      z-index:1;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      border-radius:18px;
+      backdrop-filter:blur(16px);
+      box-shadow:0 12px 40px rgba(0,0,0,.22);
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .brand strong{
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .brand span{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .menu{
+      width:44px;height:44px;border-radius:50%;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.07);
+      color:var(--text);
+      font-size:22px;
+    }
 
-.chat {
-  height:80vh;
-  overflow:auto;
-  padding:10px;
-}
+    .chat{
+      flex:1;
+      overflow:auto;
+      padding:4px 2px 8px;
+      scroll-behavior:smooth;
+    }
+    .msg{
+      max-width:86%;
+      margin:10px 0;
+      padding:12px 14px;
+      border-radius:18px;
+      line-height:1.5;
+      font-size:16px;
+      border:1px solid var(--line);
+      backdrop-filter:blur(14px);
+      white-space:pre-wrap;
+      word-break:break-word;
+      box-shadow:0 10px 30px rgba(0,0,0,.16);
+    }
+    .me{
+      margin-left:auto;
+      background:linear-gradient(180deg, rgba(139,125,255,.28), rgba(77,215,255,.16));
+      border-top-right-radius:8px;
+    }
+    .bot{
+      margin-right:auto;
+      background:rgba(255,255,255,.07);
+      border-top-left-radius:8px;
+    }
+    .sys{
+      margin-right:auto;
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      font-size:13px;
+    }
 
-.msg {
-  margin:10px;
-  padding:10px;
-  border-radius:10px;
-}
+    .fabline{
+      display:flex;
+      justify-content:space-between;
+      color:var(--muted);
+      font-size:12px;
+      padding:0 4px;
+      letter-spacing:.2px;
+    }
 
-.me { background:#4dd7ff; color:black; text-align:right }
-.bot { background:#222 }
-
-.form {
-  display:flex;
-}
-
-input {
-  flex:1;
-  padding:10px;
-}
-
-button {
-  padding:10px;
-}
-</style>
+    .composer{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      background:rgba(255,255,255,.07);
+      border:1px solid var(--line);
+      border-radius:24px;
+      backdrop-filter:blur(16px);
+      box-shadow:0 12px 40px rgba(0,0,0,.22);
+    }
+    .plus{
+      width:46px;height:46px;
+      border:none;
+      border-radius:50%;
+      background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+      color:var(--text);
+      font-size:28px;
+      flex:0 0 auto;
+    }
+    input{
+      flex:1;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:16px;
+      padding:12px 2px;
+    }
+    input::placeholder{color:rgba(244,247,255,.45)}
+    .send{
+      border:none;
+      padding:12px 16px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#06111c;
+      font-weight:800;
+      min-width:56px;
+    }
+    .hint{
+      font-size:11px;
+      color:var(--muted);
+      text-align:center;
+      padding-top:2px;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="stars"></div>
 
-<h2>King Diadem</h2>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <strong>King Diadem</strong>
+        <span>cosmic chat shell</span>
+      </div>
+      <button class="menu" id="menuBtn">⋯</button>
+    </div>
 
-<div id="chat" class="chat">
-  <div class="msg bot">สวัสดีครับ พิมพ์มาได้เลย</div>
-</div>
+    <div class="chat" id="chat">
+      <div class="msg bot">สวัสดีครับ พิมพ์มาได้เลย 🌌</div>
+    </div>
 
-<form id="form" class="form">
-  <input id="input" placeholder="พิมพ์..." />
-  <button type="submit">ส่ง</button>
-</form>
+    <div class="fabline">
+      <span>minimal UI</span>
+      <span>one button, one mind</span>
+    </div>
 
-<script>
-const chat = document.getElementById("chat");
-const form = document.getElementById("form");
-const input = document.getElementById("input");
+    <form class="composer" id="form">
+      <button class="plus" type="button" id="plusBtn">+</button>
+      <input id="input" placeholder="Ask anything" autocomplete="off" />
+      <button class="send" type="submit">ส่ง</button>
+    </form>
 
-function add(text, cls){
-  const div = document.createElement("div");
-  div.className = "msg " + cls;
-  div.innerText = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-  return div;
-}
+    <div class="hint">ถ้า backend ยังไม่พร้อม หน้าเว็บจะไม่ล่ม</div>
+  </div>
 
-form.onsubmit = async (e)=>{
-  e.preventDefault();
+  <script>
+    const chat = document.getElementById('chat');
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const plusBtn = document.getElementById('plusBtn');
 
-  const text = input.value;
-  if(!text) return;
+    function addMsg(text, cls){
+      const el = document.createElement('div');
+      el.className = `msg ${cls}`;
+      el.textContent = text;
+      chat.appendChild(el);
+      chat.scrollTop = chat.scrollHeight;
+      return el;
+    }
 
-  input.value = "";
+    async function send(text){
+      addMsg(text, 'me');
+      const typing = addMsg('...', 'bot');
 
-  add(text, "me");
-  const typing = add("...", "bot");
+      try{
+        const res = await fetch('/api/think', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({message:text})
+        });
 
-  try {
-    const res = await fetch("/chat", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message: text })
+        const data = await res.json();
+        typing.textContent = data.reply || 'ไม่มีคำตอบ';
+      }catch(e){
+        typing.textContent = 'backend error';
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const text = input.value.trim();
+      if(!text) return;
+      input.value = '';
+      send(text);
     });
 
-    const data = await res.json();
-    typing.innerText = data.reply;
+    plusBtn.addEventListener('click', ()=>{
+      input.value = input.value ? input.value + ' +' : '+';
+      input.focus();
+    });
 
-  } catch(e) {
-    typing.innerText = "error";
-  }
-}
-</script>
-
+    document.getElementById('menuBtn').addEventListener('click', ()=>{
+      addMsg('เมนูยังว่างอยู่', 'sys');
+    });
+  </script>
 </body>
 </html>
