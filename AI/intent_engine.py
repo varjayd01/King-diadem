@@ -1,17 +1,10 @@
-def detect_intent(text):
+def analyze_intent(input_data):
+    text = (input_data or "").lower()
 
-    t=text.lower()
+    if "ควรทำยังไง" in text or "ทำไงดี" in text:
+        return "question"
 
-    if "ช่วย" in t or "ทางออก" in t:
-        return "survivor"
+    if "เงิน" in text or "จน" in text:
+        return "survival"
 
-    if "ทำยังไง" in t or "ควร" in t:
-        return "seeker"
-
-    if "วิเคราะห์" in t or "ระบบ" in t:
-        return "strategist"
-
-    if "สร้าง" in t or "ทำโปรเจกต์" in t:
-        return "builder"
-
-    return "explorer"
+    return "general"
