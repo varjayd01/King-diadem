@@ -1,548 +1,97 @@
 <!doctype html>
-<html lang="th">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>King Diadem</title>
-  <style>
-    :root{
-      --bg0:#03050c;
-      --bg1:#070b19;
-      --bg2:#10173a;
-      --card:rgba(255,255,255,.07);
-      --card2:rgba(255,255,255,.1);
-      --line:rgba(255,255,255,.12);
-      --text:#f4f7ff;
-      --muted:rgba(244,247,255,.68);
-      --accent:#8b7dff;
-      --accent2:#4dd7ff;
-      --good:#36d399;
-      --warn:#ffcc66;
-      --bad:#ff6b8b;
-      --shadow:0 18px 50px rgba(0,0,0,.35);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      color:var(--text);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      overflow:hidden;
-      background:
-        radial-gradient(circle at 15% 20%, rgba(77,215,255,.18), transparent 22%),
-        radial-gradient(circle at 80% 15%, rgba(139,125,255,.18), transparent 20%),
-        radial-gradient(circle at 50% 80%, rgba(54,211,153,.08), transparent 25%),
-        linear-gradient(180deg,var(--bg0),var(--bg1) 45%, var(--bg2));
-    }
-    .stars,.stars::before,.stars::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background-image:
-        radial-gradient(1px 1px at 10px 20px,#fff,transparent),
-        radial-gradient(1px 1px at 80px 120px,#fff,transparent),
-        radial-gradient(1px 1px at 140px 60px,#fff,transparent),
-        radial-gradient(1px 1px at 220px 180px,#fff,transparent),
-        radial-gradient(1px 1px at 300px 90px,#fff,transparent),
-        radial-gradient(1px 1px at 380px 200px,#fff,transparent),
-        radial-gradient(1px 1px at 460px 40px,#fff,transparent),
-        radial-gradient(1px 1px at 540px 150px,#fff,transparent);
-      background-size:640px 260px;
-      opacity:.34;
-      animation:drift 32s linear infinite;
-    }
-    .stars::before{transform:translateY(-120px);opacity:.18}
-    .stars::after{transform:translateY(120px);opacity:.12}
-    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(260px)}}
-    .shell{
-      position:relative;
-      z-index:1;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      padding:12px;
-      max-width:920px;
-      margin:0 auto;
-    }
-    .topbar,.panel,.composer,.message,.chip,.input,.btn{
-      backdrop-filter:blur(18px);
-    }
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:14px 16px;
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      box-shadow:var(--shadow);
-    }
-    .brand{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-    }
-    .brand h1{
-      margin:0;
-      font-size:18px;
-      letter-spacing:.4px;
-    }
-    .brand p{
-      margin:0;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .menu-btn,.ghost-btn,.plus-btn,.send-btn,.tiny-btn,.mode-btn{
-      border:none;
-      outline:none;
-      cursor:pointer;
-      color:var(--text);
-    }
-    .menu-btn,.ghost-btn{
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
-      flex:0 0 auto;
-      font-size:20px;
-    }
-    .controls{
-      display:grid;
-      grid-template-columns:1fr 1fr auto auto;
-      gap:10px;
-    }
-    .chip,.input,.btn{
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      min-height:42px;
-    }
-    .input{
-      padding:0 12px;
-      width:100%;
-      font-size:14px;
-      outline:none;
-    }
-    .input::placeholder{color:rgba(244,247,255,.4)}
-    .mode-wrap{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .mode-btn{
-      padding:10px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      font-size:13px;
-    }
-    .mode-btn.active{
-      background:linear-gradient(135deg, rgba(139,125,255,.45), rgba(77,215,255,.32));
-      border-color:rgba(255,255,255,.22);
-    }
-    .panel{
-      padding:12px;
-      border:1px solid var(--line);
-      border-radius:20px;
-      background:rgba(255,255,255,.05);
-      box-shadow:var(--shadow);
-    }
-    .panel-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin-bottom:10px;
-    }
-    .panel-head h2{
-      margin:0;
-      font-size:14px;
-      color:var(--muted);
-      font-weight:600;
-    }
-    .panel-grid{
-      display:grid;
-      grid-template-columns:1.2fr .8fr .8fr auto;
-      gap:10px;
-    }
-    .history{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      max-height:88px;
-      overflow:auto;
-      padding-right:2px;
-    }
-    .history-item{
-      padding:10px 12px;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      font-size:13px;
-      color:var(--muted);
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .history-item strong{color:var(--text)}
-    .chat{
-      flex:1;
-      overflow:auto;
-      padding:4px 2px 8px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      scroll-behavior:smooth;
-    }
-    .message{
-      max-width:88%;
-      padding:13px 14px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      line-height:1.5;
-      white-space:pre-wrap;
-      word-break:break-word;
-      box-shadow:0 8px 24px rgba(0,0,0,.16);
-    }
-    .message.user{
-      margin-left:auto;
-      background:linear-gradient(180deg, rgba(139,125,255,.25), rgba(77,215,255,.12));
-      border-top-right-radius:8px;
-    }
-    .message.bot{
-      margin-right:auto;
-      background:rgba(255,255,255,.07);
-      border-top-left-radius:8px;
-    }
-    .message.system{
-      margin-right:auto;
-      background:rgba(255,255,255,.05);
-      color:var(--muted);
-      font-size:13px;
-    }
-    .meta{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      font-size:12px;
-      color:var(--muted);
-      margin-top:8px;
-    }
-    .badge{
-      padding:5px 8px;
-      border-radius:999px;
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.08);
-    }
-    .badge.good{color:var(--good)}
-    .badge.warn{color:var(--warn)}
-    .badge.bad{color:var(--bad)}
-    .composer{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px;
-      border:1px solid var(--line);
-      border-radius:24px;
-      background:rgba(255,255,255,.06);
-      box-shadow:var(--shadow);
-    }
-    .plus-btn{
-      width:48px;
-      height:48px;
-      border-radius:50%;
-      background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
-      border:1px solid rgba(255,255,255,.14);
-      font-size:26px;
-      flex:0 0 auto;
-    }
-    .send-btn{
-      padding:12px 16px;
-      border-radius:18px;
-      font-weight:800;
-      background:linear-gradient(135deg, var(--accent), var(--accent2));
-      color:#06111c;
-      min-width:70px;
-    }
-    .composer input{
-      flex:1;
-      min-width:0;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:var(--text);
-      font-size:16px;
-      padding:10px 2px;
-    }
-    .composer input::placeholder{color:rgba(244,247,255,.45)}
-    .drawer{
-      display:none;
-      padding:12px;
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:rgba(255,255,255,.05);
-      box-shadow:var(--shadow);
-    }
-    .drawer.open{display:block}
-    .drawer p{
-      margin:0 0 10px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .drawer-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-    .footer-line{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      color:var(--muted);
-      font-size:12px;
-      padding:0 4px;
-    }
-    @media (max-width: 760px){
-      .controls{grid-template-columns:1fr 1fr}
-      .panel-grid{grid-template-columns:1fr 1fr}
-      .drawer-grid{grid-template-columns:1fr}
-      .message{max-width:94%}
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>King Diadem</title>
+
+<style>
+body {
+    margin:0;
+    font-family:sans-serif;
+    background:#0b0f1a;
+    color:white;
+}
+
+#chat {
+    height:80vh;
+    overflow:auto;
+    padding:10px;
+}
+
+.msg {
+    margin:8px;
+    padding:10px;
+    border-radius:10px;
+    max-width:80%;
+}
+
+.me {
+    background:#4dabf7;
+    margin-left:auto;
+}
+
+.bot {
+    background:#343a40;
+}
+
+form {
+    display:flex;
+    padding:10px;
+    gap:5px;
+}
+
+input {
+    flex:1;
+    padding:10px;
+}
+
+button {
+    padding:10px;
+}
+</style>
 </head>
+
 <body>
-  <div class="stars"></div>
 
-  <div class="shell">
-    <div class="topbar">
-      <button class="menu-btn" id="menuBtn" type="button">☰</button>
-      <div class="brand">
-        <h1>{{ app_name }}</h1>
-        <p>cosmic chat shell</p>
-      </div>
-      <button class="ghost-btn" id="resetBtn" type="button">⟲</button>
-    </div>
+<div id="chat"></div>
 
-    <div class="panel">
-      <div class="panel-head">
-        <h2>context window</h2>
-        <div class="mode-wrap">
-          <button class="mode-btn active" data-mode="chat" type="button">chat</button>
-          <button class="mode-btn" data-mode="decision" type="button">decision</button>
-          <button class="mode-btn" data-mode="ui" type="button">ui</button>
-          <button class="mode-btn" data-mode="deploy" type="button">deploy</button>
-        </div>
-      </div>
+<form id="form">
+    <input id="input" placeholder="พิมพ์..." />
+    <button>ส่ง</button>
+</form>
 
-      <div class="panel-grid">
-        <input class="input" id="sessionInput" placeholder="session_id" />
-        <input class="input" id="seedInput" placeholder="seed" />
-        <input class="input" id="statusInput" placeholder="status" readonly />
-        <button class="btn" id="saveMetaBtn" type="button">save</button>
-      </div>
+<script>
+const chat = document.getElementById("chat")
+const form = document.getElementById("form")
+const input = document.getElementById("input")
 
-      <div style="height:10px"></div>
+function add(text, cls){
+    const div = document.createElement("div")
+    div.className = "msg " + cls
+    div.textContent = text
+    chat.appendChild(div)
+    chat.scrollTop = chat.scrollHeight
+}
 
-      <div class="history" id="historyBox">
-        <div class="history-item"><strong>system</strong><br>พร้อมรับข้อความ</div>
-      </div>
-    </div>
+form.onsubmit = async (e)=>{
+    e.preventDefault()
+    const text = input.value.trim()
+    if(!text) return
+    input.value=""
 
-    <div class="drawer" id="drawer">
-      <p>กด + เพื่อเปิด/ปิดแผงนี้ ใช้เก็บ seed, session และ context สั้น ๆ</p>
-      <div class="drawer-grid">
-        <div class="history-item"><strong>route</strong><br>/api/think</div>
-        <div class="history-item"><strong>reset</strong><br>/api/reset</div>
-      </div>
-    </div>
+    add(text,"me")
 
-    <div class="chat" id="chat">
-      <div class="message bot">พิมพ์มาได้เลย. ระบบนี้รันบน Render และคุยกับ backend ตรง ๆ</div>
-    </div>
+    const res = await fetch("/chat",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body:JSON.stringify({message:text})
+    })
 
-    <div class="footer-line">
-      <span>minimal UI</span>
-      <span>one button, one mind</span>
-    </div>
+    const data = await res.json()
+    add(data.reply,"bot")
+}
+</script>
 
-    <form class="composer" id="form">
-      <button class="plus-btn" id="plusBtn" type="button">+</button>
-      <input id="input" autocomplete="off" placeholder="Ask anything" />
-      <button class="send-btn" type="submit">send</button>
-    </form>
-  </div>
-
-  <script>
-    const chat = document.getElementById("chat");
-    const form = document.getElementById("form");
-    const input = document.getElementById("input");
-    const plusBtn = document.getElementById("plusBtn");
-    const drawer = document.getElementById("drawer");
-    const menuBtn = document.getElementById("menuBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const historyBox = document.getElementById("historyBox");
-    const sessionInput = document.getElementById("sessionInput");
-    const seedInput = document.getElementById("seedInput");
-    const statusInput = document.getElementById("statusInput");
-    const saveMetaBtn = document.getElementById("saveMetaBtn");
-    const modeButtons = [...document.querySelectorAll(".mode-btn")];
-
-    const storageKey = "king-diadem-session";
-    const seedKey = "king-diadem-seed";
-    const modeKey = "king-diadem-mode";
-
-    function makeId() {
-      if (window.crypto && crypto.randomUUID) return crypto.randomUUID().slice(0, 8);
-      return Math.random().toString(36).slice(2, 10);
-    }
-
-    const state = {
-      session_id: localStorage.getItem(storageKey) || makeId(),
-      seed: localStorage.getItem(seedKey) || "",
-      mode: localStorage.getItem(modeKey) || "chat",
-      history: []
-    };
-
-    sessionInput.value = state.session_id;
-    seedInput.value = state.seed;
-
-    function scrollChat() {
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function addMessage(text, role) {
-      const el = document.createElement("div");
-      el.className = `message ${role}`;
-      el.textContent = text;
-      chat.appendChild(el);
-      scrollChat();
-      return el;
-    }
-
-    function short(text, max = 64) {
-      const t = String(text || "").trim();
-      return t.length > max ? t.slice(0, max - 1) + "…" : t;
-    }
-
-    function renderHistory(items) {
-      historyBox.innerHTML = "";
-      if (!items || !items.length) {
-        historyBox.innerHTML = '<div class="history-item"><strong>system</strong><br>ไม่มี context เก่า</div>';
-        return;
-      }
-      items.slice(-4).forEach((item) => {
-        const box = document.createElement("div");
-        box.className = "history-item";
-        box.innerHTML = `<strong>${item.role}</strong><br>${short(item.text, 90)}`;
-        historyBox.appendChild(box);
-      });
-    }
-
-    function setStatus(text) {
-      statusInput.value = text;
-    }
-
-    function setMode(mode) {
-      state.mode = mode;
-      localStorage.setItem(modeKey, mode);
-      modeButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.mode === mode));
-      setStatus(`mode: ${mode}`);
-    }
-
-    modeButtons.forEach(btn => {
-      btn.addEventListener("click", () => setMode(btn.dataset.mode));
-    });
-
-    setMode(state.mode);
-
-    async function sendMessage(message) {
-      addMessage(message, "user");
-      const loading = addMessage("…", "system");
-
-      try {
-        const response = await fetch("/api/think", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message,
-            mode: state.mode,
-            session_id: state.session_id,
-            seed: state.seed
-          })
-        });
-
-        const data = await response.json();
-        loading.remove();
-        addMessage(data.reply || "ไม่มีคำตอบ", "bot");
-        renderHistory(data.history || []);
-        setStatus(`${data.intent || "unknown"} | ${data.risk?.level || "low"} | seed:${data.seed || ""}`);
-        state.history = data.history || [];
-      } catch (err) {
-        loading.textContent = "backend error";
-        setStatus("backend error");
-      }
-    }
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = "";
-      sendMessage(text);
-    });
-
-    plusBtn.addEventListener("click", () => {
-      drawer.classList.toggle("open");
-      if (drawer.classList.contains("open")) {
-        setStatus("context drawer open");
-      } else {
-        setStatus(`mode: ${state.mode}`);
-      }
-    });
-
-    menuBtn.addEventListener("click", () => {
-      drawer.classList.toggle("open");
-    });
-
-    saveMetaBtn.addEventListener("click", () => {
-      state.session_id = (sessionInput.value || "").trim() || makeId();
-      state.seed = (seedInput.value || "").trim();
-      localStorage.setItem(storageKey, state.session_id);
-      localStorage.setItem(seedKey, state.seed);
-      setStatus(`saved | ${state.session_id}`);
-    });
-
-    resetBtn.addEventListener("click", async () => {
-      try {
-        await fetch("/api/reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: state.session_id })
-        });
-      } catch (e) {}
-      chat.innerHTML = '<div class="message bot">context reset</div>';
-      historyBox.innerHTML = '<div class="history-item"><strong>system</strong><br>context ถูกล้างแล้ว</div>';
-      setStatus("reset");
-    });
-
-    sessionInput.addEventListener("change", () => {
-      state.session_id = (sessionInput.value || "").trim() || makeId();
-      localStorage.setItem(storageKey, state.session_id);
-      setStatus(`session: ${state.session_id}`);
-    });
-
-    seedInput.addEventListener("change", () => {
-      state.seed = (seedInput.value || "").trim();
-      localStorage.setItem(seedKey, state.seed);
-      setStatus(`seed: ${state.seed || "empty"}`);
-    });
-
-    addMessage("พร้อมแล้ว. ปุ่ม + เปิด context, ช่องพิมพ์อยู่ล่างสุด, mode เปลี่ยนได้ทันที", "system");
-  </script>
 </body>
 </html>
