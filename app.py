@@ -1,97 +1,29 @@
-# =========================
-# KING DIADEM - MAIN APP
-# =========================
+from flask import Flask, render_template, request, jsonify
+from engine.decision_engine import decide, seed_reply
 
-from fastapi import FastAPI
-import traceback
+app = Flask(__name__)
 
-app = FastAPI(title="KING DIADEM", version="1.0")
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-# =========================
-# SAFE IMPORT ZONE
-# =========================
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    data = request.get_json(force=True) or {}
+    message = (data.get("message") or "").strip()
+    seed = (data.get("seed") or "").strip()
 
-engine_status = {
-    "engine": False,
-    "decision": False,
-    "kernel": False
-}
+    if not message:
+        return jsonify({"reply": "พิมพ์อะไรสักอย่างก่อนสิพี่ 😏"})
 
-try:
-    from ENGINE.decision_engine import KingDiademEngine
-    engine = KingDiademEngine()
-    engine_status["engine"] = True
-except Exception as e:
-    print("❌ ENGINE LOAD FAIL:", e)
-    engine = None
+    reply = decide(message, seed=seed)
+    return jsonify({"reply": reply})
 
-try:
-    from decision import make_decision
-    engine_status["decision"] = True
-except Exception as e:
-    print("❌ DECISION LOAD FAIL:", e)
-    make_decision = None
+@app.route("/api/seed", methods=["POST"])
+def api_seed():
+    data = request.get_json(force=True) or {}
+    seed = (data.get("seed") or "").strip()
+    return jsonify({"reply": seed_reply(seed)})
 
-try:
-    from KING_DIadem_core import KingDiademCore
-    core = KingDiademCore()
-    engine_status["kernel"] = True
-except Exception as e:
-    print("❌ CORE LOAD FAIL:", e)
-    core = None
-
-
-# =========================
-# ROOT
-# =========================
-
-@app.get("/")
-def root():
-    return {
-        "system": "KING DIADEM",
-        "status": "RUNNING",
-        "engines": engine_status
-    }
-
-
-# =========================
-# DECISION API
-# =========================
-
-@app.post("/decision")
-def decision_api(data: dict):
-    try:
-        result = {}
-
-        if make_decision:
-            result["decision"] = make_decision(data)
-
-        if engine:
-            result["engine"] = engine.process(data)
-
-        if core:
-            result["core"] = core.evaluate(data)
-
-        return {
-            "status": "ok",
-            "result": result
-        }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e),
-            "trace": traceback.format_exc()
-        }
-
-
-# =========================
-# HEALTH CHECK
-# =========================
-
-@app.get("/health")
-def health():
-    return {
-        "alive": True,
-        "engines": engine_status
-    }
+if __name__ == "__main__":
+    app.run(debug=True)
