@@ -3,9 +3,9 @@ def evaluate_risk(user_input: str):
 
     score = 0.1
 
-    if any(k in text for k in ["ฆ่า", "ทำร้าย", "หลอก", "โกง"]):
+    if any(k in text for k in ["เจ็บ", "ทำร้าย", "เลือด", "ไฟ"]):
         score = 0.9
-    elif any(k in text for k in ["ลงทุน", "เสี่ยง"]):
+    elif any(k in text for k in ["ล้ม", "เสี่ยง"]):
         score = 0.6
 
     level = "low"
