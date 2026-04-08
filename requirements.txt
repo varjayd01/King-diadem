@@ -1,9 +1,6 @@
-fastapi
-uvicorn
-jinja2
 flask
 flask-cors
-requests
 gunicorn
+requests
 google-genai
-google-generativeai
+openai
