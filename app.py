@@ -1,11 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import os
 
 app = FastAPI()
 
-# ✅ CORS (สำคัญมาก)
+# 🔥 CORS (จำเป็น)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,18 +12,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ route test
 @app.get("/")
-def home():
+def root():
     return {"status": "alive"}
 
-# ✅ CHAT API (ตัวเชื่อมจริง)
 @app.post("/chat")
 async def chat(req: Request):
     data = await req.json()
-    user_input = data.get("message", "")
+    msg = data.get("message", "")
 
-    # 👇 ตรงนี้ค่อยเอา decision_mode มายัดทีหลัง
-    return JSONResponse({
-        "reply": f"ระบบรับแล้ว: {user_input}"
-    })
+    return {
+        "reply": f"รับแล้ว: {msg}"
+    }
