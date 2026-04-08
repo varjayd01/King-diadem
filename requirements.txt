@@ -1,7 +1,10 @@
-
-requests
-google-genai
-openai
 fastapi
 uvicorn[standard]
 jinja2
+flask
+flask-cors
+requests
+gunicorn
+google-genai
+google-generativeai
+openai
