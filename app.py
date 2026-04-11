@@ -3,6 +3,9 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import os
 
+# ===== IMPORT ENGINE =====
+from ENGINE.decision_engine import ENGINE_DECISION
+
 app = FastAPI()
 
 # ===== MEMORY =====
@@ -18,17 +21,10 @@ class Input(BaseModel):
     risk: int
     username: str
 
-# ===== ENGINE CORE =====
-def ENGINE(data):
-    if data["money"] < 50:
-        return "ประหยัดก่อน"
-    elif data["risk"] > 7:
-        return "อย่าเสี่ยง"
-    return "ลุยได้เลย"
-
-# ===== API =====
+# ===== ROUTE ENGINE (ตัวจริงที่พี่ถาม) =====
 @app.post("/ENGINE")
 def run_engine(data: Input):
+
     if data.username not in users:
         return {"error": "no user"}
 
@@ -39,10 +35,13 @@ def run_engine(data: Input):
 
     usage[data.username] += 1
 
-    result = ENGINE(data.dict())
+    # 🔥 รวม context → ส่งเข้า ENGINE
+    text = f"{data.location} {data.food} {data.money} {data.risk}"
+
+    result = ENGINE_DECISION(text)
 
     return {
-        "ENGINE": result,
+        "ENGINE_RESULT": result,
         "used": usage[data.username],
         "limit": FREE_LIMIT
     }
@@ -67,38 +66,52 @@ def login(username: str = Form(...), password: str = Form(...)):
 
     return {"status": "ok"}
 
-# ===== UI =====
+# ===== INDEX UI =====
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
-    <html>
-    <body style="background:black;color:white;font-family:sans-serif">
-    <h2>⚔️ KING DIADEM ENGINE</h2>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>KING DIADEM ENGINE</title>
+<style>
+body { background:black; color:white; font-family:sans-serif; }
+input { margin:4px; }
+button { margin:6px; }
+</style>
+</head>
+<body>
 
-    <h3>สมัคร</h3>
-    <input id="r_user"><input id="r_pass">
-    <button onclick="reg()">Register</button>
+<h2>⚔️ KING DIADEM ENGINE</h2>
 
-    <h3>ล็อกอิน</h3>
-    <input id="l_user"><input id="l_pass">
-    <button onclick="login()">Login</button>
+<h3>สมัคร</h3>
+<input id="r_user" placeholder="user">
+<input id="r_pass" placeholder="pass">
+<button onclick="reg()">Register</button>
 
-    <h3>ENGINE</h3>
-    <input id="location" placeholder="location"><br>
-    <input id="food" placeholder="food"><br>
-    <input id="money" placeholder="money"><br>
-    <input id="risk" placeholder="risk"><br><br>
+<h3>ล็อกอิน</h3>
+<input id="l_user" placeholder="user">
+<input id="l_pass" placeholder="pass">
+<button onclick="login()">Login</button>
 
-    <button onclick="run()">RUN ENGINE</button>
+<h3>ENGINE</h3>
+<input id="location" placeholder="location"><br>
+<input id="food" placeholder="food"><br>
+<input id="money" placeholder="money"><br>
+<input id="risk" placeholder="risk"><br>
 
-    <pre id="out"></pre>
+<button onclick="run()">RUN ENGINE</button>
 
-    <script src="/static/app.js"></script>
-    </body>
-    </html>
-    """
+<pre id="out"></pre>
 
-# ===== PORT FIX =====
+<script src="/static/app.js"></script>
+
+</body>
+</html>
+"""
+
+# ===== PORT =====
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))
