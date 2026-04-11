@@ -1,38 +1,9 @@
-from WORLD_MODEL.human_behavior import detect_emotion, extract_context
-from WORLD_MODEL.survival_threshold import survival_priority
-from WORLD_MODEL.environment import environment_state
-
 def ENGINE_DECISION(text: str):
 
-    emotion = detect_emotion(text)
-    context = extract_context(text)
+    if "น้อย" in text or "0" in text:
+        return {"mode": "SURVIVAL", "action": "save"}
 
-    # ===== PRIORITY =====
-    survival = survival_priority(context)
+    if "เสี่ยง" in text or "9" in text:
+        return {"mode": "DEFENSE", "action": "avoid"}
 
-    # ===== ENVIRONMENT =====
-    pressure = environment_state["economic_pressure"]
-
-    # ===== DECISION LOGIC =====
-    if survival != "stable":
-        return {
-            "ENGINE": "SURVIVAL_MODE",
-            "action": survival
-        }
-
-    if emotion == "stress":
-        return {
-            "ENGINE": "STABILIZE",
-            "action": "reduce_risk"
-        }
-
-    if pressure > 0.6:
-        return {
-            "ENGINE": "ECONOMIC_DEFENSE",
-            "action": "save_money"
-        }
-
-    return {
-        "ENGINE": "NORMAL",
-        "action": "proceed"
-    }
+    return {"mode": "NORMAL", "action": "proceed"}
