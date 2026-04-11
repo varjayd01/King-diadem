@@ -1,74 +1,17 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KING DIADEM ENGINE</title>
-
-<style>
-body{
-    background:black;
-    color:white;
-    font-family:sans-serif;
-    padding:20px;
-}
-
-h2{
-    color:#00ffcc;
-}
-
-input{
-    display:block;
-    margin:5px 0;
-    padding:8px;
-    width:200px;
-}
-
-button{
-    margin:5px 0;
-    padding:8px 12px;
-    background:#00ffcc;
-    border:none;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#00ccaa;
-}
-
-#out{
-    margin-top:20px;
-    background:#111;
-    padding:10px;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <title>KING DIADEM CONTROL</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-
-<h2>⚔️ KING DIADEM ENGINE</h2>
-
-<h3>สมัคร</h3>
-<input id="r_user" placeholder="user">
-<input id="r_pass" placeholder="pass">
-<button onclick="reg()">Register</button>
-
-<h3>ล็อกอิน</h3>
-<input id="l_user" placeholder="user">
-<input id="l_pass" placeholder="pass">
-<button onclick="login()">Login</button>
-
-<h3>ENGINE</h3>
-<input id="location" placeholder="location">
-<input id="food" placeholder="food">
-<input id="money" placeholder="money">
-<input id="risk" placeholder="risk">
-
-<button onclick="run()">RUN ENGINE</button>
-
-<pre id="out"></pre>
-
-<script src="/static/app.js"></script>
-
+    <div id="kernel-status">LYLA KERNEL: MONITORING</div>
+    <div class="container">
+        <h1>KING DIADEM ENGINE</h1>
+        <button id="runDecision">RUN DECISION SYSTEM</button>
+        <div id="output">STATUS: WAITING FOR COMMAND...</div>
+    </div>
+    <script src="/static/app.js"></script>
 </body>
 </html>
