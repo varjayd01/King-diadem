@@ -1,22 +1,41 @@
-async function run() {
-    const input = document.getElementById('cmd');
-    const term = document.getElementById('term');
-    const val = input.value;
-    if(!val) return;
+let currentUser = ""
 
-    term.innerHTML += `<div style="color:white;">> COMMAND: ${val}</div>`;
-    input.value = '';
+async function reg(){
+    const f = new FormData()
+    f.append("username", r_user.value)
+    f.append("password", r_pass.value)
 
-    try {
-        const res = await fetch('/api/execute', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({prompt: val})
-        });
-        const data = await res.json();
-        term.innerHTML += `<div>> [KERNEL]: ${data.message}</div>`;
-    } catch (e) {
-        term.innerHTML += `<div style="color:red;">> [ALERT]: API RATE LIMIT EXCEEDED!</div>`;
+    const res = await fetch("/register",{method:"POST",body:f})
+    out.innerText = JSON.stringify(await res.json(),null,2)
+}
+
+async function login(){
+    const f = new FormData()
+    f.append("username", l_user.value)
+    f.append("password", l_pass.value)
+
+    const res = await fetch("/login",{method:"POST",body:f})
+    const data = await res.json()
+
+    if(data.status==="ok"){
+        currentUser = l_user.value
     }
-    term.scrollTop = term.scrollHeight;
+
+    out.innerText = JSON.stringify(data,null,2)
+}
+
+async function run(){
+    const res = await fetch("/ENGINE",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            location:location.value,
+            food:food.value,
+            money:parseInt(money.value),
+            risk:parseInt(risk.value),
+            username:currentUser
+        })
+    })
+
+    out.innerText = JSON.stringify(await res.json(),null,2)
 }
