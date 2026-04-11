@@ -1,69 +1,81 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Security
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-import json, os, uuid, hashlib
+import json, os, uuid
 
+# Import logic core จากที่พี่วางโครงไว้
 from ENGINE.decision_engine import KingDiademEngine
 
-app = FastAPI()
-engine = KingDiademEngine()
+app = FastAPI(title="KING DIADEM OS")
+engine = KingDiademEngine() # Singleton Engine
 
+# Setup Path
+DATA_DIR = "data"
+USER_FILE = os.path.join(DATA_DIR, "users.json")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+# --- HELPER FUNCTIONS ---
+def get_db():
+    if not os.path.exists(USER_FILE):
+        return {}
+    with open(USER_FILE, "r") as f:
+        return json.load(f)
+
+def commit_db(data):
+    with open(USER_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+# --- SCHEMA ---
+class ActionReq(BaseModel):
+    api_key: str
+    question: str
+    mode: str = "chat"
+
+# --- ROUTES ---
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
-def root():
+def read_index():
     return FileResponse("static/index.html")
 
-
-# DB
-FILE="data/users.json"
-
-def load():
-    if not os.path.exists(FILE): return {}
-    return json.load(open(FILE))
-
-def save(d):
-    os.makedirs("data",exist_ok=True)
-    json.dump(d,open(FILE,"w"),indent=2)
-
-def hash(p): return hashlib.sha256(p.encode()).hexdigest()
-
-def find(k,d):
-    for e in d:
-        if d[e]["api_key"]==k:
-            return e
-
-
-# schema
-class Req(BaseModel):
-    api_key:str
-    question:str
-    mode:str="chat"
-
-
 @app.post("/signup")
-def signup(r:Req):
-    d=load()
-    k="kd_"+uuid.uuid4().hex
-    d[str(len(d))]={"password":"x","credits":10,"api_key":k}
-    save(d)
-    return {"api_key":k}
-
+def signup():
+    db = get_db()
+    new_id = str(uuid.uuid4())[:8] # Short UUID for ID
+    api_key = f"kd_{uuid.uuid4().hex}"
+    
+    db[new_id] = {
+        "api_key": api_key,
+        "credits": 10,
+        "status": "active"
+    }
+    commit_db(db)
+    return {"api_key": api_key, "msg": "Welcome to the Kernel"}
 
 @app.post("/decision")
-def decision(r:Req):
+def run_decision(r: ActionReq):
+    db = get_db()
+    
+    # 1. Identity Check (Identity Radius)
+    user_entry = next((uid for uid, info in db.items() if info.get("api_key") == r.api_key), None)
+    
+    if not user_entry:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
 
-    d=load()
-    u=find(r.api_key,d)
+    # 2. Resource Check (Energy Conservation)
+    if db[user_entry]["credits"] <= 0:
+        raise HTTPException(status_code=402, detail="Energy Depleted: Credits = 0")
 
-    if not u:
-        raise HTTPException(401)
-
-    if d[u]["credits"]<=0:
-        return {"reply":"หมด"}
-
-    d[u]["credits"]-=1
-    save(d)
-
-    return engine.run(r.question, r.mode)
+    # 3. Execution (LYLA/VEGA Mode)
+    try:
+        reply = engine.run(r.question, r.mode)
+        
+        # 4. Update State (Post-Action)
+        db[user_entry]["credits"] -= 1
+        commit_db(db)
+        
+        return reply
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
