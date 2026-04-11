@@ -1,17 +1,30 @@
-def ENGINE_DECISION(text: str):
+import os
+import json
+from datetime import datetime
 
-    text = text.lower()
+class DecisionEngine:
+    def __init__(self):
+        self.status = "ACTIVE"
+        self.kernel_name = "KING_DIADEM_CORE"
 
-    if "เงิน" in text or "money" in text:
-        if "0" in text or "น้อย" in text:
-            return "❌ ประหยัดทันที หยุดความเสี่ยง"
-        else:
-            return "💰 ใช้เงินแบบควบคุมความเสี่ยง"
+    def evaluate_drift(self, data):
+        # ตรรกะการประเมินความเสื่อมถอย (Drift Analysis)
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            # Logic: Risk = (Drift × Exposure) / Remaining Choice
+            drift = data.get('drift', 0)
+            exposure = data.get('exposure', 1)
+            choices = data.get('remaining_choices', 1)
+            risk_score = (drift * exposure) / max(choices, 0.01)
+            
+            return {
+                "status": "SUCCESS",
+                "timestamp": timestamp,
+                "risk_score": round(risk_score, 4),
+                "decision": "STABILIZE" if risk_score < 0.5 else "STOP_THE_LINE"
+            }
+        except Exception as e:
+            return {"status": "ERROR", "message": str(e)}
 
-    if "เสี่ยง" in text or "risk" in text:
-        return "⚠️ ลด risk ก่อนตัดสินใจ"
-
-    if "อาหาร" in text or "food" in text:
-        return "🍜 หาอาหารก่อน ทุกอย่างค่อยคิดทีหลัง"
-
-    return "🧠 วิเคราะห์เพิ่ม ยังไม่ชัด"
+# Initialize Engine for KING DIADEM
+engine = DecisionEngine()
