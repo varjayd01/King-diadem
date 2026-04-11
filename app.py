@@ -1,23 +1,14 @@
 from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from passlib.context import CryptContext
+import os
 
 app = FastAPI()
 
-# ===== USER SYSTEM =====
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-users = {}  # temp memory db
-usage = {}  # track usage
-
-FREE_LIMIT = 5  # ฟรีวันละ 5 ครั้ง
-
-def hash_password(pw):
-    return pwd_context.hash(pw)
-
-def verify(pw, hashed):
-    return pwd_context.verify(pw, hashed)
+# ===== MEMORY =====
+users = {}
+usage = {}
+FREE_LIMIT = 5
 
 # ===== MODEL =====
 class Input(BaseModel):
@@ -27,23 +18,20 @@ class Input(BaseModel):
     risk: int
     username: str
 
-# ===== AI =====
+# ===== CORE =====
 def core_logic(data):
     if data["money"] < 50:
         return "ประหยัดก่อน"
     elif data["risk"] > 7:
         return "อย่าเสี่ยง"
-    return "ลุยหาโอกาส"
+    return "ลุยได้เลย"
 
 # ===== API =====
 @app.post("/simulate")
 def simulate(data: Input):
-
-    # check user
     if data.username not in users:
         return {"error": "no user"}
 
-    # quota check
     usage.setdefault(data.username, 0)
 
     if usage[data.username] >= FREE_LIMIT:
@@ -65,8 +53,9 @@ def register(username: str = Form(...), password: str = Form(...)):
     if username in users:
         return {"error": "exists"}
 
-    users[username] = hash_password(password)
+    users[username] = password
     usage[username] = 0
+
     return {"status": "registered"}
 
 @app.post("/login")
@@ -74,7 +63,7 @@ def login(username: str = Form(...), password: str = Form(...)):
     if username not in users:
         return {"error": "no user"}
 
-    if not verify(password, users[username]):
+    if users[username] != password:
         return {"error": "wrong password"}
 
     return {"status": "ok"}
@@ -85,15 +74,16 @@ def home():
     return """
     <html>
     <body style="background:black;color:white;font-family:sans-serif">
-
-    <h2>🔥 KING DIADEM</h2>
+    <h2>⚔️ KING DIADEM</h2>
 
     <h3>สมัคร</h3>
-    <input id="r_user"><input id="r_pass">
+    <input id="r_user" placeholder="user">
+    <input id="r_pass" placeholder="pass">
     <button onclick="reg()">Register</button>
 
     <h3>ล็อกอิน</h3>
-    <input id="l_user"><input id="l_pass">
+    <input id="l_user" placeholder="user">
+    <input id="l_pass" placeholder="pass">
     <button onclick="login()">Login</button>
 
     <h3>ใช้งาน</h3>
@@ -106,50 +96,55 @@ def home():
 
     <pre id="out"></pre>
 
-<script>
-let currentUser = ""
+    <script>
+    let currentUser = ""
 
-async function reg(){
-    const f = new FormData()
-    f.append("username", r_user.value)
-    f.append("password", r_pass.value)
+    async function reg(){
+        const f = new FormData()
+        f.append("username", r_user.value)
+        f.append("password", r_pass.value)
 
-    const res = await fetch('/register',{method:'POST',body:f})
-    out.innerText = JSON.stringify(await res.json())
-}
-
-async function login(){
-    const f = new FormData()
-    f.append("username", l_user.value)
-    f.append("password", l_pass.value)
-
-    const res = await fetch('/login',{method:'POST',body:f})
-    const data = await res.json()
-
-    if(data.status==="ok"){
-        currentUser = l_user.value
+        const res = await fetch("/register",{method:"POST",body:f})
+        out.innerText = JSON.stringify(await res.json(),null,2)
     }
 
-    out.innerText = JSON.stringify(data)
-}
+    async function login(){
+        const f = new FormData()
+        f.append("username", l_user.value)
+        f.append("password", l_pass.value)
 
-async function run(){
-    const res = await fetch('/simulate',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            location:location.value,
-            food:food.value,
-            money:parseInt(money.value),
-            risk:parseInt(risk.value),
-            username: currentUser
+        const res = await fetch("/login",{method:"POST",body:f})
+        const data = await res.json()
+
+        if(data.status==="ok"){
+            currentUser = l_user.value
+        }
+
+        out.innerText = JSON.stringify(data,null,2)
+    }
+
+    async function run(){
+        const res = await fetch("/simulate",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                location:location.value,
+                food:food.value,
+                money:parseInt(money.value),
+                risk:parseInt(risk.value),
+                username:currentUser
+            })
         })
-    })
 
-    out.innerText = JSON.stringify(await res.json(),null,2)
-}
-</script>
-
+        out.innerText = JSON.stringify(await res.json(),null,2)
+    }
+    </script>
     </body>
     </html>
     """
+
+# ===== RENDER PORT FIX =====
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
