@@ -1,28 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KING DIADEM ENGINE</title>
+
+<style>
+body{
+    background:black;
+    color:white;
+    font-family:sans-serif;
+    padding:20px;
+}
+
+h2{
+    color:#00ffcc;
+}
+
+input{
+    display:block;
+    margin:5px 0;
+    padding:8px;
+    width:200px;
+}
+
+button{
+    margin:5px 0;
+    padding:8px 12px;
+    background:#00ffcc;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#00ccaa;
+}
+
+#out{
+    margin-top:20px;
+    background:#111;
+    padding:10px;
+}
+</style>
+
 </head>
-<body style="background:black;color:white">
+<body>
 
 <h2>⚔️ KING DIADEM ENGINE</h2>
 
-<input id="r_user"><input id="r_pass">
+<h3>สมัคร</h3>
+<input id="r_user" placeholder="user">
+<input id="r_pass" placeholder="pass">
 <button onclick="reg()">Register</button>
 
-<input id="l_user"><input id="l_pass">
+<h3>ล็อกอิน</h3>
+<input id="l_user" placeholder="user">
+<input id="l_pass" placeholder="pass">
 <button onclick="login()">Login</button>
 
-<input id="location">
-<input id="food">
-<input id="money">
-<input id="risk">
+<h3>ENGINE</h3>
+<input id="location" placeholder="location">
+<input id="food" placeholder="food">
+<input id="money" placeholder="money">
+<input id="risk" placeholder="risk">
 
 <button onclick="run()">RUN ENGINE</button>
 
 <pre id="out"></pre>
 
 <script src="/static/app.js"></script>
+
 </body>
 </html>
