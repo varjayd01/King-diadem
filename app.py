@@ -1,107 +1,79 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-import os
-
-# ✅ IMPORTANT: ใช้ ENGINE ตัวใหญ่ให้ตรงโฟลเดอร์จริง
-from ENGINE.decision_engine import KingDiademEngine
+from ENGINE.universal_engine import UNIVERSAL_ENGINE
 
 app = FastAPI()
 
-# =========================
-# ENGINE INIT
-# =========================
-engine = KingDiademEngine()
-
-# =========================
-# STATIC + TEMPLATE
-# =========================
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-templates = Jinja2Templates(directory="static")
-
-# =========================
-# MOCK DATABASE (กันพัง)
-# =========================
-users = {"admin": "1234"}
+# ===== MEMORY (ไม่พัง) =====
+users = {}
 usage = {}
+FREE_LIMIT = 50
 
-FREE_LIMIT = 100
 
-# =========================
-# INPUT MODEL
-# =========================
-class Input(BaseModel):
-    username: str
-    location: str
-    food: str
-    money: str
-    risk: str
-
-# =========================
-# ROOT (แก้ BUG JINJA ตรงนี้)
-# =========================
+# ===== ROOT =====
 @app.get("/")
-def root(request: Request):
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request}   # ✅ ห้ามแก้รูปแบบนี้เด็ดขาด
-    )
+def root():
+    return FileResponse("static/index.html")
 
-# =========================
-# REGISTER
-# =========================
+
+# ===== REGISTER =====
 @app.post("/register")
-def register(username: str, password: str):
+async def register(request: Request):
+    form = await request.form()
+    username = form.get("username")
+    password = form.get("password")
+
+    if not username or not password:
+        return {"error": "missing"}
+
     if username in users:
-        return {"error": "user exists"}
+        return {"error": "exists"}
 
     users[username] = password
-    return {"status": "registered"}
+    return {"status": "ok"}
 
-# =========================
-# LOGIN
-# =========================
+
+# ===== LOGIN =====
 @app.post("/login")
-def login(username: str, password: str):
+async def login(request: Request):
+    form = await request.form()
+    username = form.get("username")
+    password = form.get("password")
+
     if users.get(username) != password:
-        return {"error": "invalid login"}
+        return {"error": "invalid"}
 
     return {"status": "ok"}
 
-# =========================
-# ENGINE (ตัวหลัก)
-# =========================
+
+# ===== ENGINE INPUT =====
+class Input(BaseModel):
+    username: str
+    location: str = ""
+    food: str = ""
+    money: str = ""
+    risk: str = ""
+
+
+# ===== ENGINE =====
 @app.post("/ENGINE")
 def run_engine(data: Input):
 
-    # ตรวจ user
     if data.username not in users:
         return {"error": "no user"}
 
-    # limit usage
     usage.setdefault(data.username, 0)
 
     if usage[data.username] >= FREE_LIMIT:
-        return {"error": "limit reached"}
+        return {"error": "limit"}
 
     usage[data.username] += 1
 
-    # รวม input
-    text = f"{data.location} {data.food} {data.money} {data.risk}"
+    result = UNIVERSAL_ENGINE(data.dict())
 
-    try:
-        # ✅ เรียก ENGINE จริง
-        result = engine.run(text)
-
-    except Exception as e:
-        return {"error": str(e)}
-
-    return {
-        "status": "ok",
-        "input": text,
-        "result": result
-    }
+    return result
