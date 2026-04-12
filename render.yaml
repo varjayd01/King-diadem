@@ -1,7 +1,21 @@
 services:
   - type: web
-    name: King-Diadem
-    env: python
+    name: king-diadem
+    runtime: python
     plan: starter
+
     buildCommand: pip install -r requirements.txt
-    startCommand: python -m uvicorn app:app --host 0.0.0.0 --port $PORT
+
+    startCommand: python main.py
+
+    envVars:
+      - key: CHATGPT_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
