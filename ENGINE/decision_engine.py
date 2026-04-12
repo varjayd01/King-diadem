@@ -1,30 +1,36 @@
-import os
-import json
-from datetime import datetime
+# CORE DECISION ENGINE (ไม่ผูกกับไฟล์อื่น)
 
-class DecisionEngine:
-    def __init__(self):
-        self.status = "ACTIVE"
-        self.kernel_name = "KING_DIADEM_CORE"
+def run_decision(input_data: dict):
 
-    def evaluate_drift(self, data):
-        # ตรรกะการประเมินความเสื่อมถอย (Drift Analysis)
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        try:
-            # Logic: Risk = (Drift × Exposure) / Remaining Choice
-            drift = data.get('drift', 0)
-            exposure = data.get('exposure', 1)
-            choices = data.get('remaining_choices', 1)
-            risk_score = (drift * exposure) / max(choices, 0.01)
-            
+    try:
+        food = str(input_data.get("food", "")).lower()
+        money = str(input_data.get("money", "")).lower()
+        risk = str(input_data.get("risk", "")).lower()
+        location = input_data.get("location", "")
+
+        # ===== PRIORITY ENGINE =====
+        if "high" in risk:
             return {
-                "status": "SUCCESS",
-                "timestamp": timestamp,
-                "risk_score": round(risk_score, 4),
-                "decision": "STABILIZE" if risk_score < 0.5 else "STOP_THE_LINE"
+                "priority": "SURVIVAL",
+                "action": "minimize risk, reduce exposure"
             }
-        except Exception as e:
-            return {"status": "ERROR", "message": str(e)}
 
-# Initialize Engine for KING DIADEM
-engine = DecisionEngine()
+        if "low" in food:
+            return {
+                "priority": "FOOD",
+                "action": "secure food immediately"
+            }
+
+        if "low" in money:
+            return {
+                "priority": "ECONOMY",
+                "action": "increase income / reduce burn"
+            }
+
+        return {
+            "priority": "STABLE",
+            "action": f"operate normally in {location}"
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
