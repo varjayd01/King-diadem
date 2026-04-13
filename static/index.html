@@ -1,96 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>KING AI</title>
-    <style>
-        body {
-            background: black;
-            color: #00ffcc;
-            font-family: monospace;
-            padding: 20px;
-        }
+<meta charset="UTF-8">
+<title>KING DIADEM</title>
 
-        #chat {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #00ffcc;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
+<style>
+body {
+    margin:0;
+    overflow:hidden;
+    background:black;
+    color:#00ffee;
+    font-family:monospace;
+}
 
-        .msg {
-            margin: 5px 0;
-        }
+#ui {
+    position:absolute;
+    top:20px;
+    left:20px;
+    z-index:10;
+    background:rgba(0,0,0,0.5);
+    padding:15px;
+    border:1px solid #00ffee;
+}
 
-        input {
-            width: 70%;
-            padding: 10px;
-            background: black;
-            color: #00ffcc;
-            border: 1px solid #00ffcc;
-        }
+input {
+    display:block;
+    margin:5px;
+    background:black;
+    border:1px solid #00ffee;
+    color:#00ffee;
+    padding:5px;
+}
 
-        button {
-            padding: 10px;
-            background: #00ffcc;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+button {
+    background:#00ffee;
+    border:none;
+    padding:10px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+canvas {
+    position:absolute;
+    top:0;
+    left:0;
+}
+</style>
 </head>
 
 <body>
 
-<h2>KING AI CHAT</h2>
+<div id="ui">
+<h2>KING DIADEM</h2>
 
-<div id="chat"></div>
+<input id="msg" placeholder="type command">
 
-<input id="input" placeholder="พิมพ์..." />
-<button onclick="send()">Send</button>
-<button onclick="newChat()">New Chat</button>
+<button onclick="runAI()">RUN</button>
+
+<pre id="output"></pre>
+</div>
+
+<canvas id="bg"></canvas>
 
 <script>
-let history = []
+const canvas = document.getElementById("bg")
+const ctx = canvas.getContext("2d")
 
-function render() {
-    const chat = document.getElementById("chat")
-    chat.innerHTML = ""
+canvas.width = window.innerWidth
+canvas.height = window.innerHeight
 
-    history.forEach(m => {
-        chat.innerHTML += `<div class="msg"><b>${m.role}:</b> ${m.content}</div>`
+let stars = []
+for(let i=0;i<200;i++){
+    stars.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height
     })
-
-    chat.scrollTop = chat.scrollHeight
 }
 
-async function send() {
-    const input = document.getElementById("input")
-    const text = input.value
+function draw(){
+    ctx.fillStyle="black"
+    ctx.fillRect(0,0,canvas.width,canvas.height)
 
-    if (!text) return
+    ctx.fillStyle="#00ffee"
+    stars.forEach(s=>{
+        s.y += 0.3
+        if(s.y > canvas.height) s.y = 0
+        ctx.fillRect(s.x,s.y,1,1)
+    })
 
-    history.push({role: "user", content: text})
-    render()
+    requestAnimationFrame(draw)
+}
+draw()
 
-    input.value = ""
+async function runAI(){
 
-    const res = await fetch("/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
+    const message = document.getElementById("msg").value
+
+    document.getElementById("output").innerText = "PROCESSING..."
+
+    const res = await fetch("/think",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
         },
-        body: JSON.stringify({message: text})
+        body: JSON.stringify({message})
     })
 
     const data = await res.json()
 
-    history.push({role: "ai", content: data.reply})
-    render()
-}
-
-function newChat() {
-    history = []
-    render()
+    document.getElementById("output").innerText = data.reply
 }
 </script>
 
