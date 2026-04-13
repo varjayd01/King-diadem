@@ -1,79 +1,61 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-
-from ENGINE.universal_engine import UNIVERSAL_ENGINE
+import requests
+import os
 
 app = FastAPI()
 
+# serve UI
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ===== MEMORY (ไม่พัง) =====
-users = {}
-usage = {}
-FREE_LIMIT = 50
-
-
-# ===== ROOT =====
 @app.get("/")
 def root():
     return FileResponse("static/index.html")
 
 
-# ===== REGISTER =====
-@app.post("/register")
-async def register(request: Request):
-    form = await request.form()
-    username = form.get("username")
-    password = form.get("password")
-
-    if not username or not password:
-        return {"error": "missing"}
-
-    if username in users:
-        return {"error": "exists"}
-
-    users[username] = password
-    return {"status": "ok"}
+# ===== API KEY =====
+OPENAI_API_KEY = os.getenv("CHATGPT_API_KEY")
 
 
-# ===== LOGIN =====
-@app.post("/login")
-async def login(request: Request):
-    form = await request.form()
-    username = form.get("username")
-    password = form.get("password")
-
-    if users.get(username) != password:
-        return {"error": "invalid"}
-
-    return {"status": "ok"}
+# ===== INPUT MODEL =====
+class ChatInput(BaseModel):
+    message: str
 
 
-# ===== ENGINE INPUT =====
-class Input(BaseModel):
-    username: str
-    location: str = ""
-    food: str = ""
-    money: str = ""
-    risk: str = ""
+# ===== CALL OPENAI =====
+def call_openai(message):
+
+    url = "https://api.openai.com/v1/chat/completions"
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "user", "content": message}
+        ]
+    }
+
+    res = requests.post(url, headers=headers, json=data)
+
+    try:
+        return res.json()["choices"][0]["message"]["content"]
+    except:
+        return str(res.text)
 
 
-# ===== ENGINE =====
-@app.post("/ENGINE")
-def run_engine(data: Input):
+# ===== CHAT ENDPOINT =====
+@app.post("/chat")
+def chat(data: ChatInput):
 
-    if data.username not in users:
-        return {"error": "no user"}
+    if not data.message:
+        return {"reply": "..."}
 
-    usage.setdefault(data.username, 0)
+    reply = call_openai(data.message)
 
-    if usage[data.username] >= FREE_LIMIT:
-        return {"error": "limit"}
-
-    usage[data.username] += 1
-
-    result = UNIVERSAL_ENGINE(data.dict())
-
-    return result
+    return {"reply": reply}
