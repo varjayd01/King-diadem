@@ -1,7 +1,34 @@
-from DATABASE.credit_store import get_credits,use_credit,add_credits
+import sqlite3
 
-VALID_KEYS = set()
+DB = "king_diadem.db"
 
-def validate_api_key(key):
+
+def use_credit(username: str, amount: int = 1):
+
+    conn = sqlite3.connect(DB)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT credits FROM users WHERE username=?",
+        (username,)
+    )
+
+    result = cursor.fetchone()
+
+    if not result:
+        return False
+
+    credits = result[0]
+
+    if credits < amount:
+        return False
+
+    cursor.execute(
+        "UPDATE users SET credits = credits - ? WHERE username=?",
+        (amount, username)
+    )
+
+    conn.commit()
+    conn.close()
 
     return True
