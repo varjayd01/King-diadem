@@ -1,18 +1,18 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 
 import os
 import requests
+import stripe
 
-# ===== IMPORT FATE =====
 from core.fate_core import run_fate
+from KING_DIAdem_core import king_diadem
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 @app.get("/")
 def root():
@@ -21,72 +21,63 @@ def root():
 
 # ===== ENV =====
 OPENAI_API_KEY = os.getenv("CHATGPT_API_KEY")
+stripe.api_key = os.getenv("STRIPE_SECRET")
 
 
 # ===== INPUT =====
 class ChatInput(BaseModel):
     message: str
 
-
-# ===== AI CALL =====
-def call_openai(message):
-
-    url = "https://api.openai.com/v1/responses"
-
-    headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "gpt-4.1-mini",
-        "input": message
-    }
-
-    try:
-        r = requests.post(url, headers=headers, json=data)
-        res = r.json()
-        return res["output"][0]["content"][0]["text"]
-    except:
-        return "ระบบตอบไม่ได้ชั่วคราว"
-
-
-# ===== HUMAN-AWARE LAYER =====
-def human_layer(message, ai_reply, risk):
-
-    # ไม่ใช่อารมณ์ แต่เป็น “การกันพัง”
-    if risk == "normal":
-        return ai_reply
-
-    if risk == "low":
-        return f"(ข้อมูลยังไม่ชัด) {ai_reply}"
-
-    return ai_reply
+class EngineInput(BaseModel):
+    username: str
+    location: str
+    food: str
+    money: str
+    risk: str
 
 
 # ===== CHAT =====
 @app.post("/chat")
 def chat(data: ChatInput):
-
-    # ===== FATE =====
     fate = run_fate(data.dict())
 
     if fate["status"] == "reject":
-        return {"reply": "[FATE REJECTED] invalid input"}
-
-    if fate["status"] == "block":
-        return {"reply": fate["safe_response"]}
+        return {"reply": "invalid"}
 
     clean = fate["data"]
-    risk = fate["risk"]
 
-    # ===== AI =====
-    ai_reply = call_openai(clean["message"])
+    return {"reply": clean["message"]}
 
-    # ===== HUMAN LAYER =====
-    final = human_layer(clean["message"], ai_reply, risk)
 
-    return {
-        "reply": final,
-        "risk": risk
-    }
+# ===== ENGINE =====
+@app.post("/ENGINE")
+def run_engine(data: EngineInput):
+
+    question = f"""
+    user: {data.username}
+    location: {data.location}
+    food: {data.food}
+    money: {data.money}
+    risk: {data.risk}
+    """
+
+    result = king_diadem(question)
+    return result
+
+
+# ===== STRIPE =====
+@app.get("/pay")
+def pay():
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{
+            "price": os.getenv("STRIPE_PRICE_ID"),
+            "quantity": 1,
+        }],
+        mode="payment",
+        success_url="https://king-diadem.onrender.com/?success=1",
+        cancel_url="https://king-diadem.onrender.com/?cancel=1",
+    )
+
+    return RedirectResponse(session.url)
