@@ -9,6 +9,8 @@ from ENGINE.path_generator import generate_paths
 from ENGINE.intervention_engine import intervention
 from ENGINE.decision_engine import decision_engine
 
+from INTELLIGENCE.risk_engine import run_audit  # 🔥 เพิ่มเข้ามา
+
 from core.silent_canon import SILENT_CANON
 from core.axioms import AXIOMS
 from core.memory_store import record_decision
@@ -19,38 +21,32 @@ def king_diadem(question: str):
     # -----------------------------
     # PERCEPTION
     # -----------------------------
-
     situation = analyze_situation(question)
     human_state = analyze_human_state(question)
 
     # -----------------------------
     # RELATIONSHIP ANALYSIS
     # -----------------------------
-
     relationship_state = analyze_relationship(human_state)
 
     # -----------------------------
     # COLLAPSE PREDICTION
     # -----------------------------
-
     collapse_risk = predict_collapse(human_state)
 
     # -----------------------------
     # PATH GENERATION
     # -----------------------------
-
     paths = generate_paths(human_state)
 
     # -----------------------------
     # INTERVENTION
     # -----------------------------
-
     help_plan = intervention(paths)
 
     # -----------------------------
     # DECISION ENGINE
     # -----------------------------
-
     decision = decision_engine(
         situation.get("location", "unknown"),
         situation.get("food", "medium"),
@@ -59,9 +55,13 @@ def king_diadem(question: str):
     )
 
     # -----------------------------
+    # SYSTEM AUDIT (🔥 จุดสำคัญ)
+    # -----------------------------
+    system_audit = run_audit()
+
+    # -----------------------------
     # FINAL RESULT
     # -----------------------------
-
     result = {
         "question": question,
         "situation": situation,
@@ -71,10 +71,17 @@ def king_diadem(question: str):
         "paths": paths,
         "intervention": help_plan,
         "decision": decision,
+
+        # 🔥 เพิ่มระบบจริงเข้าไปตรงนี้
+        "system_risk": system_audit,
+
         "axioms": AXIOMS,
         "silent_canon": SILENT_CANON
     }
 
+    # -----------------------------
+    # MEMORY STORE
+    # -----------------------------
     record_decision(result)
 
     return result
