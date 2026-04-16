@@ -1,5 +1,3 @@
-# CORE DECISION ENGINE (ไม่ผูกกับไฟล์อื่น)
-
 def run_decision(input_data: dict):
 
     try:
@@ -8,28 +6,33 @@ def run_decision(input_data: dict):
         risk = str(input_data.get("risk", "")).lower()
         location = input_data.get("location", "")
 
-        # ===== PRIORITY ENGINE =====
         if "high" in risk:
             return {
                 "priority": "SURVIVAL",
-                "action": "minimize risk, reduce exposure"
+                "action": "reduce_risk",
+                "tool": "none"
             }
 
         if "low" in food:
             return {
                 "priority": "FOOD",
-                "action": "secure food immediately"
+                "action": "search_food",
+                "tool": "open_url",
+                "url": "https://maps.google.com"
             }
 
         if "low" in money:
             return {
                 "priority": "ECONOMY",
-                "action": "increase income / reduce burn"
+                "action": "write_log",
+                "tool": "write_note",
+                "content": "User needs income strategy"
             }
 
         return {
             "priority": "STABLE",
-            "action": f"operate normally in {location}"
+            "action": f"operate in {location}",
+            "tool": "none"
         }
 
     except Exception as e:
