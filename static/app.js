@@ -1,70 +1,35 @@
-async function runEngine() {
+async function run(){
 
     const data = {
-        username: "guest",
-        location: location.value,
-        food: food.value,
-        money: money.value,
-        risk: risk.value
+        entropy: Number(document.getElementById("entropy").value) || 40,
+        resource: Number(document.getElementById("resource").value) || 50,
+        stability: Number(document.getElementById("stability").value) || 60
     }
 
-    const r = await fetch("/ENGINE", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json"},
-        body: JSON.stringify(data)
-    })
+    const out = document.getElementById("out")
+    out.innerText = "Processing..."
 
-    const d = await r.json()
+    try{
+        const r = await fetch("/ENGINE",{
+            method:"POST",
+            headers:{ "Content-Type":"application/json"},
+            body: JSON.stringify(data)
+        })
 
-    document.getElementById("output").innerText =
-        JSON.stringify(d, null, 2)
+        if(!r.ok){
+            throw new Error("Server error " + r.status)
+        }
 
-    system.speed = d.decision.orbit_speed || 1
+        const d = await r.json()
+
+        if(d.status === "HALT"){
+            out.innerText = "⚠️ SYSTEM HALTED\n" + JSON.stringify(d,null,2)
+            return
+        }
+
+        out.innerText = JSON.stringify(d,null,2)
+
+    }catch(e){
+        out.innerText = "ERROR: " + e.message
+    }
 }
-
-function pay(){
-    window.location.href="/pay"
-}
-
-
-// ===== COSMOS =====
-const canvas = document.getElementById("cosmos")
-const ctx = canvas.getContext("2d")
-
-canvas.width = innerWidth
-canvas.height = innerHeight
-
-let system = { speed:1 }
-let t = 0
-
-const stars = Array.from({length:50}, (_,i)=>({
-    r: 50 + i*10,
-    a: Math.random()*6.28,
-    s: Math.random()*0.002,
-    c: `hsl(${Math.random()*360},100%,60%)`
-}))
-
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height)
-
-    let cx = canvas.width/2
-    let cy = canvas.height/2
-
-    t+=0.01
-
-    stars.forEach(st=>{
-        st.a += st.s * system.speed
-
-        let x = cx + Math.cos(st.a)*st.r
-        let y = cy + Math.sin(st.a)*st.r
-
-        ctx.beginPath()
-        ctx.arc(x,y,2+Math.sin(t+st.a)*2,0,6.28)
-        ctx.fillStyle = st.c
-        ctx.fill()
-    })
-
-    requestAnimationFrame(draw)
-}
-
-draw()
