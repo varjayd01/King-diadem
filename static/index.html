@@ -1,26 +1,91 @@
 <!DOCTYPE html>
-<html>
-<body style="background:#111;color:#0f0;font-family:monospace">
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KING DIADEM</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <canvas id="galaxy"></canvas>
+  <canvas id="orbit"></canvas>
+  <canvas id="brain"></canvas>
 
-<h2>KING DIADEM SYSTEM</h2>
+  <main class="shell">
+    <section class="panel">
+      <div class="header">
+        <div>
+          <div class="title">KING DIADEM</div>
+          <div class="subtitle">DriftZero Waterline Governance Framework</div>
+        </div>
+        <div id="thinking" class="subtitle">Ready.</div>
+      </div>
 
-<p>Entropy</p>
-<input id="entropy" value="40">
+      <div class="grid">
+        <div class="field">
+          <label>Input</label>
+          <textarea id="input" placeholder="enter problem / question / context"></textarea>
+        </div>
+        <div class="field">
+          <label>Output</label>
+          <textarea id="output" readonly>Waiting...</textarea>
+        </div>
 
-<p>Resource</p>
-<input id="resource" value="50">
+        <div class="field">
+          <label>Entropy</label>
+          <input id="entropy" type="number" value="40" />
+        </div>
+        <div class="field">
+          <label>Resource</label>
+          <input id="resource" type="number" value="50" />
+        </div>
 
-<p>Stability</p>
-<input id="stability" value="60">
+        <div class="field">
+          <label>Stability</label>
+          <input id="stability" type="number" value="60" />
+        </div>
+        <div class="field">
+          <label>Choices</label>
+          <input id="choices" type="number" value="1" />
+        </div>
 
-<br><br>
+        <div class="field">
+          <label>Confidence</label>
+          <input id="confidence" type="number" step="0.01" value="0.5" />
+        </div>
+      </div>
 
-<button onclick="run()">RUN SYSTEM</button>
+      <div class="controls">
+        <button id="runBtn">RUN SYSTEM</button>
+        <button id="resetBtn" class="secondary">RESET</button>
+      </div>
+    </section>
 
-<h3>OUTPUT</h3>
-<pre id="out">Waiting...</pre>
+    <section class="stack">
+      <div class="panel card">
+        <h3>Decision</h3>
+        <pre id="decision">Waiting...</pre>
+      </div>
+      <div class="panel card">
+        <h3>Council</h3>
+        <pre id="council">Waiting...</pre>
+      </div>
+      <div class="panel card">
+        <h3>Summary</h3>
+        <pre id="summary">Waiting...</pre>
+      </div>
+    </section>
+  </main>
 
-<script src="/static/app.js"></script>
-
+  <script src="/static/system.js"></script>
+  <script src="/static/ai_thinking.js"></script>
+  <script src="/static/ai_brain.js"></script>
+  <script src="/static/ai_orbit.js"></script>
+  <script src="/static/galaxy.js"></script>
+  <script src="/static/decision.js"></script>
+  <script src="/static/dicision.js"></script>
+  <script src="/static/galaxy_council.js"></script>
+  <script src="/static/galaxy_decision.js"></script>
+  <script src="/static/app.js"></script>
 </body>
 </html>
