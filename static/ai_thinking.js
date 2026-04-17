@@ -1,15 +1,30 @@
-function thinkingAnimation(){
+// static/ai_thinking.js
+(function () {
+  const el = () => window.KD.byId("thinking");
+  let dots = 0;
+  let timer = null;
 
-let dots = document.getElementById("thinking")
+  function start() {
+    if (timer) return;
+    timer = setInterval(() => {
+      const node = el();
+      if (!node) return;
+      dots = (dots + 1) % 4;
+      node.textContent = "Thinking" + ".".repeat(dots);
+    }, 450);
+  }
 
-let i = 0
+  function stop() {
+    if (timer) clearInterval(timer);
+    timer = null;
+    dots = 0;
+  }
 
-setInterval(()=>{
+  window.addEventListener("KD:response", () => {
+    stop();
+  });
 
-dots.innerText = ".".repeat(i%4)
-
-i++
-
-},400)
-
-}
+  document.addEventListener("DOMContentLoaded", () => {
+    start();
+  });
+})();
