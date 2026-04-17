@@ -1,49 +1,76 @@
-# UNIVERSAL ENGINE (รวมทุกระบบแบบไม่พัง)
+# ENGINE/universal_engine.py
 
-# ===== SAFE IMPORT =====
-def safe_import(path, func):
-    try:
-        module = __import__(path, fromlist=[func])
-        return getattr(module, func)
-    except:
-        return None
-
-
-# ===== LOAD OPTIONAL ENGINES =====
-run_decision = safe_import("ENGINE.decision_engine", "run_decision")
-
-survival_engine = safe_import("DOMAINS.survival_engine", "run")
-business_engine = safe_import("DOMAINS.business_engine", "run")
-human_engine = safe_import("DOMAINS.human_engine", "run")
+from ENGINE.pattern_engine import analyze_pattern
+from ENGINE.risk_engine import analyze_risk
+from ENGINE.decision_engine import decision_intelligence
+from ENGINE.council_engine import council_engine
+from ENGINE.consensus_engine import consensus_engine
+from core.emptiness_guard import emptiness_guard
 
 
-# ===== CORE =====
-def UNIVERSAL_ENGINE(input_data: dict):
+def _normalize_input(payload):
+    if not isinstance(payload, dict):
+        payload = {}
 
-    output = {
-        "status": "ok",
-        "layers": {}
+    return {
+        "input": str(payload.get("input", payload.get("question", ""))).strip(),
+        "entropy": payload.get("entropy", 40),
+        "resource": payload.get("resource", 50),
+        "stability": payload.get("stability", 60),
+        "choices": payload.get("choices", 1),
+        "confidence": payload.get("confidence", 0.5),
+        "decision": payload.get("decision"),
+        "previous_decision": payload.get("previous_decision"),
+        "decision_history": payload.get("decision_history", []),
+        "warnings": payload.get("warnings", []),
+        "alternatives": payload.get("alternatives", []),
+        "locked": payload.get("locked", False),
     }
 
-    try:
-        # ===== DECISION CORE =====
-        if run_decision:
-            output["layers"]["decision"] = run_decision(input_data)
 
-        # ===== OPTIONAL LAYERS =====
-        if survival_engine:
-            output["layers"]["survival"] = survival_engine(input_data)
+def run_engine(payload):
+    raw = _normalize_input(payload)
 
-        if business_engine:
-            output["layers"]["business"] = business_engine(input_data)
+    pattern = analyze_pattern(raw)
+    core_state = {**raw, **pattern}
 
-        if human_engine:
-            output["layers"]["human"] = human_engine(input_data)
+    core_state = emptiness_guard(core_state)
 
-        return output
+    risk = analyze_risk(core_state)
+    decision = decision_intelligence(core_state, risk)
+    council = council_engine(decision, core_state)
+    consensus = consensus_engine(council, core_state)
 
-    except Exception as e:
+    packet = {
+        "status": "ok",
+        "input": raw,
+        "state": core_state,
+        "risk": risk,
+        "decision": decision,
+        "council": council,
+        "consensus": consensus,
+    }
+
+    packet = emptiness_guard({**packet, **core_state})
+
+    if packet.get("blocked"):
         return {
-            "status": "error",
-            "message": str(e)
-}
+            "status": "blocked",
+            "reason": packet.get("reason"),
+            "output": packet.get("output", {}),
+            "state": packet.get("state", {}),
+            "risk": packet.get("risk", {}),
+            "decision": packet.get("decision", {}),
+            "council": packet.get("council", {}),
+            "consensus": packet.get("consensus", {}),
+        }
+
+    return {
+        "status": "ok",
+        "output": packet.get("output", {}),
+        "state": packet.get("state", {}),
+        "risk": packet.get("risk", {}),
+        "decision": packet.get("decision", {}),
+        "council": packet.get("council", {}),
+        "consensus": packet.get("consensus", {}),
+    }
