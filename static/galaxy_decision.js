@@ -1,66 +1,23 @@
-const canvas = document.getElementById("galaxyDecision")
-const ctx = canvas.getContext("2d")
+// static/galaxy_decision.js
+function renderGalaxyDecision(payload) {
+  const target = window.KD.byId("summary");
+  if (!target) return;
 
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+  const output = payload?.output || {};
+  const consensus = payload?.consensus || {};
 
-let nodes = []
+  const lines = [
+    `final_action: ${output.action || consensus.final_action || "n/a"}`,
+    `risk: ${output.risk ?? payload?.risk?.risk_score ?? "n/a"}`,
+    `confidence: ${output.confidence ?? consensus.confidence ?? "n/a"}`,
+    `reason: ${output.reason || "clear"}`,
+  ];
 
-function drawGalaxy(problem, paths){
-
-nodes = []
-
-let centerX = canvas.width/2
-let centerY = canvas.height/2
-
-nodes.push({
-name:problem,
-x:centerX,
-y:centerY,
-type:"core"
-})
-
-let radius = 220
-
-paths.forEach((p,i)=>{
-
-let angle = (i/paths.length) * Math.PI * 2
-
-let x = centerX + Math.cos(angle) * radius
-let y = centerY + Math.sin(angle) * radius
-
-nodes.push({
-name:p.strategy,
-x:x,
-y:y,
-risk:p.risk,
-confidence:p.confidence
-})
-
-})
-
-render()
-
+  target.textContent = lines.join(" | ");
 }
 
-function render(){
+window.renderGalaxyDecision = renderGalaxyDecision;
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-nodes.forEach((n,i)=>{
-
-ctx.beginPath()
-
-ctx.arc(n.x,n.y,10,0,Math.PI*2)
-
-ctx.fillStyle = i===0 ? "#ffd700" : "#66ccff"
-
-ctx.fill()
-
-ctx.fillStyle="white"
-
-ctx.fillText(n.name,n.x+14,n.y)
-
-})
-
-}
+window.addEventListener("KD:response", (event) => {
+  renderGalaxyDecision(event.detail);
+});
