@@ -1,30 +1,36 @@
-// static/decision.js
+// static/dicision.js
 (function () {
 
-  function renderDecision(payload) {
-    const target = window.KD?.byId("decision");
-    if (!target) return;
+  function renderDicision(payload) {
+    const el = document.getElementById("decision");
+    if (!el) return;
 
-    const decision = payload?.decision || payload?.output || payload || {};
+    // รองรับทุกโครงสร้างที่มึงโยนมา
+    const d =
+      payload?.decision ||
+      payload?.output ||
+      payload?.consensus ||
+      payload ||
+      {};
 
     const lines = [
-      `status: ${payload?.status || "ok"}`,
-      `action: ${decision.action || decision.final_action || "none"}`,
-      `message: ${decision.message || "n/a"}`,
-      `confidence: ${decision.confidence ?? "n/a"}`,
-      `blocked: ${decision.blocked ?? payload?.blocked ?? false}`,
-      `risk: ${decision.risk ?? "n/a"}`
+      "status: " + (payload?.status || "ok"),
+      "action: " + (d.action || d.final_action || "none"),
+      "message: " + (d.message || "n/a"),
+      "confidence: " + (d.confidence ?? "n/a"),
+      "risk: " + (d.risk ?? payload?.risk_score ?? "n/a"),
+      "blocked: " + (d.blocked ?? payload?.blocked ?? false)
     ];
 
-    target.textContent = lines.join("\n");
+    el.textContent = lines.join("\n");
   }
 
-  // expose globally
-  window.renderDecision = renderDecision;
+  // expose global
+  window.renderDicision = renderDicision;
 
-  // event hook
-  window.addEventListener("KD:response", (event) => {
-    renderDecision(event.detail);
+  // auto hook event (ถ้ามีระบบ dispatch)
+  window.addEventListener("KD:response", function (e) {
+    renderDicision(e.detail);
   });
 
 })();
