@@ -1,44 +1,43 @@
-const canvas=document.getElementById("orbit")
-const ctx=canvas.getContext("2d")
+// static/ai_orbit.js
+(function () {
+  const canvas = document.getElementById("orbit");
+  if (!canvas) return;
 
-let particles=[]
+  const ctx = window.KD.resizeCanvas(canvas);
 
-for(let i=0;i<60;i++){
+  const particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      angle: Math.random() * Math.PI * 2,
+      distance: 60 + Math.random() * 220,
+      speed: 0.004 + Math.random() * 0.01,
+      size: 1 + Math.random() * 2.3,
+    });
+  }
 
-particles.push({
+  function animate() {
+    const confidence = Number(window.KD.state?.consensus?.confidence ?? 50);
+    const speedBoost = Math.max(0.5, confidence / 40);
 
-angle:Math.random()*360,
-distance:50+Math.random()*150
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
 
-})
+    particles.forEach((p) => {
+      p.angle += p.speed * speedBoost;
 
-}
+      const x = cx + Math.cos(p.angle) * p.distance;
+      const y = cy + Math.sin(p.angle) * p.distance;
 
-function animate(){
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(100,255,220,0.7)";
+      ctx.fill();
+    });
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+    requestAnimationFrame(animate);
+  }
 
-let cx=canvas.width/2
-let cy=canvas.height/2
-
-particles.forEach(p=>{
-
-p.angle+=0.5
-
-let rad=p.angle*Math.PI/180
-
-let x=cx+Math.cos(rad)*p.distance
-let y=cy+Math.sin(rad)*p.distance
-
-ctx.beginPath()
-ctx.arc(x,y,2,0,Math.PI*2)
-ctx.fillStyle="#00ffff"
-ctx.fill()
-
-})
-
-requestAnimationFrame(animate)
-
-}
-
-animate()
+  window.addEventListener("resize", () => window.KD.resizeCanvas(canvas));
+  animate();
+})();
