@@ -1,59 +1,54 @@
-const brain=document.getElementById("brain")
-const ctx=brain.getContext("2d")
+// static/ai_brain.js
+(function () {
+  const canvas = document.getElementById("brain");
+  if (!canvas) return;
 
-brain.width=window.innerWidth
-brain.height=window.innerHeight
+  const ctx = window.KD.resizeCanvas(canvas);
+  const nodes = Array.from({ length: 28 }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 0.7,
+    vy: (Math.random() - 0.5) * 0.7,
+  }));
 
-let nodes=[]
+  function loop() {
+    const risk = Number(window.KD.state?.risk?.risk_score ?? 0);
+    const pulse = Math.max(0.5, 1 + risk / 100);
 
-for(let i=0;i<30;i++){
-nodes.push({
-x:Math.random()*brain.width,
-y:Math.random()*brain.height,
-vx:(Math.random()-0.5)*0.6,
-vy:(Math.random()-0.5)*0.6
-})
-}
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-function updateBrain(risk){
-nodes.forEach(n=>{
-n.vx*=1+risk
-n.vy*=1+risk
-})
-}
+    nodes.forEach((n) => {
+      n.x += n.vx * pulse;
+      n.y += n.vy * pulse;
 
-function loop(){
+      if (n.x < 0 || n.x > window.innerWidth) n.vx *= -1;
+      if (n.y < 0 || n.y > window.innerHeight) n.vy *= -1;
 
-ctx.clearRect(0,0,brain.width,brain.height)
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 2.4, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(120,240,255,0.95)";
+      ctx.fill();
+    });
 
-nodes.forEach(n=>{
-n.x+=n.vx
-n.y+=n.vy
+    nodes.forEach((a, i) => {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 140) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(90,200,255,${0.18 - dist / 1200})`;
+          ctx.stroke();
+        }
+      }
+    });
 
-if(n.x<0||n.x>brain.width)n.vx*=-1
-if(n.y<0||n.y>brain.height)n.vy*=-1
+    requestAnimationFrame(loop);
+  }
 
-ctx.beginPath()
-ctx.arc(n.x,n.y,2,0,Math.PI*2)
-ctx.fillStyle="#4fd1ff"
-ctx.fill()
-
-nodes.forEach(n2=>{
-let dx=n.x-n2.x
-let dy=n.y-n2.y
-let d=Math.sqrt(dx*dx+dy*dy)
-
-if(d<140){
-ctx.beginPath()
-ctx.moveTo(n.x,n.y)
-ctx.lineTo(n2.x,n2.y)
-ctx.strokeStyle="rgba(79,209,255,0.15)"
-ctx.stroke()
-}
-})
-})
-
-requestAnimationFrame(loop)
-}
-
-loop()
+  window.addEventListener("resize", () => window.KD.resizeCanvas(canvas));
+  loop();
+})();
