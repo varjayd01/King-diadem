@@ -1,29 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body { margin:0; background:black; color:white; }
-canvas { position:fixed; top:0; left:0; z-index:-1; }
-.panel { padding:20px; }
-</style>
-</head>
+<body style="background:#111;color:#0f0;font-family:monospace">
 
-<body>
+<h2>KING DIADEM SYSTEM</h2>
 
-<canvas id="cosmos"></canvas>
+<p>Entropy</p>
+<input id="entropy" value="40">
 
-<div class="panel">
-<input id="location" placeholder="location">
-<input id="food" placeholder="food">
-<input id="money" placeholder="money">
-<input id="risk" placeholder="risk">
+<p>Resource</p>
+<input id="resource" value="50">
 
-<button onclick="runEngine()">RUN</button>
-<button onclick="pay()">PAY</button>
+<p>Stability</p>
+<input id="stability" value="60">
 
-<pre id="output"></pre>
-</div>
+<br><br>
+
+<button onclick="run()">RUN SYSTEM</button>
+
+<h3>OUTPUT</h3>
+<pre id="out">Waiting...</pre>
 
 <script src="/static/app.js"></script>
 
