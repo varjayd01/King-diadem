@@ -1,158 +1,18 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>King Diadem</title>
-
-<style>
-body {
-  background: #050b18;
-  color: #cde7ff;
-  font-family: monospace;
-  padding: 20px;
-}
-
-.box {
-  border: 1px solid #1f3a5f;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.4);
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  background: #0b1a2a;
-  border: 1px solid #1f3a5f;
-  color: #cde7ff;
-}
-
-button {
-  padding: 10px;
-  background: #00d2ff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-pre {
-  white-space: pre-wrap;
-}
-</style>
+    <title>King Diadem AI</title>
 </head>
-
 <body>
 
-<h2>KING DIADEM</h2>
+<h2>AI Decision Engine</h2>
 
-<div class="box">
-  <input id="input" placeholder="พิมพ์ปัญหา / สถานการณ์">
-  <br><br>
-  <button onclick="run()">RUN</button>
-</div>
+<input id="input" placeholder="ถามอะไรมา..." />
+<button onclick="send()">Run</button>
 
-<div class="box">
-  <b>Decision</b>
-  <pre id="decision"></pre>
-</div>
+<pre id="output"></pre>
 
-<script>
-// =======================
-// 🔥 ENGINE (รวมในไฟล์เดียว)
-// =======================
-
-function think(text){
-
-  let state = {
-    input: text,
-    entropy: 40,
-    resource: 50,
-    stability: 60,
-    confidence: 0.5
-  };
-
-  // ===== decision layer =====
-  if(text.includes("หิว")){
-    state.decision = {
-      action: "eat",
-      message: "ไปกินก่อน ไม่งั้นระบบพัง",
-      confidence: 0.6
-    };
-  }
-  else if(text.includes("เหนื่อย")){
-    state.decision = {
-      action: "rest",
-      message: "พักก่อน แล้วค่อยลุยต่อ",
-      confidence: 0.6
-    };
-  }
-  else{
-    state.decision = {
-      action: "process",
-      message: text || "ไม่มี input",
-      confidence: 0.5
-    };
-  }
-
-  // ===== guard layer (ย่อจาก emptiness_guard) =====
-  if(state.resource < 10){
-    state.decision = {
-      action: "stabilize",
-      message: "resource ต่ำ หยุดก่อน",
-      confidence: 0.3
-    };
-  }
-
-  if(state.entropy > 80){
-    state.decision.action = "stabilize";
-    state.decision.message = "entropy สูง เสี่ยงพัง";
-  }
-
-  return {
-    status: "ok",
-    decision: state.decision,
-    risk: state.entropy * 0.5 + (100 - state.resource) * 0.5
-  };
-}
-
-// =======================
-// 🎯 RENDER
-// =======================
-
-function render(payload){
-  const el = document.getElementById("decision");
-
-  if(!payload){
-    el.textContent = "system error";
-    return;
-  }
-
-  const d = payload.decision || {};
-
-  const lines = [
-    "status: " + (payload.status || "n/a"),
-    "action: " + (d.action || "none"),
-    "message: " + (d.message || "n/a"),
-    "confidence: " + (d.confidence ?? "n/a"),
-    "risk: " + (payload.risk ?? "n/a")
-  ];
-
-  el.textContent = lines.join("\n");
-}
-
-// =======================
-// 🚀 MAIN
-// =======================
-
-function run(){
-  const text = document.getElementById("input").value;
-
-  const result = think(text);
-
-  render(result);
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
