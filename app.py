@@ -1,39 +1,23 @@
-# app.py
-
-import os
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-
+from flask import Flask, request, jsonify
 from ENGINE.universal_engine import run_engine
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__)
 
-app = FastAPI(title="KING DIADEM")
+@app.route("/")
+def home():
+    return open("static/index.html").read()
 
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+@app.route("/ask", methods=["POST"])
+def ask():
+    try:
+        data = request.json or {}
+        result = run_engine(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        })
 
-
-class InputData(BaseModel):
-    input: str = Field(default="")
-    entropy: float = Field(default=40)
-    resource: float = Field(default=50)
-    stability: float = Field(default=60)
-    choices: int = Field(default=1)
-    confidence: float = Field(default=0.5)
-
-
-@app.get("/")
-def root():
-    return FileResponse(os.path.join(BASE_DIR, "static", "index.html"))
-
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-
-@app.post("/ENGINE")
-def engine(data: InputData):
-    return run_engine(data.model_dump())
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
