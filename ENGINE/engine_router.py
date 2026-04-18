@@ -1,38 +1,32 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+# ENGINE/engine_router.py
 
-from AUTH.auth_system import authorize
-from KING_DIAdem_core import king_diadem
+from AI.intent_engine import detect_intent
+from ENGINE.decision_engine import make_decision
+from ENGINE.simulation_engine import simulate
+from ENGINE.risk_engine import evaluate_risk
+from AI.freedom_signal import freedom_index
 
-router = APIRouter()
+def run_system(user_input):
 
-class EngineInput(BaseModel):
-    username: str
-    question: str
-    location: str = ""
-    food: str = ""
-    money: str = ""
-    risk: str = ""
+    # 1. เข้าใจเจตนา
+    intent = detect_intent(user_input)
 
+    # 2. ประมวลผลการตัดสินใจ
+    decision = make_decision(user_input, intent)
 
-@router.post("/ENGINE")
-def run_engine(data: EngineInput):
+    # 3. จำลองผลลัพธ์
+    sim = simulate(decision)
 
-    # 🔐 1. CHECK CREDIT
-    auth = authorize(data.username)
+    # 4. ประเมินความเสี่ยง
+    risk = evaluate_risk(sim)
 
-    if auth["status"] != "allowed":
-        return {
-            "status": "blocked",
-            "reason": "no credits"
-        }
-
-    # 🧠 2. RUN CORE
-    result = king_diadem(data.question)
+    # 5. วัด freedom
+    freedom = freedom_index()
 
     return {
-        "status": "ok",
-        "decision": result["decision"],
-        "paths": result["paths"],
-        "risk": result["risk"]
+        "intent": intent,
+        "decision": decision,
+        "simulation": sim,
+        "risk": risk,
+        "freedom": freedom
     }
