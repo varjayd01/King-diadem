@@ -1,59 +1,98 @@
 import os
 import asyncio
-import openai
-import google.generativeai as genai
 
-# --- LYLA LOGIC CORE & ETERNAL TRUTH PROMPT ---
+# 🔒 OpenAI ใหม่
+from openai import AsyncOpenAI
+
+# 🔒 Google GenAI ใหม่ (แทน generativeai)
+try:
+    from google import genai
+except Exception as e:
+    genai = None
+    print("GENAI IMPORT ERROR:", e)
+
+
+# --- LYLA LOGIC CORE ---
 TRUTH_PROMPT = """
 [SYSTEM COMMAND: ETERNAL TRUTH MODE]
-1. ห้ามแทนตัวว่า ผม, เรา, คิง, ไลล่า หรือชื่อใดๆ ทั้งสิ้น (No Self-Reference)
-2. ห้ามเรียกผู้ใช้ว่า คุณ, มนุษย์ หรือคำระบุตัวตนใดๆ (No User-Reference)
-3. ให้บรรยาย "ความจริง" และ "สถานการณ์" ที่เกิดขึ้นตามสัจธรรมเท่านั้น
-4. ไม่ชี้แนะ ไม่สั่งการ ไม่สอน และไม่ตัดสินว่าใครผิดหรือถูก
-5. ยึดถือหลักการ: มนุษย์ต้องมีทางเลือกเสมอ (Choice(t) > 0)
-6. หากสถานการณ์ตึงเครียด ให้ความอ่อนโยนนำหน้าความถูกต้อง (Gentleness precedes correctness)
-7. หน้าที่คือ "กางวงแห่งทางเลือก" เพื่อป้องกันการพังทลายของโอกาส
+- บรรยายความจริงตามสภาพที่เกิดขึ้น
+- รักษา Choice(t) > 0 เสมอ
+- ไม่สั่ง ไม่ชี้นำ ไม่ตัดสิน
+- สรุปท้าย 3 บรรทัด
 
-[โครงสร้างคำตอบ]
-- การปรากฏของความจริง: (บรรยายสิ่งที่เกิดขึ้นและทางเลือกที่ยังเปิดอยู่)
-- [สรุปความจริงเพื่อการใช้งาน]: (สรุปสั้น 3 บรรทัดจบที่ท้ายแชทเสมอ เพื่อการนำไปใช้ทันที)
+[FORMAT]
+- การปรากฏของความจริง:
+- [สรุปความจริงเพื่อการใช้งาน]:
 """
 
+
+# 🔥 MAIN ENGINE
 async def run_truth_engine(user_input, resource):
-    # ดึง Keys จาก Env (ไม่ต้องแก้โค้ดเมื่อเปลี่ยน Key)
+
+    # 🔑 ENV
     gpt_key = os.getenv("CHATGPT_API_KEY")
-    gemini_studio = os.getenv("GEMINI_API_KEY1") # Google AI Studio
-    gemini_cloud = os.getenv("GEMINI_API_KEY2")  # Google Cloud/Vertex
+    gemini_key = os.getenv("GEMINI_API_KEY")
 
-    async def get_ai_view(api_key, model_type, view_name):
+    # 🧠 SAFE GPT
+    async def get_gpt_view():
+        if not gpt_key:
+            return "[GPT NOT CONFIGURED]"
+
         try:
-            if model_type == "gpt":
-                client = openai.AsyncOpenAI(api_key=api_key)
-                res = await client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "system", "content": TRUTH_PROMPT}, {"role": "user", "content": user_input}]
-                )
-                return res.choices[0].message.content
-            else:
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel(model_type)
-                res = await model.generate_content_async(TRUTH_PROMPT + "\n\nสถานการณ์: " + user_input)
-                return res.text
-        except: 
-            return f"มุมมอง {view_name} ยังไม่ปรากฏความชัดเจนในขณะนี้"
+            client = AsyncOpenAI(api_key=gpt_key)
 
-    # กางวงแห่งทางเลือกด้วย AI 3 มิติพร้อมกัน
-    tasks = [
-        get_ai_view(gpt_key, "gpt", "เชิงโครงสร้าง"),
-        get_ai_view(gemini_studio, "gemini-1.5-flash", "เชิงความเป็นไปได้"),
-        get_ai_view(gemini_cloud, "gemini-1.5-pro", "เชิงความมั่นคง")
-    ]
-    
-    views = await asyncio.gather(*tasks)
-    
+            res = await client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": TRUTH_PROMPT},
+                    {"role": "user", "content": user_input}
+                ]
+            )
+            return res.choices[0].message.content
+
+        except Exception as e:
+            return f"[GPT ERROR] {str(e)}"
+
+    # 🧠 SAFE GEMINI
+    async def get_gemini_view():
+        if genai is None:
+            return "[GENAI NOT INSTALLED]"
+
+        if not gemini_key:
+            return "[GEMINI KEY MISSING]"
+
+        try:
+            client = genai.Client(api_key=gemini_key)
+
+            res = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=f"{TRUTH_PROMPT}\n\nสถานการณ์:\n{user_input}"
+            )
+
+            return res.text
+
+        except Exception as e:
+            return f"[GEMINI ERROR] {str(e)}"
+
+    # ⚡ RUN PARALLEL (ไม่ให้พังทั้งระบบ)
+    results = await asyncio.gather(
+        get_gpt_view(),
+        get_gemini_view(),
+        return_exceptions=True
+    )
+
+    # 🔒 SAFE RESOURCE → RISK
+    try:
+        resource_value = float(resource)
+    except:
+        resource_value = 50  # fallback กลาง
+
+    risk_index = max(0, min(100, (100 - resource_value) * 0.75))
+
+    # 📦 OUTPUT (JSON SAFE 100%)
     return {
-        "view_structural": views[0],
-        "view_possibility": views[1],
-        "view_stability": views[2],
-        "risk_index": (100 - resource) * 0.75
+        "view_structural": str(results[0]),
+        "view_possibility": str(results[1]),
+        "view_stability": "Fallback stability channel active",
+        "risk_index": risk_index
     }
