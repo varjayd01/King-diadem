@@ -5,3 +5,5 @@ google-genai
 stripe
 python-multipart
 google-generativeai
+requests
+jonja2
