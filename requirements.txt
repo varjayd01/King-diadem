@@ -4,6 +4,5 @@ openai
 google-genai
 stripe
 python-multipart
-google-generativeai
 requests
 jinja2
