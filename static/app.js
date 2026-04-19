@@ -1,56 +1,30 @@
-async function run() {
-    const input = document.getElementById("input").value;
+async function runEngine() {
+
+    const input = document.getElementById("inputBox").value;
+    const energy = document.getElementById("energy").value;
+
     const output = document.getElementById("output");
-
-    if (!input.trim()) {
-        output.textContent = "กรุณาพิมพ์ก่อน";
-        return;
-    }
-
-    output.textContent = "thinking...";
+    output.innerText = "⏳ Running...";
 
     try {
         const res = await fetch("/ENGINE", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 input: input,
-                entropy: 40,
-                resource: 50,
-                stability: 60
+                state: {
+                    energy: energy,
+                    food: true,
+                    safe_place: true
+                }
             })
         });
 
         const data = await res.json();
 
-        // 🚫 โดนบล็อก
-        if (data.status === "blocked") {
-            output.textContent =
-                "❌ NO CREDIT\n" +
-                "Plan: " + data.plan + "\n" +
-                "Credits: " + data.credits;
-            return;
-        }
+        output.innerText = JSON.stringify(data, null, 2);
 
-        // ❗ error
-        if (data.status === "error") {
-            output.textContent = "ERROR: " + data.message;
-            return;
-        }
-
-        // ✅ ปกติ
-        let text = "";
-
-        text += "PLAN: " + data.plan + "\n";
-        text += "CREDITS LEFT: " + data.credits + "\n\n";
-
-        text += JSON.stringify(data.data, null, 2);
-
-        output.textContent = text;
-
-    } catch (e) {
-        output.textContent = "ERROR: " + e.message;
+    } catch (err) {
+        output.innerText = "❌ ERROR: " + err;
     }
 }
