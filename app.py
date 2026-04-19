@@ -1,23 +1,61 @@
-from flask import Flask, request, jsonify
-from ENGINE.universal_engine import run_engine
+# app.py
 
-app = Flask(__name__)
+import os
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-@app.route("/")
+# 👉 ใช้ของพี่ ไม่เปลี่ยนชื่อ
+from ENGINE.universal_engine import run_universal_engine
+
+app = FastAPI(title="KING DIADEM")
+
+# 📁 path static
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# 📦 input model
+class InputData(BaseModel):
+    input: str
+    entropy: float = 40
+    resource: float = 50
+    stability: float = 60
+
+
+# 🌐 หน้าเว็บหลัก
+@app.get("/")
 def home():
-    return open("static/index.html").read()
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
-@app.route("/ask", methods=["POST"])
-def ask():
+
+# 🔥 ENGINE endpoint (จุดเดียวจบ)
+@app.post("/ENGINE")
+async def engine_endpoint(data: InputData):
     try:
-        data = request.json or {}
-        result = run_engine(data)
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "error": str(e)
-        })
+        payload = data.dict()
 
+        result = run_universal_engine(payload)
+
+        # 👉 กันพัง ถ้า engine คืนค่า None
+        if result is None:
+            return {
+                "status": "error",
+                "message": "ENGINE returned None"
+            }
+
+        return result
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
+# 🚀 run local
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
