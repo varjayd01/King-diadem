@@ -6,4 +6,4 @@ stripe
 python-multipart
 google-generativeai
 requests
-jonja2
+jinja2
