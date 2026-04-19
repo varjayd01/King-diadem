@@ -1,18 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>King Diadem AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KING DIADEM</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: monospace;
+    color: #0ff;
+}
+
+/* CANVAS background */
+#bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+/* UI PANEL */
+.panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    
+    border: 1px solid rgba(0,255,255,0.3);
+    padding: 20px;
+    width: 320px;
+    border-radius: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: black;
+    color: #0ff;
+    border: 1px solid #0ff;
+}
+
+button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    background: #001f1f;
+    color: #0ff;
+    border: 1px solid #0ff;
+    cursor: pointer;
+}
+
+pre {
+    margin-top: 15px;
+    white-space: pre-wrap;
+    font-size: 12px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>AI Decision Engine</h2>
+<canvas id="bg"></canvas>
 
-<input id="input" placeholder="ถามอะไรมา..." />
-<button onclick="send()">Run</button>
+<div class="panel">
+    <h3>KING DIADEM</h3>
+    <input id="input" placeholder="สถานการณ์ของคุณ...">
+    <button onclick="run()">RUN</button>
+    <pre id="output">Waiting...</pre>
+</div>
 
-<pre id="output"></pre>
+<script src="/static/app.js"></script>
 
-<script src="app.js"></script>
+<script>
+// 🌌 CANVAS GALAXY
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stars = [];
+
+for(let i=0;i<200;i++){
+    stars.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        size: Math.random()*2,
+        speed: Math.random()*0.5
+    });
+}
+
+// 🕳 BLACK HOLE
+let angle = 0;
+
+function draw(){
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // stars
+    ctx.fillStyle = "#0ff";
+    stars.forEach(s=>{
+        s.y += s.speed;
+        if(s.y > canvas.height) s.y = 0;
+        ctx.fillRect(s.x,s.y,s.size,s.size);
+    });
+
+    // black hole
+    let cx = canvas.width/2;
+    let cy = canvas.height/2;
+
+    angle += 0.01;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 50 + Math.sin(angle)*5, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(0,0,0,0.8)";
+    ctx.fill();
+
+    requestAnimationFrame(draw);
+}
+
+draw();
+</script>
 
 </body>
 </html>
