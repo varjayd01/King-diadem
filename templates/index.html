@@ -2,33 +2,202 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>KING DIADEM UI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KING DIADEM™</title>
 
 <style>
+
+/* 🌌 Background */
 body {
-  background: radial-gradient(circle, #020611, #000);
-  color: cyan;
-  font-family: monospace;
-  text-align: center;
+    margin: 0;
+    background: radial-gradient(circle at center, #020611, #000000);
+    color: #00f7ff;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
 }
 
+/* ✨ Glow Animation */
+@keyframes glow {
+    0% { text-shadow: 0 0 10px #00f7ff; }
+    50% { text-shadow: 0 0 40px #00f7ff; }
+    100% { text-shadow: 0 0 10px #00f7ff; }
+}
+
+/* 🌠 Floating particles */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+/* 🔷 Main Container */
+.container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    top: 10vh;
+}
+
+/* 👑 Title */
 .title {
-  font-size: 60px;
-  margin-top: 100px;
-  text-shadow: 0 0 30px cyan;
+    font-size: 70px;
+    animation: glow 3s infinite;
 }
 
+/* 🧠 Subtitle */
+.subtitle {
+    opacity: 0.5;
+    margin-bottom: 40px;
+}
+
+/* 🧩 Card */
 .card {
-  margin: 50px auto;
-  padding: 30px;
-  width: 400px;
-  border: 1px solid cyan;
-  box-shadow: 0 0 30px cyan;
+    margin: auto;
+    width: 420px;
+    padding: 25px;
+    border: 1px solid #00f7ff;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0,255,255,0.5);
+    backdrop-filter: blur(10px);
 }
 
+/* 📝 Input */
+textarea {
+    width: 100%;
+    height: 120px;
+    background: black;
+    color: #00f7ff;
+    border: 1px solid #00f7ff;
+    padding: 10px;
+}
+
+/* 🎚 Slider */
+input[type=range] {
+    width: 100%;
+}
+
+/* 🔘 Button */
 button {
-  padding: 15px;
-  width: 100%;
-  background: cyan;
-  border: none;
-  cursor
+    margin-top: 15px;
+    padding: 15px;
+    width: 100%;
+    background: #00f7ff;
+    color: black;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    box-shadow: 0 0 20px #00f7ff;
+}
+
+/* 📡 Output */
+.output {
+    margin-top: 20px;
+    text-align: left;
+    font-size: 13px;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="container">
+
+    <div class="title">KING DIADEM</div>
+    <div class="subtitle">DRIFTZERO WATERLINE GOVERNANCE OS</div>
+
+    <div class="card">
+
+        <textarea id="inputBox" placeholder="Reality Input..."></textarea>
+
+        <br><br>
+
+        Energy
+        <input type="range" id="energy" min="0" max="100" value="50">
+
+        <button onclick="fakeRun()">RUN COSMIC ENGINE</button>
+
+        <div class="output" id="output"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* 🌠 Particle Stars */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stars = [];
+
+for (let i = 0; i < 150; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.5
+    });
+}
+
+function drawStars() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "#00f7ff";
+
+    stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+    });
+
+    requestAnimationFrame(drawStars);
+}
+
+drawStars();
+
+/* 🤖 Fake AI */
+function fakeRun() {
+
+    const input = document.getElementById("inputBox").value;
+    const energy = document.getElementById("energy").value;
+    const out = document.getElementById("output");
+
+    out.innerText = "⏳ Processing reality...";
+
+    setTimeout(() => {
+        out.innerText =
+`[REALITY SIGNAL]
+Input: ${input}
+
+[STATE]
+Energy: ${energy}
+
+[ANALYSIS]
+- System stable
+- No collapse detected
+- Choice > 0
+
+[OUTPUT]
+→ Continue
+→ Observe
+→ Do not rush`;
+    }, 1200);
+}
+
+</script>
+
+</body>
+</html>
