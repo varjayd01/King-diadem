@@ -1,34 +1,35 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>KING DIADEM™</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="/static/style.css">
+  <title>KING DIADEM</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="container">
+<h1 class="title">KING DIADEM</h1>
 
-  <h1 class="title">KING DIADEM</h1>
-  <p class="subtitle">DRIFTZERO WATERLINE GOVERNANCE OS</p>
+<textarea id="text" placeholder="Reality input..."></textarea><br>
 
-  <textarea id="inputBox" placeholder="ระบุสิ่งที่ปรากฏในความจริง..."></textarea>
+<label>Energy</label>
+<input type="range" id="energy" min="0" max="100" value="50"><br>
 
-  <div class="controls">
-    <label>Energy</label>
-    <input type="range" id="energy" min="0" max="100" value="50">
-  </div>
+<label><input type="checkbox" id="food" checked> Food</label>
+<label><input type="checkbox" id="safe" checked> Safe</label>
 
-  <button onclick="runEngine()">RUN RUNTIME GATES</button>
+<br><br>
 
-  <pre id="output"></pre>
+<select id="mental">
+  <option value="stable">Stable</option>
+  <option value="stressed">Stressed</option>
+  <option value="overwhelmed">Overwhelmed</option>
+</select>
 
-</div>
+<br><br>
 
-<script src="/static/app.js"></script>
+<button onclick="run()">RUN RUNTIME GATES</button>
 
+<div class="result" id="output"></div>
+
+<script src="app.js"></script>
 </body>
 </html>
