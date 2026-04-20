@@ -1,50 +1,33 @@
 body {
-  background: #050b14;
-  color: #00f7ff;
+  background: radial-gradient(circle, #020617, #000);
+  color: #FFF8E7;
   font-family: monospace;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.container {
-  width: 90%;
-  max-width: 600px;
   text-align: center;
 }
 
 .title {
+  color: #00F5FF;
   font-size: 40px;
-  text-shadow: 0 0 20px #00f7ff;
-}
-
-.subtitle {
-  opacity: 0.6;
-  margin-bottom: 20px;
+  text-shadow: 0 0 20px #00F5FF;
 }
 
 textarea {
-  width: 100%;
+  width: 80%;
   height: 120px;
   background: black;
-  color: #00f7ff;
-  border: 1px solid #00f7ff;
-  padding: 10px;
+  color: #00F5FF;
+  border: 1px solid #00F5FF;
 }
 
 button {
-  margin-top: 15px;
-  padding: 15px;
-  width: 100%;
-  background: #00f7ff;
-  color: black;
+  background: linear-gradient(45deg, #00F5FF, #FFF8E7);
   border: none;
+  padding: 15px;
+  margin-top: 10px;
   cursor: pointer;
 }
 
-pre {
+.result {
   margin-top: 20px;
-  text-align: left;
   white-space: pre-wrap;
 }
