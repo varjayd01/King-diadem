@@ -1,30 +1,22 @@
-async function runEngine() {
+async function run() {
 
-    const input = document.getElementById("inputBox").value;
-    const energy = document.getElementById("energy").value;
+    const data = {
+        text: document.getElementById("text").value,
+        energy: parseFloat(document.getElementById("energy").value),
+        food_access: document.getElementById("food").checked,
+        safe_place: document.getElementById("safe").checked,
+        mental_state: document.getElementById("mental").value
+    };
 
-    const output = document.getElementById("output");
-    output.innerText = "⏳ Running...";
+    const res = await fetch("/ENGINE", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
 
-    try {
-        const res = await fetch("/ENGINE", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                input: input,
-                state: {
-                    energy: energy,
-                    food: true,
-                    safe_place: true
-                }
-            })
-        });
+    const json = await res.json();
 
-        const data = await res.json();
-
-        output.innerText = JSON.stringify(data, null, 2);
-
-    } catch (err) {
-        output.innerText = "❌ ERROR: " + err;
-    }
+    document.getElementById("output").innerText =
+        "SURVIVAL:\n" + JSON.stringify(json.survival, null, 2) +
+        "\n\nAI:\n" + json.ai;
 }
