@@ -1,33 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>King Diadem</title>
-
+<title>KING DIADEM</title>
 <link rel="stylesheet" href="style.css">
-
 </head>
+
 <body>
 
 <div class="overlay"></div>
 
 <div class="container">
+    <h1>KING DIADEM</h1>
 
-    <!-- LOGO -->
-    <img src="logo.png" class="logo">
+    <textarea id="input" placeholder="พิมพ์คำถามของคุณ..."></textarea>
 
-    <!-- TITLE -->
-    <h1 class="title">
-        <span class="cosmic">K</span>ing 
-        <span class="cosmic">D</span>iadem
-    </h1>
-
-    <!-- INPUT -->
-    <textarea id="inputBox" placeholder="พิมพ์สิ่งที่พี่ต้องการ..."></textarea>
-
-    <!-- CONTROLS -->
     <div class="controls">
         <label>Energy</label>
         <input type="range" id="energy" min="0" max="100" value="50">
@@ -38,18 +25,18 @@
         <select id="mode">
             <option>Stable</option>
             <option>Risk</option>
-            <option>Escape</option>
+            <option>Critical</option>
         </select>
     </div>
 
-    <!-- BUTTON -->
-    <button onclick="runDecision()">RUN DECISION ENGINE</button>
+    <button onclick="run()">RUN DECISION ENGINE</button>
 
-    <!-- OUTPUT -->
-    <div id="output"></div>
-
+    <div class="output">
+        <p><b>AI:</b></p>
+        <div id="result">...</div>
+    </div>
 </div>
 
-<script src="app.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
