@@ -1,22 +1,25 @@
-async function run() {
+async function runDecision() {
+    const input = document.getElementById("inputBox").value;
+    const energy = document.getElementById("energy").value;
+    const food = document.getElementById("food").checked;
+    const safe = document.getElementById("safe").checked;
+    const mode = document.getElementById("mode").value;
 
-    const data = {
-        text: document.getElementById("text").value,
-        energy: parseFloat(document.getElementById("energy").value),
-        food_access: document.getElementById("food").checked,
-        safe_place: document.getElementById("safe").checked,
-        mental_state: document.getElementById("mental").value
-    };
-
-    const res = await fetch("/ENGINE", {
+    const res = await fetch("/decision", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            input: input,
+            energy: energy,
+            food: food,
+            safe: safe,
+            mode: mode
+        })
     });
 
-    const json = await res.json();
+    const data = await res.json();
 
-    document.getElementById("output").innerText =
-        "SURVIVAL:\n" + JSON.stringify(json.survival, null, 2) +
-        "\n\nAI:\n" + json.ai;
+    document.getElementById("output").innerText = data.result;
 }
