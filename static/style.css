@@ -1,33 +1,72 @@
 body {
-  background: radial-gradient(circle, #020617, #000);
-  color: #FFF8E7;
-  font-family: monospace;
-  text-align: center;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: white;
+
+    background: url("hero.png") no-repeat center center fixed;
+    background-size: cover;
 }
 
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9));
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 40px;
+}
+
+/* LOGO */
+.logo {
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+/* TITLE */
 .title {
-  color: #00F5FF;
-  font-size: 40px;
-  text-shadow: 0 0 20px #00F5FF;
+    font-size: 40px;
+    letter-spacing: 2px;
 }
 
+/* COSMIC LATTE */
+.cosmic {
+    background: linear-gradient(45deg, #fff8e7, #f5deb3, #ffe4b5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* INPUT */
 textarea {
-  width: 80%;
-  height: 120px;
-  background: black;
-  color: #00F5FF;
-  border: 1px solid #00F5FF;
+    width: 80%;
+    height: 120px;
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: 1px solid cyan;
 }
 
+/* CONTROLS */
+.controls {
+    margin-top: 20px;
+}
+
+/* BUTTON */
 button {
-  background: linear-gradient(45deg, #00F5FF, #FFF8E7);
-  border: none;
-  padding: 15px;
-  margin-top: 10px;
-  cursor: pointer;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: cyan;
+    border: none;
+    cursor: pointer;
 }
 
-.result {
-  margin-top: 20px;
-  white-space: pre-wrap;
+/* OUTPUT */
+#output {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0,0,0,0.6);
 }
