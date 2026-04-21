@@ -1,72 +1,71 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    color: white;
-
-    background: url("hero.png") no-repeat center center fixed;
-    background-size: cover;
+    font-family: Arial;
+    color: #00ffff;
+    background: black;
 }
 
-.overlay {
+/* 🌌 BACKGROUND */
+body::before {
+    content: "";
     position: fixed;
-    inset: 0;
-    background: radial-gradient(circle, rgba(0,0,0,0.3), rgba(0,0,0,0.9));
+    width: 100%;
+    height: 100%;
+    background: url("hero.png") no-repeat center center;
+    background-size: cover;
+    z-index: -2;
 }
 
+/* 🌟 layer glow */
+body::after {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,255,255,0.2), transparent);
+    animation: pulse 5s infinite;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0% {opacity: 0.2;}
+    50% {opacity: 0.6;}
+    100% {opacity: 0.2;}
+}
+
+/* 🧠 UI */
 .container {
-    position: relative;
-    z-index: 1;
     text-align: center;
     padding: 40px;
 }
 
-/* LOGO */
-.logo {
-    width: 120px;
-    margin-bottom: 10px;
-}
-
-/* TITLE */
-.title {
+h1 {
     font-size: 40px;
-    letter-spacing: 2px;
+    text-shadow: 0 0 20px cyan;
 }
 
-/* COSMIC LATTE */
-.cosmic {
-    background: linear-gradient(45deg, #fff8e7, #f5deb3, #ffe4b5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* INPUT */
 textarea {
     width: 80%;
     height: 120px;
-    margin-top: 20px;
-    padding: 10px;
     background: rgba(0,0,0,0.6);
-    color: white;
+    color: cyan;
     border: 1px solid cyan;
+    padding: 10px;
 }
 
-/* CONTROLS */
 .controls {
     margin-top: 20px;
 }
 
-/* BUTTON */
 button {
     margin-top: 20px;
-    padding: 10px 20px;
+    padding: 15px;
     background: cyan;
     border: none;
     cursor: pointer;
+    font-weight: bold;
 }
 
-/* OUTPUT */
-#output {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(0,0,0,0.6);
+.output {
+    margin-top: 30px;
 }
