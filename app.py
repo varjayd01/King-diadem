@@ -1,33 +1,34 @@
+import os
 from flask import Flask, request, jsonify, send_from_directory
+from openai import OpenAI
 
 app = Flask(__name__, static_folder="static")
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 @app.route("/")
-def index():
+def home():
     return send_from_directory("static", "index.html")
 
-@app.route("/decision", methods=["POST"])
-def decision():
+@app.route("/ask", methods=["POST"])
+def ask():
     data = request.json
+    prompt = data.get("message", "")
 
-    text = data.get("input", "")
-    energy = data.get("energy")
-    mode = data.get("mode")
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "You are a survival decision AI."},
+                {"role": "user", "content": prompt}
+            ]
+        )
 
-    # MOCK ENGINE (พี่เอาไปเสียบของจริงทีหลังได้เลย)
-    result = f"""
-[King Diadem Decision]
+        answer = response.choices[0].message.content
+        return jsonify({"reply": answer})
 
-Input: {text}
-Energy: {energy}
-Mode: {mode}
-
-→ Recommended Action:
-Move forward carefully. Preserve choice. Avoid collapse.
-"""
-
-    return jsonify({"result": result})
-
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
