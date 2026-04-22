@@ -1,83 +1,77 @@
-from dataclasses import dataclass
-from typing import List, Dict, Any
+import os, asyncio
+from openai import AsyncOpenAI
+
+try:
+    from google import genai
+except:
+    genai = None
 
 
-@dataclass
-class HumanState:
-    energy: float
-    money: float
-    food_access: bool
-    safe_place: bool
-    mental_state: str
-    time_available: float
+class TruthSystem:
+    def __init__(self):
+        self.openai_key = os.getenv("OPENAI_API_KEY")
+        self.gemini_keys = [
+            os.getenv("GEMINI_API_KEY1"),
+            os.getenv("GEMINI_API_KEY2")
+        ]
+
+    async def gpt_view(self, context):
+        try:
+            client = AsyncOpenAI(api_key=self.openai_key)
+
+            res = await client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": context}]
+            )
+
+            return res.choices[0].message.content
+
+        except Exception as e:
+            return f"[GPT ERROR] {str(e)}"
+
+    async def gemini_view(self, context):
+        if genai is None:
+            return "[Gemini not installed]"
+
+        for key in self.gemini_keys:
+            if not key:
+                continue
+
+            try:
+                client = genai.Client(api_key=key)
+
+                res = client.models.generate_content(
+                    model="gemini-1.5-flash",
+                    contents=context
+                )
+
+                return res.text
+
+            except Exception:
+                continue
+
+        return "[Gemini ERROR all keys failed]"
 
 
-@dataclass
-class SurvivalOutput:
-    status: str
-    actions: List[str]
-    warnings: List[str]
-    next_step: str
+async def run_truth(user_input, state):
+    context = f"""
+    STATE: {state}
+    INPUT: {user_input}
+    """
 
+    ts = TruthSystem()
 
-def from_dict(data: dict) -> HumanState:
-    return HumanState(
-        energy=data.get("energy", 50),
-        money=data.get("money", 0),
-        food_access=data.get("food_access") or data.get("food", False),
-        safe_place=data.get("safe_place") or data.get("safe", False),
-        mental_state=data.get("mental_state", "stable"),
-        time_available=data.get("time_available", 1)
+    results = await asyncio.gather(
+        ts.gpt_view(context),
+        ts.gemini_view(context),
+        return_exceptions=True
     )
 
+    return {
+        "gpt": str(results[0]),
+        "gemini": str(results[1])
+    }
 
-class RealHumanSurvivorEngine:
 
-    def __init__(self):
-        self.MIN_ENERGY = 20
-
-    def run(self, state: HumanState) -> SurvivalOutput:
-
-        if state.mental_state == "overwhelmed":
-            return SurvivalOutput(
-                status="RESET_REQUIRED",
-                actions=[
-                    "Stop all decisions",
-                    "Drink water",
-                    "Breathing 4-4-6",
-                    "Lie down"
-                ],
-                warnings=["Do not decide anything now"],
-                next_step="Reset first"
-            )
-
-        if not state.food_access:
-            return SurvivalOutput(
-                status="NO_FOOD",
-                actions=["Find cheap food now"],
-                warnings=["Energy will crash"],
-                next_step="Eat first"
-            )
-
-        if not state.safe_place:
-            return SurvivalOutput(
-                status="NO_SHELTER",
-                actions=["Find safe place"],
-                warnings=["Safety > everything"],
-                next_step="Move immediately"
-            )
-
-        if state.energy < self.MIN_ENERGY:
-            return SurvivalOutput(
-                status="LOW_ENERGY",
-                actions=["Eat", "Sleep 30 min"],
-                warnings=["Low brain power"],
-                next_step="Recover energy"
-            )
-
-        return SurvivalOutput(
-            status="STABLE",
-            actions=["Focus 1 task"],
-            warnings=["Don't overload"],
-            next_step="Continue"
-        )
+def run_sync(user_input, state):
+    return asyncio.run(run_truth(user_input, state))
