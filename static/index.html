@@ -1,42 +1,38 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>KING DIADEM</title>
-<link rel="stylesheet" href="style.css">
+    <title>King Diadem</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<div class="overlay"></div>
+<h1>KING DIADEM</h1>
 
-<div class="container">
-    <h1>KING DIADEM</h1>
+<textarea id="input" placeholder="พิมพ์สถานการณ์..."></textarea>
 
-    <textarea id="input" placeholder="พิมพ์คำถามของคุณ..."></textarea>
+<br>
 
-    <div class="controls">
-        <label>Energy</label>
-        <input type="range" id="energy" min="0" max="100" value="50">
+<label>Energy</label>
+<input type="range" id="energy" min="0" max="100" value="50">
 
-        <label><input type="checkbox" id="food" checked> Food</label>
-        <label><input type="checkbox" id="safe" checked> Safe</label>
+<label><input type="checkbox" id="food" checked> Food</label>
+<label><input type="checkbox" id="safe" checked> Safe</label>
 
-        <select id="mode">
-            <option>Stable</option>
-            <option>Risk</option>
-            <option>Critical</option>
-        </select>
-    </div>
+<select id="mode">
+    <option>Stable</option>
+    <option>Risk</option>
+</select>
 
-    <button onclick="run()">RUN DECISION ENGINE</button>
+<br><br>
 
-    <div class="output">
-        <p><b>AI:</b></p>
-        <div id="result">...</div>
-    </div>
-</div>
+<button onclick="run()">RUN DECISION ENGINE</button>
 
-<script src="main.js"></script>
+<h3>AI:</h3>
+<pre id="output">...</pre>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+
 </body>
 </html>
