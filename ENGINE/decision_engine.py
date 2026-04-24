@@ -1,71 +1,68 @@
-from typing import Dict, Any
-from core.system_orchestrator import SystemOrchestrator
+# =========================
+# 👁️ DECISION ENGINE (OBSERVER MODE)
+# =========================
+
+from ENGINE.pattern_engine import analyze_pattern
 
 class DecisionEngine:
 
     def __init__(self):
-        self.orchestrator = SystemOrchestrator()
+        pass
 
-    def run(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, data):
 
-        user_input = data.get("input", "")
-        state = data.get("state", {})
+        # =========================
+        # 👁️ 1. OBSERVE (ไม่ตัดสินก่อน)
+        # =========================
+        pattern = analyze_pattern(data)
 
-        energy = int(state.get("energy", 50))
-        food = state.get("food", True)
-        safe = state.get("safe_place", True)
+        route = pattern.get("route", "general")
 
-        # 🧠 1. ให้ core เลือกว่าจะใช้ engine ไหน
-        route = self.orchestrator.route(user_input)
+        # =========================
+        # 🧠 2. SELECT ENGINE
+        # =========================
 
-        # 🧠 2. execute เฉพาะ engine ที่จำเป็น
-        core_result = self.orchestrator.execute(route, data)
+        try:
 
-        # 🧠 3. fallback survival logic
-        risk = self._assess_risk_local(energy, food, safe)
+            if route == "survival":
+                from ENGINE.survival_advisor import advise as engine_func
 
-        choices = self._generate_choices(risk, energy)
+            elif route == "risk":
+                from ENGINE.risk_engine import assess as engine_func
+
+            elif route == "uncertain":
+                from ENGINE.consensus_engine import resolve as engine_func
+
+            else:
+                from ENGINE.strategy_planner import plan as engine_func
+
+        except Exception as e:
+            return {
+                "route": route,
+                "observer": "fallback",
+                "error": f"ENGINE LOAD FAIL: {str(e)}",
+                "input": data.get("input")
+            }
+
+        # =========================
+        # ⚙️ 3. EXECUTE (ผ่าน kernel)
+        # =========================
+
+        try:
+            result = engine_func(pattern)
+        except Exception as e:
+            result = {
+                "error": f"ENGINE FAIL: {str(e)}"
+            }
+
+        # =========================
+        # 👁️ 4. RETURN AS OBSERVER
+        # =========================
 
         return {
+            "observer": "KING DIADEM",
             "route": route,
-            "core_result": core_result,
-            "risk": risk,
-            "choices": choices,
-            "input": user_input
+            "pattern": pattern,
+            "result": result,
+            "input": data.get("input")
         }
-
-    # ---------------------
-
-    def _assess_risk_local(self, energy, food, safe):
-
-        if energy < 20 or not food or not safe:
-            return "HIGH"
-
-        if energy < 50:
-            return "MEDIUM"
-
-        return "LOW"
-
-    # ---------------------
-
-    def _generate_choices(self, risk, energy):
-
-        if risk == "HIGH":
-            return [
-                "หยุดทุกการตัดสินใจที่ไม่จำเป็น",
-                "ฟื้นฟูพลังงานทันที",
-                "ออกจากสภาพแวดล้อมเสี่ยง"
-            ]
-
-        if risk == "MEDIUM":
-            return [
-                "ลดความเสี่ยงก่อนขยาย",
-                "ประเมินทรัพยากรใหม่",
-                "เลี่ยงการตัดสินใจใหญ่"
-            ]
-
-        return [
-            "ดำเนินการต่อได้",
-            "สังเกตการเปลี่ยนแปลง",
-            "ขยายได้แบบควบคุม"
-        ]
