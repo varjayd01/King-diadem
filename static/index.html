@@ -1,154 +1,50 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <title>KING DIADEM</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>KING DIADEM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            margin: 0;
-            font-family: monospace;
-            background: radial-gradient(circle at top, #0b1220, #000);
-            color: #00ffff;
-            text-align: center;
-        }
-
-        h1 {
-            margin-top: 40px;
-            font-size: 48px;
-            text-shadow: 0 0 20px #00ffff;
-        }
-
-        .sub {
-            opacity: 0.6;
-            margin-bottom: 30px;
-        }
-
-        textarea {
-            width: 80%;
-            height: 120px;
-            background: black;
-            border: 2px solid #00ffff;
-            color: #00ffff;
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        .slider {
-            margin: 20px;
-        }
-
-        button {
-            margin: 10px;
-            padding: 15px 25px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .run {
-            background: #00ffff;
-            color: black;
-        }
-
-        .pay {
-            background: gold;
-        }
-
-        pre {
-            width: 90%;
-            margin: 20px auto;
-            text-align: left;
-            background: black;
-            padding: 15px;
-            border: 1px solid #00ffff;
-            overflow-x: auto;
-        }
-    </style>
-</head>
-
-<body>
-
-    <h1>KING DIADEM</h1>
-    <div class="sub">DRIFTZERO WATERLINE GOVERNANCE OS</div>
-
-    <textarea id="input" placeholder="พิมพ์สถานการณ์ เช่น ไม่มีเงิน / งานพัง / เครียด"></textarea>
-
-    <div class="slider">
-        Energy:
-        <input type="range" id="energy" min="0" max="100" value="50">
-    </div>
-
-    <button class="run" onclick="runEngine()">RUN RUNTIME GATES</button>
-    <button class="pay" onclick="pay()">💳 เติมพลัง AI</button>
-
-    <pre id="output">...</pre>
-
-<script>
-
-async function runEngine() {
-
-    const input = document.getElementById("input").value;
-    const energy = document.getElementById("energy").value;
-
-    const res = await fetch("/run", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            input: input,
-            state: {
-                energy: parseInt(energy),
-                food: true,
-                safe_place: true
-            }
-        })
-    });
-
-    const data = await res.json();
-
-    // 🔥 เรียก AI เพิ่ม
-    let aiText = "";
-
-    try {
-        const aiRes = await fetch("/ai", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ input })
-        });
-
-        const aiData = await aiRes.json();
-        aiText = aiData.ai;
-    } catch (e) {
-        aiText = "AI ERROR";
-    }
-
-    document.getElementById("output").textContent =
-        JSON.stringify(data, null, 2) +
-        "\n\n=== AI ===\n" +
-        aiText;
+<style>
+body {
+    margin: 0;
+    font-family: monospace;
+    background: radial-gradient(circle at top, #0b1220, #000);
+    color: #00ffff;
+    text-align: center;
 }
 
-async function pay() {
-
-    const res = await fetch("/create-checkout-session", {
-        method: "POST"
-    });
-
-    const data = await res.json();
-
-    if (data.url) {
-        window.location.href = data.url;
-    } else {
-        alert("Payment error");
-    }
+h1 {
+    margin-top: 30px;
+    font-size: 42px;
+    text-shadow: 0 0 20px #00ffff;
 }
 
-</script>
+.sub {
+    opacity: 0.6;
+    margin-bottom: 20px;
+}
 
-</body>
-</html>
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+textarea {
+    width: 100%;
+    height: 120px;
+    background: black;
+    border: 2px solid #00ffff;
+    color: #00ffff;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.slider {
+    margin: 20px;
+}
+
+button {
+    margin: 10px;
+    padding: 12px 20px;
+    border: none
