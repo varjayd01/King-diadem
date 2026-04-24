@@ -6,61 +6,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+
 body {
     margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    color: #e6f1ff;
+    font-family: 'Segoe UI', sans-serif;
+    color: #e0f7ff;
 
     background: url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564") no-repeat center center fixed;
     background-size: cover;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
 }
 
-/* 🔥 glass card */
+/* 🔥 ทำให้จักรวาล soft ลง */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    background: radial-gradient(circle at center, rgba(0,0,0,0.3), rgba(0,0,0,0.85));
+    backdrop-filter: blur(4px);
+
+    z-index: -1;
+}
+
+/* 🧊 กล่องหลัก */
 .container {
-    width: 90%;
-    max-width: 720px;
+    max-width: 800px;
+    margin: 60px auto;
     padding: 30px;
 
-    background: rgba(0,0,0,0.75);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
+    background: rgba(10, 20, 30, 0.75);
+    backdrop-filter: blur(20px);
 
-    box-shadow: 0 0 40px rgba(0,255,255,0.2);
+    border-radius: 20px;
+    border: 1px solid rgba(0,255,255,0.2);
+
+    box-shadow: 0 0 40px rgba(0,255,255,0.15);
 }
 
-/* title */
+/* 🧠 Title */
 h1 {
     margin: 0;
-    font-size: 36px;
+    font-size: 40px;
     color: #00eaff;
-    text-shadow: 0 0 15px rgba(0,234,255,0.8);
 }
 
 .sub {
-    margin-top: 5px;
+    opacity: 0.6;
     margin-bottom: 20px;
-    color: #aaa;
 }
 
-/* textarea */
+/* ✍️ input */
 textarea {
     width: 100%;
-    height: 130px;
+    height: 120px;
     padding: 12px;
 
-    background: rgba(0,0,0,0.8);
-    border: 1px solid #00eaff;
+    background: rgba(0,20,30,0.6);
+    border: 1px solid rgba(0,255,255,0.4);
     border-radius: 10px;
 
-    color: #00eaff;
+    color: #ccfaff;
+    font-size: 16px;
 }
 
-/* buttons */
+/* 🎛 slider */
+.slider {
+    margin: 15px 0;
+}
+
+/* 🔘 buttons */
 .buttons {
     display: flex;
     gap: 10px;
@@ -69,40 +83,41 @@ textarea {
 
 button {
     flex: 1;
-    padding: 12px;
-    border-radius: 10px;
+    padding: 15px;
     border: none;
+    border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
 }
 
-/* theme colors */
+/* 🎨 ปุ่ม */
 .run {
-    background: linear-gradient(45deg, #00eaff, #0099ff);
-    color: black;
+    background: linear-gradient(135deg, #00cfff, #0077ff);
+    color: white;
 }
 
 .ai {
-    background: linear-gradient(45deg, #00ff9d, #00cc88);
-}
-
-.pay {
-    background: linear-gradient(45deg, gold, orange);
+    background: linear-gradient(135deg, #00ff99, #00cc66);
     color: black;
 }
 
-/* output */
+.pay {
+    background: linear-gradient(135deg, #ffd700, #ff9900);
+    color: black;
+}
+
+/* 📦 output */
 pre {
     margin-top: 20px;
     padding: 15px;
 
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(0,255,255,0.3);
     border-radius: 10px;
-    border: 1px solid #00eaff;
 
-    max-height: 250px;
-    overflow: auto;
+    overflow-x: auto;
 }
+
 </style>
 </head>
 
@@ -110,29 +125,45 @@ pre {
 
 <div class="container">
 
-<h1>King Diadem</h1>
-<div class="sub">AI Decision Civilization System</div>
+    <h1>King Diadem</h1>
+    <div class="sub">AI Decision Civilization System</div>
 
-<textarea id="input" placeholder="Describe your situation..."></textarea>
+    <textarea id="input" placeholder="พิมพ์สถานการณ์ เช่น ไม่มีเงิน / งานพัง / เครียด"></textarea>
 
-<div class="buttons">
-    <button class="run" onclick="runEngine()">Run Engine</button>
-    <button class="ai" onclick="askAI()">Ask AI</button>
-    <button class="pay" onclick="pay()">Support</button>
-</div>
+    <div class="slider">
+        Energy:
+        <input type="range" id="energy" min="0" max="100" value="50">
+    </div>
 
-<pre id="output">System ready...</pre>
+    <div class="buttons">
+        <button class="run" onclick="runEngine()">Run Engine</button>
+        <button class="ai" onclick="askAI()">Ask AI</button>
+        <button class="pay" onclick="pay()">Support</button>
+    </div>
+
+    <pre id="output">SYSTEM READY...</pre>
 
 </div>
 
 <script>
+
+/* 🧠 ENGINE */
 async function runEngine() {
+
     const input = document.getElementById("input").value;
+    const energy = document.getElementById("energy").value;
 
     const res = await fetch("/run", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({input})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            input,
+            state: {
+                energy: parseInt(energy),
+                food: true,
+                safe_place: true
+            }
+        })
     });
 
     const data = await res.json();
@@ -141,22 +172,26 @@ async function runEngine() {
         JSON.stringify(data, null, 2);
 }
 
+/* 🤖 AI */
 async function askAI() {
+
     const input = document.getElementById("input").value;
 
     const res = await fetch("/ai", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({input})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input })
     });
 
     const data = await res.json();
 
     document.getElementById("output").textContent =
-        data.ai;
+        "AI RESPONSE:\n\n" + data.ai;
 }
 
+/* 💳 Stripe */
 async function pay() {
+
     const res = await fetch("/create-checkout-session", {
         method: "POST"
     });
@@ -165,8 +200,11 @@ async function pay() {
 
     if (data.url) {
         window.location.href = data.url;
+    } else {
+        alert("Payment error");
     }
 }
+
 </script>
 
 </body>
