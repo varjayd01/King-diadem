@@ -7,144 +7,163 @@
 
 <style>
 
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    color: #e0f7ff;
-
-    background: radial-gradient(circle at center, #0b1a2a, #000);
-    overflow-x: hidden;
+/* 🌌 BASE */
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    color:#e0f7ff;
+    background:#000;
+    overflow:hidden;
 }
 
-/* 🌌 Universe layer */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-
-    background: url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564") center/cover no-repeat;
-    opacity: 0.25;
-
-    filter: blur(2px);
-    z-index: -2;
+/* ⭐ STAR FIELD */
+.stars{
+    position:fixed;
+    width:100%;
+    height:100%;
+    background:
+    radial-gradient(2px 2px at 20% 30%, white, transparent),
+    radial-gradient(2px 2px at 80% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent);
+    animation: twinkle 3s infinite alternate;
+    opacity:0.7;
 }
 
-/* 🌫 overlay ให้กลืน */
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-
-    background: radial-gradient(circle at center,
-        rgba(0, 255, 255, 0.08),
-        rgba(0, 0, 0, 0.9)
-    );
-
-    z-index: -1;
+@keyframes twinkle{
+    from{opacity:0.3;}
+    to{opacity:1;}
 }
 
-/* 🧊 container */
-.container {
-    max-width: 780px;
-    margin: 80px auto;
-    padding: 30px;
-
-    background: rgba(10, 20, 30, 0.75);
-    backdrop-filter: blur(20px);
-
-    border-radius: 20px;
-    border: 1px solid rgba(0,255,255,0.15);
-
-    box-shadow: 0 0 60px rgba(0,255,255,0.12);
+/* 🌀 GALAXY */
+.galaxy{
+    position:fixed;
+    width:600px;
+    height:600px;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle,
+        rgba(0,255,255,0.15),
+        transparent 70%);
+    border-radius:50%;
+    animation: rotateGalaxy 120s linear infinite;
 }
 
-/* 🔷 logo */
-.logo {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 60px;
-    opacity: 0.9;
+@keyframes rotateGalaxy{
+    from{transform:translate(-50%,-50%) rotate(0deg);}
+    to{transform:translate(-50%,-50%) rotate(360deg);}
 }
 
-/* 🧠 title */
-.title {
-    text-align: center;
-    margin-bottom: 20px;
+/* 🌍 EARTH */
+.earth{
+    position:fixed;
+    right:50px;
+    bottom:50px;
+    width:200px;
+    height:200px;
+    border-radius:50%;
+    background:url("https://eoimages.gsfc.nasa.gov/images/imagerecords/79000/79765/dnb_land_ocean_ice.2012.5400x2700.jpg") no-repeat;
+    background-size:cover;
+    box-shadow:0 0 30px rgba(0,150,255,0.5);
+    animation: rotateEarth 40s linear infinite;
 }
 
-.title h1 {
-    margin: 0;
-    font-size: 36px;
-    color: #00eaff;
+@keyframes rotateEarth{
+    from{background-position:0 0;}
+    to{background-position:1000px 0;}
 }
 
-.sub {
-    opacity: 0.6;
+/* 🧊 UI */
+.container{
+    position:relative;
+    max-width:700px;
+    margin:80px auto;
+    padding:25px;
+    background:rgba(10,20,30,0.8);
+    backdrop-filter:blur(20px);
+    border-radius:20px;
+    border:1px solid rgba(0,255,255,0.2);
+    z-index:10;
 }
 
-/* ✍️ textarea */
-textarea {
-    width: 100%;
-    height: 120px;
-    padding: 12px;
-
-    background: rgba(0,20,30,0.7);
-    border: 1px solid rgba(0,255,255,0.3);
-    border-radius: 10px;
-
-    color: #ccfaff;
+/* 🔷 LOGO + ORBIT */
+.logo-wrap{
+    position:relative;
+    width:100px;
+    margin:0 auto 10px;
 }
 
-/* 🎛 slider */
-.slider {
-    margin: 15px 0;
+.logo{
+    width:100px;
+    display:block;
 }
 
-/* 🔘 buttons */
-.buttons {
-    display: flex;
-    gap: 10px;
+.orbit{
+    position:absolute;
+    width:140px;
+    height:140px;
+    top:-20px;
+    left:-20px;
+    border:1px dashed rgba(0,255,255,0.3);
+    border-radius:50%;
+    animation: orbitRotate 6s linear infinite;
 }
 
-button {
-    flex: 1;
-    padding: 14px;
-    border-radius: 10px;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
+.orbit::after{
+    content:"";
+    position:absolute;
+    width:10px;
+    height:10px;
+    background:#00ffff;
+    border-radius:50%;
+    top:0;
+    left:50%;
+    transform:translateX(-50%);
 }
 
-button:hover {
-    transform: scale(1.03);
+@keyframes orbitRotate{
+    from{transform:rotate(0);}
+    to{transform:rotate(360deg);}
 }
 
-/* 🎨 buttons */
-.run {
-    background: linear-gradient(135deg, #00cfff, #0066ff);
+/* ✍️ INPUT */
+textarea{
+    width:100%;
+    height:100px;
+    background:rgba(0,20,30,0.7);
+    border:1px solid rgba(0,255,255,0.3);
+    border-radius:10px;
+    color:#ccfaff;
+    padding:10px;
 }
 
-.ai {
-    background: linear-gradient(135deg, #00ff99, #00cc66);
+/* 🔘 BUTTONS */
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
 }
 
-.pay {
-    background: linear-gradient(135deg, #ffd700, #ff9900);
+button{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-/* 📦 output */
-pre {
-    margin-top: 20px;
-    padding: 15px;
+.run{background:#00cfff;}
+.ai{background:#00ff99;}
+.pay{background:#ffd700;}
 
-    background: rgba(0,0,0,0.8);
-    border: 1px solid rgba(0,255,255,0.2);
-    border-radius: 10px;
-
-    max-height: 260px;
-    overflow: auto;
+/* 📦 OUTPUT */
+pre{
+    margin-top:10px;
+    background:black;
+    padding:10px;
+    max-height:200px;
+    overflow:auto;
 }
 
 </style>
@@ -152,102 +171,64 @@ pre {
 
 <body>
 
-<!-- 🔷 logo -->
-<img src="/static/logo.png" class="logo">
+<div class="stars"></div>
+<div class="galaxy"></div>
+<div class="earth"></div>
 
 <div class="container">
 
-<div class="title">
-    <h1>King Diadem</h1>
-    <div class="sub">AI Decision Civilization System</div>
+<div class="logo-wrap">
+    <img src="/static/logo.png" class="logo">
+    <div class="orbit"></div>
 </div>
 
-<textarea id="input" placeholder="พิมพ์สถานการณ์ เช่น ไม่มีเงิน / งานพัง / เครียด"></textarea>
+<h2 style="text-align:center;">King Diadem</h2>
 
-<div class="slider">
-Energy:
-<input type="range" id="energy" min="0" max="100" value="50">
-</div>
+<textarea id="input"></textarea>
 
 <div class="buttons">
-<button class="run" onclick="runEngine()">Run Engine</button>
-<button class="ai" onclick="askAI()">Ask AI</button>
-<button class="pay" onclick="pay()">Support</button>
+<button class="run" onclick="runEngine()">Run</button>
+<button class="ai" onclick="askAI()">AI</button>
+<button class="pay" onclick="pay()">Pay</button>
 </div>
 
-<pre id="output">SYSTEM READY...</pre>
+<pre id="output">READY...</pre>
 
 </div>
 
 <script>
 
-async function runEngine() {
-    const output = document.getElementById("output");
-    output.textContent = "Running engine...";
+async function runEngine(){
+    const input=document.getElementById("input").value;
 
-    try {
-        const input = document.getElementById("input").value;
-        const energy = document.getElementById("energy").value;
+    const res=await fetch("/run",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({input})
+    });
 
-        const res = await fetch("/run", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                input,
-                state: {
-                    energy: parseInt(energy),
-                    food: true,
-                    safe_place: true
-                }
-            })
-        });
-
-        const data = await res.json();
-        output.textContent = JSON.stringify(data, null, 2);
-
-    } catch (e) {
-        output.textContent = "ENGINE ERROR";
-    }
+    const data=await res.json();
+    document.getElementById("output").textContent=JSON.stringify(data,null,2);
 }
 
-async function askAI() {
-    const output = document.getElementById("output");
-    output.textContent = "Thinking...";
+async function askAI(){
+    const input=document.getElementById("input").value;
+    const email=localStorage.getItem("email")||"guest";
 
-    try {
-        const input = document.getElementById("input").value;
+    const res=await fetch("/ai",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({input,email})
+    });
 
-        const res = await fetch("/ai", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ input })
-        });
-
-        const data = await res.json();
-        output.textContent = data.ai;
-
-    } catch (e) {
-        output.textContent = "AI ERROR";
-    }
+    const data=await res.json();
+    document.getElementById("output").textContent=data.ai;
 }
 
-async function pay() {
-    try {
-        const res = await fetch("/create-checkout-session", {
-            method: "POST"
-        });
-
-        const data = await res.json();
-
-        if (data.url) {
-            window.location.href = data.url;
-        } else {
-            alert("Payment error");
-        }
-
-    } catch (e) {
-        alert("Stripe error");
-    }
+async function pay(){
+    const res=await fetch("/create-checkout-session",{method:"POST"});
+    const data=await res.json();
+    if(data.url) window.location.href=data.url;
 }
 
 </script>
