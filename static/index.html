@@ -12,18 +12,33 @@ body {
     font-family: 'Segoe UI', sans-serif;
     color: #e0f7ff;
 
-    background: url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564") no-repeat center center fixed;
-    background-size: cover;
+    background: radial-gradient(circle at center, #0b1a2a, #000);
+    overflow-x: hidden;
 }
 
-/* 🌌 soft universe */
+/* 🌌 Universe layer */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
 
-    background: radial-gradient(circle at center, rgba(10,15,30,0.4), rgba(0,0,0,0.9));
-    backdrop-filter: blur(4px);
+    background: url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564") center/cover no-repeat;
+    opacity: 0.25;
+
+    filter: blur(2px);
+    z-index: -2;
+}
+
+/* 🌫 overlay ให้กลืน */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    background: radial-gradient(circle at center,
+        rgba(0, 255, 255, 0.08),
+        rgba(0, 0, 0, 0.9)
+    );
 
     z-index: -1;
 }
@@ -31,20 +46,34 @@ body::before {
 /* 🧊 container */
 .container {
     max-width: 780px;
-    margin: 60px auto;
+    margin: 80px auto;
     padding: 30px;
 
-    background: rgba(10, 20, 30, 0.8);
-    backdrop-filter: blur(18px);
+    background: rgba(10, 20, 30, 0.75);
+    backdrop-filter: blur(20px);
 
     border-radius: 20px;
-    border: 1px solid rgba(0,255,255,0.2);
+    border: 1px solid rgba(0,255,255,0.15);
 
-    box-shadow: 0 0 40px rgba(0,255,255,0.15);
+    box-shadow: 0 0 60px rgba(0,255,255,0.12);
+}
+
+/* 🔷 logo */
+.logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    opacity: 0.9;
 }
 
 /* 🧠 title */
-h1 {
+.title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.title h1 {
     margin: 0;
     font-size: 36px;
     color: #00eaff;
@@ -52,7 +81,6 @@ h1 {
 
 .sub {
     opacity: 0.6;
-    margin-bottom: 20px;
 }
 
 /* ✍️ textarea */
@@ -62,11 +90,10 @@ textarea {
     padding: 12px;
 
     background: rgba(0,20,30,0.7);
-    border: 1px solid rgba(0,255,255,0.4);
+    border: 1px solid rgba(0,255,255,0.3);
     border-radius: 10px;
 
     color: #ccfaff;
-    font-size: 15px;
 }
 
 /* 🎛 slider */
@@ -78,14 +105,13 @@ textarea {
 .buttons {
     display: flex;
     gap: 10px;
-    margin-top: 15px;
 }
 
 button {
     flex: 1;
     padding: 14px;
-    border: none;
     border-radius: 10px;
+    border: none;
     font-weight: bold;
     cursor: pointer;
     transition: 0.2s;
@@ -93,23 +119,19 @@ button {
 
 button:hover {
     transform: scale(1.03);
-    opacity: 0.9;
 }
 
 /* 🎨 buttons */
 .run {
-    background: linear-gradient(135deg, #00cfff, #0077ff);
-    color: white;
+    background: linear-gradient(135deg, #00cfff, #0066ff);
 }
 
 .ai {
     background: linear-gradient(135deg, #00ff99, #00cc66);
-    color: black;
 }
 
 .pay {
     background: linear-gradient(135deg, #ffd700, #ff9900);
-    color: black;
 }
 
 /* 📦 output */
@@ -118,7 +140,7 @@ pre {
     padding: 15px;
 
     background: rgba(0,0,0,0.8);
-    border: 1px solid rgba(0,255,255,0.3);
+    border: 1px solid rgba(0,255,255,0.2);
     border-radius: 10px;
 
     max-height: 260px;
@@ -130,10 +152,15 @@ pre {
 
 <body>
 
+<!-- 🔷 logo -->
+<img src="/static/logo.png" class="logo">
+
 <div class="container">
 
-<h1>King Diadem</h1>
-<div class="sub">AI Decision Civilization System</div>
+<div class="title">
+    <h1>King Diadem</h1>
+    <div class="sub">AI Decision Civilization System</div>
+</div>
 
 <textarea id="input" placeholder="พิมพ์สถานการณ์ เช่น ไม่มีเงิน / งานพัง / เครียด"></textarea>
 
@@ -154,9 +181,7 @@ Energy:
 
 <script>
 
-/* 🧠 ENGINE */
 async function runEngine() {
-
     const output = document.getElementById("output");
     output.textContent = "Running engine...";
 
@@ -181,13 +206,11 @@ async function runEngine() {
         output.textContent = JSON.stringify(data, null, 2);
 
     } catch (e) {
-        output.textContent = "ENGINE ERROR: " + e;
+        output.textContent = "ENGINE ERROR";
     }
 }
 
-/* 🤖 AI */
 async function askAI() {
-
     const output = document.getElementById("output");
     output.textContent = "Thinking...";
 
@@ -204,13 +227,11 @@ async function askAI() {
         output.textContent = data.ai;
 
     } catch (e) {
-        output.textContent = "AI ERROR: " + e;
+        output.textContent = "AI ERROR";
     }
 }
 
-/* 💳 Stripe */
 async function pay() {
-
     try {
         const res = await fetch("/create-checkout-session", {
             method: "POST"
