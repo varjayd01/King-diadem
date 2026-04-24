@@ -1,20 +1,44 @@
-from flask import Flask, request, jsonify, send_from_directory
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+from openai import OpenAI
+import os
+
 from ENGINE.decision_engine import run_decision
 
-app = Flask(__name__, static_folder="static", static_url_path="")
+app = FastAPI()
 
-# 🌐 หน้าเว็บหลัก
-@app.route("/")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+class InputData(BaseModel):
+    text: str
+
+@app.get("/", response_class=HTMLResponse)
 def index():
-    return send_from_directory("static", "index.html")
+    with open("static/index.html", encoding="utf-8") as f:
+        return f.read()
 
-# 🧠 API เรียก Decision Engine
-@app.route("/api/decision", methods=["POST"])
-def decision():
-    data = request.get_json()
-    result = run_decision(data)
-    return jsonify(result)
+@app.post("/run")
+def run(data: InputData):
 
-# 🚀 RUN
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    decision = run_decision(data.text)
+
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "user", "content": data.text}
+            ]
+        )
+        ai = res.choices[0].message.content
+
+    except Exception as e:
+        ai = f"[GPT FAIL] {str(e)}"
+
+    return {
+        "decision": decision,
+        "ai": ai
+    }
