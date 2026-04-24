@@ -6,17 +6,16 @@ import os
 app = FastAPI()
 
 # =========================
-# 🔥 FIX ROOT (กันหน้าขาว 100%)
+# 🔥 FIX ROOT (กันหน้าขาว)
 # =========================
 @app.get("/")
 def root():
     return FileResponse("static/index.html")
 
-# static (ไฟล์อื่น เช่น css/js/image)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # =========================
-# 🧠 ENGINE
+# 🧠 ENGINE (Observer)
 # =========================
 try:
     from ENGINE.decision_engine import DecisionEngine
@@ -25,32 +24,73 @@ except Exception as e:
     print("ENGINE LOAD ERROR:", e)
     engine = None
 
-@app.post("/run")
-async def run_engine(data: dict):
-    if engine:
-        try:
-            return engine.run(data)
-        except Exception as e:
-            return {"error": str(e)}
-    return {"error": "ENGINE NOT FOUND"}
+# =========================
+# ⚡ ENERGY GOVERNOR
+# =========================
+try:
+    from ENGINE.energy_governor import allow_request
+except:
+    def allow_request(x):
+        return True, {"energy": "unknown"}
 
 # =========================
-# 🤖 AI
+# 🧠 RUN ENGINE
+# =========================
+@app.post("/run")
+async def run_engine(data: dict):
+
+    if not engine:
+        return {"error": "ENGINE NOT FOUND"}
+
+    try:
+        return engine.run(data)
+    except Exception as e:
+        return {"error": str(e)}
+
+# =========================
+# 🤖 AI (CONNECTED VERSION)
 # =========================
 @app.post("/ai")
 async def ai_call(data: dict):
+
+    api_key = "public"  # อนาคตเปลี่ยนเป็น user id
+
+    ok, info = allow_request(api_key)
+
+    if not ok:
+        return {"ai": f"BLOCKED: {info}"}
+
     try:
         from openai import OpenAI
 
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        prompt = data.get("input", "")
+
+        # 👁️ ใช้ Decision ก่อน
+        decision_result = None
+        if engine:
+            try:
+                decision_result = engine.run(data)
+            except Exception as e:
+                decision_result = {"error": str(e)}
+
+        prompt = f"""
+SYSTEM (Decision Observer):
+{decision_result}
+
+USER:
+{data.get("input", "")}
+"""
 
         res = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )
 
-        return {"ai": res.choices[0].message.content}
+        return {
+            "ai": res.choices[0].message.content,
+            "decision": decision_result,
+            "energy": info
+        }
 
     except Exception as e:
         return {"ai": f"[AI ERROR] {str(e)}"}
@@ -81,7 +121,7 @@ def create_checkout():
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # =========================
-# ❤️ HEALTH CHECK
+# ❤️ HEALTH
 # =========================
 @app.get("/health")
 def health():
