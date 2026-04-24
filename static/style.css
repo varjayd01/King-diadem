@@ -1,10 +1,26 @@
 body {
-  background: radial-gradient(circle at center, #1a1f3a, #000);
-  color: #00ffff;
+  margin: 0;
   font-family: monospace;
   text-align: center;
+  color: #00ffff;
+
+  background: url("https://images.unsplash.com/photo-1462331940025-496dfbfc7564") no-repeat center center fixed;
+  background-size: cover;
 }
 
+/* 🔥 ทำให้จักรวาลไม่รก */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+
+  background: radial-gradient(circle at center, rgba(10,15,30,0.4), rgba(0,0,0,0.85));
+  backdrop-filter: blur(3px);
+
+  z-index: -1;
+}
+
+/* ✨ glow แบบพี่ */
 h1 {
   color: #00ffff;
   text-shadow:
@@ -13,30 +29,39 @@ h1 {
     0 0 30px #00ffff;
 }
 
+/* 🧠 input */
 textarea {
   width: 80%;
   height: 150px;
-  background: black;
+
+  background: rgba(0,0,0,0.7);
   color: #00ffff;
+
   border: 1px solid #00ffff;
   box-shadow: 0 0 10px cyan;
+
   margin-top: 20px;
 }
 
+/* 🔘 cosmic latte */
 button {
   margin-top: 20px;
   padding: 12px 30px;
   font-weight: bold;
-  background: linear-gradient(45deg, #fff8e7, #ffd700); /* Cosmic Latte */
+
+  background: linear-gradient(45deg, #fff8e7, #ffd700);
   color: black;
+
   border: none;
   cursor: pointer;
 }
 
+/* 📦 output */
 pre {
   margin-top: 20px;
   text-align: left;
   padding: 10px;
-  background: black;
+
+  background: rgba(0,0,0,0.8);
   color: #00ffff;
 }
