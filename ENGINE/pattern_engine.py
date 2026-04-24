@@ -1,5 +1,5 @@
 # =========================
-# 🧠 PATTERN ENGINE (SAFE + UNIVERSAL)
+# 🧠 PATTERN ENGINE (KERNEL-AWARE)
 # =========================
 
 def _clamp(value, low=0.0, high=100.0):
@@ -11,13 +11,14 @@ def _clamp(value, low=0.0, high=100.0):
 
 
 def analyze_pattern(input_data):
+
     if not isinstance(input_data, dict):
         input_data = {}
 
     # 🔹 input text
-    text = str(input_data.get("input", input_data.get("question", ""))).strip()
+    text = str(input_data.get("input", input_data.get("question", ""))).strip().lower()
 
-    # 🔹 basic signals
+    # 🔹 signals
     entropy = _clamp(input_data.get("entropy", 40))
     resource = _clamp(input_data.get("resource", 50))
     stability = _clamp(input_data.get("stability", 60))
@@ -33,7 +34,7 @@ def analyze_pattern(input_data):
     confidence = input_data.get("confidence", 0.5)
     confidence = _clamp(confidence, 0.0, 1.0)
 
-    # 🔹 lists safe
+    # 🔹 safe list
     def safe_list(x):
         return x if isinstance(x, list) else [str(x)]
 
@@ -42,17 +43,30 @@ def analyze_pattern(input_data):
     alternatives = safe_list(input_data.get("alternatives", []))
 
     # =========================
-    # 🔥 simple pattern logic
+    # 🔥 ROUTE LOGIC (UPGRADED)
     # =========================
 
     route = "general"
 
-    if resource < 20 or entropy > 80:
+    # 🔴 collapse detection (priority สูงสุด)
+    if ("พัง" in text or "ล้ม" in text or "collapse" in text) or (entropy > 70 and stability < 40):
+        route = "collapse"
+
+    # 🟠 survival
+    elif resource < 20 or entropy > 80:
         route = "survival"
+
+    # 🟡 risk
     elif stability < 30:
         route = "risk"
+
+    # 🔵 uncertain
     elif confidence < 0.3:
         route = "uncertain"
+
+    # =========================
+    # 🧠 RETURN
+    # =========================
 
     return {
         "input": text,
@@ -70,7 +84,7 @@ def analyze_pattern(input_data):
 
 
 # =========================
-# 🔥 BACKWARD COMPAT (กันพัง)
+# 🔥 BACKWARD COMPAT
 # =========================
 
 def detect_pattern(input_data):
