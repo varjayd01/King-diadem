@@ -1,21 +1,19 @@
-async function sendDecision() {
-    const inputText = document.getElementById("input").value;
+async function run() {
 
-    const response = await fetch("/api/decision", {
+    const text = document.getElementById("input").value;
+
+    const res = await fetch("/run", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            input: inputText,
-            state: {
-                energy: 50,
-                food: true,
-                safe_place: true
-            }
+            text: text
         })
     });
 
-    const data = await response.json();
-    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+    const data = await res.json();
+
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
 }
