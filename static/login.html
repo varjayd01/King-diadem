@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/static/style.css">
+<title>Login</title>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Login</h1>
+
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
+
+</div>
+
+<script>
+
+async function login(){
+    const email = document.getElementById("email").value
+    const password = document.getElementById("password").value
+
+    const res = await fetch("/login",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email,password})
+    })
+
+    const data = await res.json()
+
+    if(data.status==="ok"){
+        localStorage.setItem("email", email)
+        alert("Login success | เครดิต: " + data.credit)
+        window.location.href = "/"
+    }else{
+        alert("Login failed")
+    }
+}
+
+async function register(){
+    const email = document.getElementById("email").value
+    const password = document.getElementById("password").value
+
+    const res = await fetch("/register",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email,password})
+    })
+
+    const data = await res.json()
+    alert(JSON.stringify(data))
+}
+
+</script>
+
+</body>
+</html>
