@@ -12,11 +12,11 @@ body{
 margin:0;
 font-family:monospace;
 background:black;
-color:#00ffff;
+color:#bfefff;
 overflow:hidden;
 }
 
-/* 🌠 CANVAS */
+/* 🌠 STARS */
 #stars{
 position:fixed;
 top:0;
@@ -33,25 +33,36 @@ margin:80px auto;
 background:rgba(0,0,0,0.85);
 padding:30px;
 border-radius:15px;
-box-shadow:0 0 40px #00ffff;
+box-shadow:0 0 50px rgba(0,255,255,0.5);
 text-align:center;
 }
 
 /* 👑 TITLE */
-h1{
+.title{
 font-size:42px;
 letter-spacing:2px;
-}
-
-.title span{
-background:linear-gradient(90deg,#fff,#ffd27f,#66ccff);
+background:linear-gradient(90deg,#66ccff,#9999ff);
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
 }
 
-/* 🔴 CREDIT */
+.title span{
+background:linear-gradient(90deg,#ffd27f,#ff9966);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* SUBTITLE */
+p{
+color:#ffd27f;
+opacity:0.9;
+letter-spacing:1px;
+}
+
+/* ❌ CREDIT */
 .credit{
-color:#ff4d4d;
+color:#ff5e5e;
+text-shadow:0 0 10px #ff5e5e;
 margin:10px;
 }
 
@@ -62,7 +73,7 @@ padding:12px;
 margin-top:10px;
 background:#000;
 border:1px solid #00ffff;
-color:#00ffff;
+color:#bfefff;
 }
 
 /* BUTTON */
@@ -70,10 +81,11 @@ button{
 margin-top:15px;
 padding:12px;
 width:100%;
-background:#ffd700;
+background:linear-gradient(90deg,#ffd700,#ff9966);
 border:none;
 cursor:pointer;
 font-weight:bold;
+box-shadow:0 0 20px #ffd700;
 }
 
 /* RESULT */
@@ -82,11 +94,12 @@ margin-top:20px;
 text-align:left;
 background:#000;
 padding:15px;
-border:1px solid #00ffff;
+border:1px solid #66ccff;
+color:#66ccff;
 overflow:auto;
 }
 
-/* GRID MODULE */
+/* GRID */
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -94,10 +107,19 @@ gap:10px;
 margin-top:20px;
 }
 
+/* MODULE */
 .module{
-background:#111;
+background:#0a0a0a;
 padding:10px;
-border:1px solid #00ffff;
+border:1px solid rgba(0,255,255,0.3);
+color:#ddd;
+transition:0.3s;
+}
+
+.module:hover{
+border:1px solid #ffd27f;
+color:#ffd27f;
+box-shadow:0 0 15px #ffd27f;
 }
 
 </style>
@@ -119,7 +141,7 @@ border:1px solid #00ffff;
 ❌ เครดิตหมด (AI ถูกจำกัด)
 </div>
 
-<input id="input" placeholder="พิมพ์สถานการณ์...">
+<input id="input" placeholder="พิมพ์สถานการณ์ของคุณ...">
 
 <button onclick="runDecision()">
 RUN DECISION ENGINE
@@ -135,29 +157,10 @@ RUN DECISION ENGINE
 
 <div class="grid">
 
-<div class="module">
-🧠 Choice Engine
-<br>
-Preserve Future Choices
-</div>
-
-<div class="module">
-⚖ Risk Engine
-<br>
-Avoid Collapse
-</div>
-
-<div class="module">
-🌍 Survival Engine
-<br>
-Stability First
-</div>
-
-<div class="module">
-🔗 Cooperation Engine
-<br>
-Human Pathways
-</div>
+<div class="module">🧠 Choice Engine<br>Preserve Future Choices</div>
+<div class="module">⚖ Risk Engine<br>Avoid Collapse</div>
+<div class="module">🌍 Survival Engine<br>Stability First</div>
+<div class="module">🔗 Cooperation Engine<br>Human Pathways</div>
 
 </div>
 
@@ -212,7 +215,7 @@ requestAnimationFrame(drawStars);
 
 drawStars();
 
-/* 🧠 DECISION ENGINE */
+/* 🧠 DECISION */
 async function runDecision(){
 
 document.getElementById("result").innerText="Running..."
