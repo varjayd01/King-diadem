@@ -6,58 +6,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
+html, body {
     margin: 0;
+    padding: 0;
+    background: black;
     font-family: monospace;
     color: #00ffff;
-    text-align: center;
     overflow: hidden;
 }
 
 /* 🌌 CANVAS */
 #stars {
     position: fixed;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     z-index: -1;
-    background: radial-gradient(circle at center, #0b1220, #000);
+    background: black;
 }
 
-/* 🧠 CARD */
+/* 🧠 CENTER */
 .container {
-    margin-top: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
+/* 💎 CARD */
 .card {
-    width: 360px;
-    margin: auto;
-    padding: 20px;
+    width: 380px;
+    padding: 25px;
     border-radius: 20px;
     background: rgba(0,0,0,0.85);
-    box-shadow: 0 0 40px #00ffff;
+    box-shadow: 0 0 50px #00ffff;
 }
 
 /* 👑 TITLE */
 h1 {
-    font-size: 32px;
-    margin: 10px 0;
+    text-align: center;
+}
+
+.k {
+    background: linear-gradient(45deg,#fff8e7,#ffd27f,#ff9966,#66ccff,#9999ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px #ffd27f;
 }
 
 .sub {
+    text-align: center;
     opacity: 0.6;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 /* ❌ STATUS */
 .status {
     color: red;
+    text-align: center;
     margin-bottom: 15px;
 }
 
 /* 📝 INPUT */
 input {
-    width: 80%;
-    padding: 10px;
+    width: 100%;
+    padding: 12px;
     background: black;
     border: 2px solid #00ffff;
     color: #00ffff;
@@ -65,49 +79,53 @@ input {
 
 /* 🚀 BUTTON */
 button {
+    width: 100%;
     margin-top: 10px;
-    padding: 10px 20px;
+    padding: 12px;
     background: gold;
     border: none;
     cursor: pointer;
+    font-weight: bold;
 }
 
 /* 📦 OUTPUT */
 pre {
     margin-top: 15px;
-    text-align: left;
     background: black;
     padding: 10px;
     border: 1px solid #00ffff;
     height: 150px;
     overflow: auto;
+    font-size: 12px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🌌 CANVAS -->
 <canvas id="stars"></canvas>
 
 <div class="container">
     <div class="card">
 
-        <h1>King Diadem</h1>
-        <div class="sub">AI Decision Civilization Platform</div>
+        <h1><span class="k">K</span>ing Diadem</h1>
+
+        <div class="sub">
+            Decision Engine Core<br>
+            <small>ระบบตัดสินใจเพื่อไม่ให้มนุษย์พัง</small>
+        </div>
 
         <div class="status">❌ เครดิตหมด (AI ถูกจำกัด)</div>
 
-        <input id="input" placeholder="พิมพ์สถานการณ์ของคุณ...">
+        <input id="input" placeholder="พิมพ์สถานการณ์...">
 
-        <br>
-        <button onclick="run()">→</button>
+        <button onclick="run()">RUN DECISION ENGINE</button>
 
         <pre id="output">
 {
-  "observer": "KING DIADEM",
-  "status": "AI DISABLED",
-  "note": "ระบบยังทำงาน แต่ AI ปิดชั่วคราว"
+  "system": "KING DIADEM",
+  "status": "READY",
+  "ai": "DISABLED"
 }
         </pre>
 
@@ -122,31 +140,36 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+const colors = ["#ffffff","#ffd27f","#ff9966","#ff5e5e","#66ccff","#9999ff"];
+
 let stars = [];
 
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 300; i++) {
     stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         size: Math.random() * 2,
-        speed: Math.random() * 0.3
+        speed: Math.random() * 0.3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        glow: Math.random() * 10
     });
 }
 
 function drawStars() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "#00ffff";
-
     stars.forEach(star => {
         ctx.beginPath();
+        ctx.shadowBlur = star.glow;
+        ctx.shadowColor = star.color;
+        ctx.fillStyle = star.color;
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
 
         star.y += star.speed;
-
         if (star.y > canvas.height) {
             star.y = 0;
+            star.x = Math.random() * canvas.width;
         }
     });
 
@@ -155,16 +178,21 @@ function drawStars() {
 
 drawStars();
 
-/* 🧠 SYSTEM MOCK */
+/* 🧠 DECISION ENGINE MOCK */
 function run() {
     const input = document.getElementById("input").value;
 
     document.getElementById("output").textContent =
 `{
   "input": "${input}",
-  "logic": "เหตุ → ความคิด → การตัดสินใจ → ผลลัพธ์",
-  "status": "AI DISABLED",
-  "message": "ระบบยังไม่เชื่อม AI"
+  "process": [
+    "เหตุ (Cause)",
+    "ความคิด (Thought)",
+    "การตัดสินใจ (Decision)",
+    "ผลลัพธ์ (Outcome)"
+  ],
+  "engine": "Decision Engine Core",
+  "ai": "DISABLED (NO CREDIT)"
 }`;
 }
 </script>
