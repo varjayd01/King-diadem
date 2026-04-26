@@ -1,26 +1,95 @@
-<style>
 html, body {
     margin: 0;
     padding: 0;
-    background: black;
+    background: radial-gradient(circle at center, #000000 40%, #020617 100%);
     font-family: monospace;
-    color: #00ffff;
+    color: #bfefff;
     text-align: center;
     overflow: hidden;
 }
 
-/* 🌌 STAR CANVAS */
+/* 🌌 STAR BACKGROUND */
 #stars {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    background: black;
+    width: 100%;
+    height: 100%;
+    z-index: -3;
 }
 
-/* 🧠 CENTER */
+/* 🌠 GLOW LAYER */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 50%, rgba(255,120,0,0.15), transparent 40%),
+                radial-gradient(circle at 70% 50%, rgba(0,150,255,0.15), transparent 40%);
+    z-index: -2;
+}
+
+/* 🌍 ORBIT SYSTEM */
+.orbit-container {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+}
+
+/* 🔄 วงโคจร */
+.orbit-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: spin 25s linear infinite;
+}
+
+/* ☀️ ดาวร้อน */
+.sun {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #ff6a00, #ff0000);
+    border-radius: 50%;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 20px #ff6a00;
+}
+
+/* 🌍 ดาวเย็น */
+.planet {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle, #00ccff, #0044ff);
+    border-radius: 50%;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 15px #00ccff;
+}
+
+/* 👑 LOGO */
+.logo {
+    position: absolute;
+    width: 140px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 25px #00ffff);
+}
+
+/* 🔄 ANIMATION */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 🧠 CENTER UI */
 .container {
     display: flex;
     justify-content: center;
@@ -30,62 +99,62 @@ html, body {
 
 /* 💎 CARD */
 .card {
+    margin-top: 200px;
     width: 380px;
     padding: 25px;
     border-radius: 20px;
     background: rgba(0,0,0,0.85);
-    box-shadow: 0 0 50px #00ffff;
+    box-shadow: 0 0 40px rgba(0,255,255,0.4);
     backdrop-filter: blur(10px);
 }
 
-/* 👑 TITLE */
+/* 👑 TITLE (Hybrid) */
 h1 {
-    margin: 10px 0;
     font-size: 32px;
-    text-shadow: 0 0 20px #00ffff;
+    background: linear-gradient(90deg,#ffd27f,#ff9966,#66ccff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
+/* SUB */
 .sub {
-    opacity: 0.6;
-    margin-bottom: 15px;
+    color: #ffd27f;
+    opacity: 0.9;
 }
 
 /* ❌ STATUS */
 .status {
-    color: #ff4d4d;
-    margin-bottom: 15px;
+    color: #ff5e5e;
+    text-shadow: 0 0 10px #ff5e5e;
 }
 
-/* 📝 INPUT */
+/* INPUT */
 input {
     width: 90%;
     padding: 12px;
     background: black;
-    border: 2px solid #00ffff;
-    color: #00ffff;
-    font-size: 14px;
+    border: 2px solid #66ccff;
+    color: #bfefff;
 }
 
-/* 🚀 BUTTON */
+/* BUTTON */
 button {
     margin-top: 10px;
     padding: 10px 20px;
-    background: gold;
+    background: linear-gradient(90deg,#ffd700,#ff9966);
     border: none;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 0 10px gold;
+    box-shadow: 0 0 20px #ffd700;
 }
 
-/* 📦 OUTPUT */
+/* OUTPUT */
 pre {
     margin-top: 15px;
     text-align: left;
     background: black;
     padding: 10px;
-    border: 1px solid #00ffff;
+    border: 1px solid #66ccff;
     height: 150px;
     overflow: auto;
-    font-size: 12px;
 }
-</style>
