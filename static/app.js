@@ -4,18 +4,27 @@ async function run() {
 
     document.getElementById("output").innerText = "Running...";
 
-    const res = await fetch("/run", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            input: text
-        })
-    });
+    try {
 
-    const data = await res.json();
+        const res = await fetch("/run", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                input: text
+            })
+        });
 
-    document.getElementById("output").innerText =
-        JSON.stringify(data, null, 2);
+        const data = await res.json();
+
+        document.getElementById("output").innerText =
+            JSON.stringify(data, null, 2);
+
+    } catch (err) {
+
+        document.getElementById("output").innerText =
+            "ERROR: " + err;
+
+    }
 }
