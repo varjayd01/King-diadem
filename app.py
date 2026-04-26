@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
@@ -57,7 +57,7 @@ async def login(data: dict):
     }
 
 # =========================
-# 💰 WALLET TOPUP (DEMO)
+# 💰 WALLET
 # =========================
 @app.post("/wallet/topup")
 async def topup(data: dict):
@@ -90,22 +90,57 @@ def use_credit(email, cost=1):
     return True
 
 # =========================
-# 🧠 ENGINE
+# 🧠 ENGINE LOAD
 # =========================
 try:
     from ENGINE.decision_engine import DecisionEngine
     engine = DecisionEngine()
-except:
+except Exception as e:
+    print("ENGINE LOAD ERROR:", e)
     engine = None
 
+# =========================
+# 🧠 RUN ENGINE (FIXED)
+# =========================
 @app.post("/run")
 async def run_engine(data: dict):
-    if engine:
-        return engine.run(data)
-    return {"error": "ENGINE NOT FOUND"}
+
+    user_input = data.get("input") or data.get("text") or ""
+
+    payload = {
+        "input": user_input
+    }
+
+    if not engine:
+        return {
+            "observer": "KING DIADEM",
+            "status": "ENGINE OFFLINE",
+            "fallback": [
+                "ลดการใช้ทรัพยากร",
+                "หาความร่วมมือ",
+                "รักษาความปลอดภัย",
+                "ย้ายไปพื้นที่เสี่ยงต่ำ"
+            ]
+        }
+
+    try:
+        result = engine.run(payload)
+        return result
+
+    except Exception as e:
+        return {
+            "observer": "KING DIADEM",
+            "error": str(e),
+            "fallback": [
+                "รักษาสถานการณ์",
+                "ลดความเสี่ยง",
+                "ขอความช่วยเหลือ",
+                "หลีกเลี่ยงการตัดสินใจเร่งด่วน"
+            ]
+        }
 
 # =========================
-# 🤖 AI (ใช้เครดิต)
+# 🤖 AI
 # =========================
 @app.post("/ai")
 async def ai_call(data: dict):
@@ -119,7 +154,7 @@ async def ai_call(data: dict):
         from openai import OpenAI
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-        decision = engine.run(data) if engine else {}
+        decision = engine.run({"input": data.get("input")}) if engine else {}
 
         prompt = f"""
 SYSTEM:
