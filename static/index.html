@@ -12,17 +12,26 @@ html, body {
     color: #bfefff;
     text-align: center;
     overflow: hidden;
-
     background: radial-gradient(circle at center, #000000 40%, #020617 100%);
 }
 
-/* 🌌 STAR CANVAS */
+/* 🌌 GALAXY */
+#galaxy {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -4;
+    background:
+        radial-gradient(circle at 20% 40%, rgba(255,120,0,0.2), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(0,150,255,0.2), transparent 40%),
+        radial-gradient(circle at center, rgba(0,255,255,0.05), transparent 60%);
+}
+
+/* ⭐ STAR CANVAS */
 #stars {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     z-index: -3;
 }
 
@@ -33,8 +42,8 @@ body::before {
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(circle at 20% 40%, rgba(255,120,0,0.15), transparent 40%),
-        radial-gradient(circle at 80% 60%, rgba(0,150,255,0.15), transparent 40%);
+        radial-gradient(circle at 30% 50%, rgba(255,120,0,0.15), transparent 40%),
+        radial-gradient(circle at 70% 50%, rgba(0,150,255,0.15), transparent 40%);
     z-index: -2;
 }
 
@@ -182,6 +191,7 @@ pre {
 
 <body>
 
+<div id="galaxy"></div>
 <canvas id="stars"></canvas>
 
 <div class="container">
@@ -212,7 +222,7 @@ pre {
 </div>
 
 <script>
-/* 🌌 STAR GENERATOR */
+// ⭐ STAR ENGINE (กระพริบ)
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
@@ -226,7 +236,9 @@ for (let i = 0; i < 200; i++) {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         size: Math.random() * 2,
-        speed: Math.random() * 0.3
+        speed: Math.random() * 0.3,
+        alpha: Math.random(),
+        flicker: Math.random() * 0.02
     });
 }
 
@@ -234,9 +246,14 @@ function drawStars() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let s of stars) {
+
+        // ⭐ flicker
+        s.alpha += s.flicker;
+        if (s.alpha > 1 || s.alpha < 0) s.flicker *= -1;
+
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
+        ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
         ctx.fill();
 
         s.y += s.speed;
@@ -248,7 +265,7 @@ function drawStars() {
 
 drawStars();
 
-/* ENGINE */
+// ENGINE
 async function run() {
     const text = document.getElementById("input").value;
 
