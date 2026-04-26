@@ -8,11 +8,12 @@
 html, body {
     margin: 0;
     padding: 0;
-    background: black;
     font-family: monospace;
     color: #bfefff;
     text-align: center;
     overflow: hidden;
+
+    background: radial-gradient(circle at center, #000000 40%, #020617 100%);
 }
 
 /* 🌌 STAR CANVAS */
@@ -22,10 +23,22 @@ html, body {
     left: 0;
     width: 100vw;
     height: 100vh;
+    z-index: -3;
+}
+
+/* 🌫 GLOW */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 40%, rgba(255,120,0,0.15), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(0,150,255,0.15), transparent 40%);
     z-index: -2;
 }
 
-/* 🌠 CENTER */
+/* CENTER */
 .container {
     display: flex;
     justify-content: center;
@@ -33,46 +46,56 @@ html, body {
     height: 100vh;
 }
 
-/* 💎 CARD */
+/* CARD */
 .card {
-    width: 400px;
+    width: 420px;
     padding: 25px;
     border-radius: 20px;
     background: rgba(0,0,0,0.85);
-    box-shadow: 0 0 60px rgba(0,255,255,0.4);
+    box-shadow: 0 0 60px rgba(0,255,255,0.35);
     backdrop-filter: blur(10px);
-    position: relative;
 }
 
-/* 👑 LOGO CORE */
+/* LOGO SYSTEM */
 .logo-wrap {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     margin: auto;
 }
 
-/* 🔵 LOGO */
 .logo {
     width: 100%;
     border-radius: 50%;
-    z-index: 2;
     position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 0 25px #00ffff);
 }
 
-/* 🌍 ORBIT RING */
+/* ORBITS */
 .orbit {
     position: absolute;
     top: -10px;
     left: -10px;
-    width: 140px;
-    height: 140px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.1);
-    animation: spin 8s linear infinite;
+    animation: spin 10s linear infinite;
 }
 
-/* ☀️ PLANET / LIGHT */
+.orbit2 {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    border: 1px dashed rgba(100,100,255,0.2);
+    animation: spinReverse 18s linear infinite;
+}
+
+/* PLANETS */
 .planet {
     width: 12px;
     height: 12px;
@@ -82,19 +105,7 @@ html, body {
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 15px #ff9966;
-}
-
-/* 🔥 SECOND ORBIT */
-.orbit2 {
-    position: absolute;
-    top: -20px;
-    left: -20px;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    border: 1px dashed rgba(100,100,255,0.2);
-    animation: spinReverse 14s linear infinite;
+    box-shadow: 0 0 12px #ff9966;
 }
 
 .planet2 {
@@ -109,18 +120,7 @@ html, body {
     box-shadow: 0 0 10px #66ccff;
 }
 
-/* 🔁 ANIMATION */
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes spinReverse {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
-}
-
-/* 👑 TITLE */
+/* TITLE */
 h1 {
     margin: 10px 0;
     font-size: 30px;
@@ -129,13 +129,13 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-/* 🔻 STATUS */
+/* STATUS */
 .status {
     color: #ff5e5e;
     margin-bottom: 15px;
 }
 
-/* 📝 INPUT */
+/* INPUT */
 input {
     width: 90%;
     padding: 12px;
@@ -144,10 +144,10 @@ input {
     color: #bfefff;
 }
 
-/* 🚀 BUTTON */
+/* BUTTON */
 button {
     margin-top: 10px;
-    padding: 10px 20px;
+    padding: 12px 20px;
     background: linear-gradient(90deg,#ffd700,#ff9966);
     border: none;
     font-weight: bold;
@@ -155,7 +155,7 @@ button {
     box-shadow: 0 0 20px #ffd700;
 }
 
-/* 📦 OUTPUT */
+/* OUTPUT */
 pre {
     margin-top: 15px;
     text-align: left;
@@ -165,6 +165,17 @@ pre {
     height: 150px;
     overflow: auto;
     font-size: 12px;
+}
+
+/* ANIMATION */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
 }
 </style>
 </head>
@@ -176,48 +187,77 @@ pre {
 <div class="container">
 <div class="card">
 
-    <!-- 🌌 LOGO + ORBIT -->
-    <div class="logo-wrap">
+<div class="logo-wrap">
+    <img src="/static/logo.png" class="logo">
 
-        <img src="logo.png" class="logo">
-
-        <div class="orbit">
-            <div class="planet"></div>
-        </div>
-
-        <div class="orbit2">
-            <div class="planet2"></div>
-        </div>
-
+    <div class="orbit">
+        <div class="planet"></div>
     </div>
 
-    <h1>King Diadem</h1>
-    <div class="status">❌ เครดิตหมด (AI ถูกจำกัด)</div>
+    <div class="orbit2">
+        <div class="planet2"></div>
+    </div>
+</div>
 
-    <input id="input" placeholder="พิมพ์สถานการณ์...">
-    <br>
-    <button onclick="run()">RUN DECISION ENGINE</button>
+<h1>King Diadem</h1>
+<div class="status">❌ เครดิตหมด (AI ถูกจำกัด)</div>
 
-    <pre id="output">System Ready</pre>
+<input id="input" placeholder="พิมพ์สถานการณ์...">
+<br>
+<button onclick="run()">RUN DECISION ENGINE</button>
+
+<pre id="output">System Ready</pre>
 
 </div>
 </div>
 
 <script>
-async function run() {
+/* 🌌 STAR GENERATOR */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
 
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stars = [];
+
+for (let i = 0; i < 200; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2,
+        speed: Math.random() * 0.3
+    });
+}
+
+function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        s.y += s.speed;
+        if (s.y > canvas.height) s.y = 0;
+    }
+
+    requestAnimationFrame(drawStars);
+}
+
+drawStars();
+
+/* ENGINE */
+async function run() {
     const text = document.getElementById("input").value;
 
     document.getElementById("output").innerText = "Running...";
 
     const res = await fetch("/run", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            input: text
-        })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ input: text })
     });
 
     const data = await res.json();
