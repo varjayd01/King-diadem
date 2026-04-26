@@ -1,127 +1,171 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KING DIADEM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
-/* 🌌 BACKGROUND */
-body{
-margin:0;
-font-family:monospace;
-background:black;
-color:#bfefff;
-overflow:hidden;
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    font-family: monospace;
+    color: #bfefff;
+    text-align: center;
+    overflow: hidden;
 }
 
-/* 🌠 STARS */
-#stars{
-position:fixed;
-top:0;
-left:0;
-z-index:0;
+/* 🌌 STAR CANVAS */
+#stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
 }
 
-/* 🧠 MAIN UI */
-.container{
-position:relative;
-z-index:2;
-max-width:700px;
-margin:80px auto;
-background:rgba(0,0,0,0.85);
-padding:30px;
-border-radius:15px;
-box-shadow:0 0 50px rgba(0,255,255,0.5);
-text-align:center;
+/* 🌠 CENTER */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* 💎 CARD */
+.card {
+    width: 400px;
+    padding: 25px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.85);
+    box-shadow: 0 0 60px rgba(0,255,255,0.4);
+    backdrop-filter: blur(10px);
+    position: relative;
+}
+
+/* 👑 LOGO CORE */
+.logo-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: auto;
+}
+
+/* 🔵 LOGO */
+.logo {
+    width: 100%;
+    border-radius: 50%;
+    z-index: 2;
+    position: relative;
+}
+
+/* 🌍 ORBIT RING */
+.orbit {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: spin 8s linear infinite;
+}
+
+/* ☀️ PLANET / LIGHT */
+.planet {
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #ffd27f, #ff5e5e);
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 15px #ff9966;
+}
+
+/* 🔥 SECOND ORBIT */
+.orbit2 {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 1px dashed rgba(100,100,255,0.2);
+    animation: spinReverse 14s linear infinite;
+}
+
+.planet2 {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #66ccff, #9999ff);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px #66ccff;
+}
+
+/* 🔁 ANIMATION */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
 }
 
 /* 👑 TITLE */
-.title{
-font-size:42px;
-letter-spacing:2px;
-background:linear-gradient(90deg,#66ccff,#9999ff);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
+h1 {
+    margin: 10px 0;
+    font-size: 30px;
+    background: linear-gradient(90deg,#ffd27f,#66ccff,#9999ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.title span{
-background:linear-gradient(90deg,#ffd27f,#ff9966);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
+/* 🔻 STATUS */
+.status {
+    color: #ff5e5e;
+    margin-bottom: 15px;
 }
 
-/* SUBTITLE */
-p{
-color:#ffd27f;
-opacity:0.9;
-letter-spacing:1px;
+/* 📝 INPUT */
+input {
+    width: 90%;
+    padding: 12px;
+    background: black;
+    border: 2px solid #66ccff;
+    color: #bfefff;
 }
 
-/* ❌ CREDIT */
-.credit{
-color:#ff5e5e;
-text-shadow:0 0 10px #ff5e5e;
-margin:10px;
+/* 🚀 BUTTON */
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: linear-gradient(90deg,#ffd700,#ff9966);
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px #ffd700;
 }
 
-/* INPUT */
-input{
-width:100%;
-padding:12px;
-margin-top:10px;
-background:#000;
-border:1px solid #00ffff;
-color:#bfefff;
+/* 📦 OUTPUT */
+pre {
+    margin-top: 15px;
+    text-align: left;
+    background: black;
+    padding: 10px;
+    border: 1px solid #66ccff;
+    height: 150px;
+    overflow: auto;
+    font-size: 12px;
 }
-
-/* BUTTON */
-button{
-margin-top:15px;
-padding:12px;
-width:100%;
-background:linear-gradient(90deg,#ffd700,#ff9966);
-border:none;
-cursor:pointer;
-font-weight:bold;
-box-shadow:0 0 20px #ffd700;
-}
-
-/* RESULT */
-pre{
-margin-top:20px;
-text-align:left;
-background:#000;
-padding:15px;
-border:1px solid #66ccff;
-color:#66ccff;
-overflow:auto;
-}
-
-/* GRID */
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-top:20px;
-}
-
-/* MODULE */
-.module{
-background:#0a0a0a;
-padding:10px;
-border:1px solid rgba(0,255,255,0.3);
-color:#ddd;
-transition:0.3s;
-}
-
-.module:hover{
-border:1px solid #ffd27f;
-color:#ffd27f;
-box-shadow:0 0 15px #ffd27f;
-}
-
 </style>
 </head>
 
@@ -130,129 +174,57 @@ box-shadow:0 0 15px #ffd27f;
 <canvas id="stars"></canvas>
 
 <div class="container">
+<div class="card">
 
-<h1 class="title">
-<span>K</span>ing Diadem
-</h1>
+    <!-- 🌌 LOGO + ORBIT -->
+    <div class="logo-wrap">
 
-<p>Decision Engine Core</p>
+        <img src="logo.png" class="logo">
 
-<div class="credit">
-❌ เครดิตหมด (AI ถูกจำกัด)
-</div>
+        <div class="orbit">
+            <div class="planet"></div>
+        </div>
 
-<input id="input" placeholder="พิมพ์สถานการณ์ของคุณ...">
+        <div class="orbit2">
+            <div class="planet2"></div>
+        </div>
 
-<button onclick="runDecision()">
-RUN DECISION ENGINE
-</button>
+    </div>
 
-<pre id="result">
-{
- "system":"KING DIADEM",
- "status":"READY",
- "ai":"DISABLED"
-}
-</pre>
+    <h1>King Diadem</h1>
+    <div class="status">❌ เครดิตหมด (AI ถูกจำกัด)</div>
 
-<div class="grid">
+    <input id="input" placeholder="พิมพ์สถานการณ์...">
+    <br>
+    <button onclick="run()">RUN DECISION ENGINE</button>
 
-<div class="module">🧠 Choice Engine<br>Preserve Future Choices</div>
-<div class="module">⚖ Risk Engine<br>Avoid Collapse</div>
-<div class="module">🌍 Survival Engine<br>Stability First</div>
-<div class="module">🔗 Cooperation Engine<br>Human Pathways</div>
+    <pre id="output">System Ready</pre>
 
 </div>
-
 </div>
 
 <script>
+async function run() {
 
-/* 🌌 STARS */
-const canvas = document.getElementById("stars");
-const ctx = canvas.getContext("2d");
+    const text = document.getElementById("input").value;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+    document.getElementById("output").innerText = "Running...";
 
-const colors = [
-"#ffffff","#ffd27f","#ff9966","#ff5e5e","#66ccff","#9999ff"
-];
+    const res = await fetch("/run", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            input: text
+        })
+    });
 
-let stars = [];
+    const data = await res.json();
 
-for (let i = 0; i < 400; i++) {
-stars.push({
-x: Math.random() * canvas.width,
-y: Math.random() * canvas.height,
-size: Math.random() * 2,
-speed: Math.random() * 0.5,
-color: colors[Math.floor(Math.random()*colors.length)],
-glow: Math.random()*10
-});
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
 }
-
-function drawStars(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-stars.forEach(s=>{
-ctx.beginPath();
-ctx.shadowBlur = s.glow;
-ctx.shadowColor = s.color;
-ctx.fillStyle = s.color;
-ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
-ctx.fill();
-
-s.y += s.speed;
-if(s.y > canvas.height){
-s.y = 0;
-s.x = Math.random()*canvas.width;
-}
-});
-
-requestAnimationFrame(drawStars);
-}
-
-drawStars();
-
-/* 🧠 DECISION */
-async function runDecision(){
-
-document.getElementById("result").innerText="Running..."
-
-try{
-
-let response = await fetch("/decision",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-location:"earth",
-food:"medium",
-money:50,
-risk:"low"
-})
-})
-
-let data = await response.json()
-
-document.getElementById("result").innerText =
-JSON.stringify(data,null,2)
-
-}catch(e){
-
-document.getElementById("result").innerText =
-JSON.stringify({
-observer:"KING DIADEM",
-status:"AI DISABLED",
-note:"ระบบยังทำงาน แต่ AI ถูกจำกัด"
-},null,2)
-
-}
-
-}
-
 </script>
 
 </body>
