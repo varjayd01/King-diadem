@@ -2,10 +2,6 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- 🔥 FONT -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
-
 <title>KING DIADEM</title>
 
 <style>
@@ -17,20 +13,12 @@ html, body {
     overflow: hidden;
 
     background:
-        radial-gradient(circle at 20% 50%, rgba(255,80,0,0.3), transparent 40%),
-        radial-gradient(circle at 80% 50%, rgba(0,150,255,0.3), transparent 40%),
+        radial-gradient(circle at 20% 50%, rgba(255,80,0,0.25), transparent 40%),
+        radial-gradient(circle at 80% 50%, rgba(0,150,255,0.25), transparent 40%),
         radial-gradient(circle at center, #000000 30%, #020617 100%);
 
-    font-family: 'Inter', sans-serif;
+    font-family: monospace; /* 👈 กลับเป็นของพี่ */
     color: #cdefff;
-}
-
-/* 🌌 GALAXY */
-#galaxy {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: -3;
 }
 
 /* ⭐ STARS */
@@ -51,7 +39,7 @@ body::before {
     z-index: -1;
 }
 
-/* 🌍 ORBIT SYSTEM */
+/* 🌍 ORBIT */
 .orbit-system {
     position: absolute;
     top: -140px;
@@ -69,12 +57,14 @@ body::before {
 }
 
 .ring1 {
-    border: 1px solid rgba(255,120,0,0.2);
+    border: 1px solid rgba(255,120,0,0.4);
+    box-shadow: 0 0 25px rgba(255,120,0,0.4);
     animation: spin 18s linear infinite;
 }
 
 .ring2 {
-    border: 1px dashed rgba(0,150,255,0.2);
+    border: 1px dashed rgba(0,150,255,0.4);
+    box-shadow: 0 0 25px rgba(0,150,255,0.4);
     animation: spinReverse 25s linear infinite;
 }
 
@@ -129,8 +119,8 @@ body::before {
     background: rgba(0,0,0,0.75);
 
     box-shadow:
-        0 0 60px rgba(0,255,255,0.3),
-        inset 0 0 20px rgba(0,255,255,0.1);
+        0 0 80px rgba(0,255,255,0.35),
+        inset 0 0 30px rgba(0,255,255,0.1);
 
     backdrop-filter: blur(15px);
     position: relative;
@@ -138,21 +128,16 @@ body::before {
 
 /* 👑 TITLE */
 h1 {
-    font-family: 'Orbitron', sans-serif;
     font-size: 36px;
-
     background: linear-gradient(90deg,#ffd27f,#66ccff,#9999ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-
-    text-shadow: 0 0 20px rgba(0,255,255,0.4);
 }
 
 /* SUB */
 .sub {
     font-size: 12px;
     color: #ffd27f;
-    margin-bottom: 10px;
 }
 
 /* STATUS */
@@ -168,7 +153,6 @@ input {
     background: rgba(0,0,0,0.9);
     border: 1px solid #00ccff;
     color: #cdefff;
-    outline: none;
 }
 
 /* BUTTON */
@@ -190,7 +174,6 @@ pre {
     padding: 12px;
     border: 1px solid #00ccff;
     height: 150px;
-    overflow: auto;
 }
 
 /* GRID */
@@ -198,14 +181,12 @@ pre {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-top: 15px;
 }
 
 .box {
     padding: 10px;
     border: 1px solid rgba(0,255,255,0.2);
     border-radius: 10px;
-    font-size: 12px;
 }
 
 </style>
@@ -213,13 +194,11 @@ pre {
 
 <body>
 
-<div id="galaxy"></div>
 <canvas id="stars"></canvas>
 
 <div class="container">
 <div class="card">
 
-<!-- 🌍 ORBIT -->
 <div class="orbit-system">
     <div class="ring ring1"><div class="sun"></div></div>
     <div class="ring ring2"><div class="planet"></div></div>
@@ -236,10 +215,10 @@ pre {
 <pre id="output">System Ready</pre>
 
 <div class="grid">
-    <div class="box">🧠 Choice Engine<br>Preserve Future Choices</div>
-    <div class="box">⚖️ Risk Engine<br>Avoid Collapse</div>
-    <div class="box">🛡 Survival Engine<br>Stability First</div>
-    <div class="box">🔗 Cooperation Engine<br>Human Pathways</div>
+    <div class="box">🧠 Choice Engine</div>
+    <div class="box">⚖️ Risk Engine</div>
+    <div class="box">🛡 Survival Engine</div>
+    <div class="box">🔗 Cooperation Engine</div>
 </div>
 
 </div>
@@ -247,40 +226,53 @@ pre {
 
 <script>
 
-/* ⭐ STAR ENGINE */
+/* 🌌 STAR ENGINE (มีชีวิต) */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
 let stars = [];
 
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 260; i++) {
     stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         size: Math.random() * 2,
-        speed: Math.random() * 0.3,
+        speed: Math.random() * 0.2 + 0.05,
         alpha: Math.random(),
-        flicker: Math.random() * 0.02
+        flicker: Math.random() * 0.03,
+        drift: (Math.random() - 0.5) * 0.3
     });
 }
 
-function drawStars() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawStars(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    for (let s of stars) {
+    for(let s of stars){
+
         s.alpha += s.flicker;
-        if (s.alpha > 1 || s.alpha < 0) s.flicker *= -1;
-
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
-        ctx.fill();
+        if(s.alpha > 1 || s.alpha < 0) s.flicker *= -1;
 
         s.y += s.speed;
-        if (s.y > canvas.height) s.y = 0;
+        s.x += s.drift;
+
+        if(s.y > canvas.height) s.y = 0;
+        if(s.x > canvas.width) s.x = 0;
+        if(s.x < 0) s.x = canvas.width;
+
+        const colors = ["255,255,255","0,200,255","255,120,0"];
+        const c = colors[Math.floor(Math.random()*colors.length)];
+
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+        ctx.fillStyle = `rgba(${c},${s.alpha})`;
+        ctx.fill();
     }
 
     requestAnimationFrame(drawStars);
@@ -289,21 +281,20 @@ function drawStars() {
 drawStars();
 
 /* ENGINE */
-async function run() {
+async function run(){
     const text = document.getElementById("input").value;
-
     document.getElementById("output").innerText = "Running...";
 
-    const res = await fetch("/run", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ input: text })
+    const res = await fetch("/run",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({input:text})
     });
 
     const data = await res.json();
 
     document.getElementById("output").innerText =
-        JSON.stringify(data, null, 2);
+        JSON.stringify(data,null,2);
 }
 
 </script>
