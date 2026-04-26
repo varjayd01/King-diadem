@@ -1,14 +1,20 @@
 html, body {
     margin: 0;
     padding: 0;
-    background: radial-gradient(circle at center, #000000 40%, #020617 100%);
-    font-family: monospace;
+
+    /* 🌌 GALAXY CORE */
+    background:
+        radial-gradient(circle at 20% 50%, rgba(255,80,0,0.35), transparent 40%),
+        radial-gradient(circle at 80% 50%, rgba(0,150,255,0.35), transparent 40%),
+        radial-gradient(circle at center, #000000 40%, #020617 100%);
+
+    font-family: 'Courier New', monospace;
     color: #bfefff;
     text-align: center;
     overflow: hidden;
 }
 
-/* 🌌 STAR BACKGROUND */
+/* 🌌 STAR CANVAS */
 #stars {
     position: fixed;
     width: 100%;
@@ -16,15 +22,37 @@ html, body {
     z-index: -3;
 }
 
-/* 🌠 GLOW LAYER */
+/* 🌠 GLOW LAYER (เพิ่มความลึก) */
 body::before {
     content: "";
     position: fixed;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 30% 50%, rgba(255,120,0,0.15), transparent 40%),
-                radial-gradient(circle at 70% 50%, rgba(0,150,255,0.15), transparent 40%);
+
+    background:
+        radial-gradient(circle at 30% 50%, rgba(255,120,0,0.15), transparent 40%),
+        radial-gradient(circle at 70% 50%, rgba(0,150,255,0.15), transparent 40%);
+
     z-index: -2;
+}
+
+/* 🌌 STAR PARTICLES */
+body::after {
+    content: "";
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    background-image:
+        radial-gradient(white 1px, transparent 1px);
+    background-size: 3px 3px;
+    opacity: 0.08;
+    animation: starMove 60s linear infinite;
+    z-index: -1;
+}
+
+@keyframes starMove {
+    from { transform: translate(0,0); }
+    to { transform: translate(-200px,-200px); }
 }
 
 /* 🌍 ORBIT SYSTEM */
@@ -43,21 +71,33 @@ body::before {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.08);
     animation: spin 25s linear infinite;
+}
+
+/* 🔵 วงสอง (เพิ่ม depth) */
+.orbit-ring2 {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+    border-radius: 50%;
+    border: 1px dashed rgba(0,150,255,0.15);
+    animation: spinReverse 35s linear infinite;
 }
 
 /* ☀️ ดาวร้อน */
 .sun {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     background: radial-gradient(circle, #ff6a00, #ff0000);
     border-radius: 50%;
     top: -10px;
     left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 20px #ff6a00;
+    box-shadow: 0 0 25px #ff6a00;
 }
 
 /* 🌍 ดาวเย็น */
@@ -70,7 +110,7 @@ body::before {
     bottom: -7px;
     left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 15px #00ccff;
+    box-shadow: 0 0 20px #00ccff;
 }
 
 /* 👑 LOGO */
@@ -80,13 +120,18 @@ body::before {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    filter: drop-shadow(0 0 25px #00ffff);
+    filter: drop-shadow(0 0 30px #00ffff);
 }
 
 /* 🔄 ANIMATION */
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
 }
 
 /* 🧠 CENTER UI */
@@ -103,17 +148,26 @@ body::before {
     width: 380px;
     padding: 25px;
     border-radius: 20px;
+
     background: rgba(0,0,0,0.85);
-    box-shadow: 0 0 40px rgba(0,255,255,0.4);
+
+    /* 🔥 glow upgrade */
+    box-shadow:
+        0 0 20px rgba(0,255,255,0.2),
+        0 0 60px rgba(0,255,255,0.3);
+
     backdrop-filter: blur(10px);
 }
 
-/* 👑 TITLE (Hybrid) */
+/* 👑 TITLE */
 h1 {
-    font-size: 32px;
-    background: linear-gradient(90deg,#ffd27f,#ff9966,#66ccff);
+    font-size: 34px;
+
+    background: linear-gradient(90deg,#ffd27f,#ff9966,#66ccff,#9999ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+
+    text-shadow: 0 0 10px rgba(0,255,255,0.3);
 }
 
 /* SUB */
@@ -141,10 +195,12 @@ input {
 button {
     margin-top: 10px;
     padding: 10px 20px;
+
     background: linear-gradient(90deg,#ffd700,#ff9966);
     border: none;
     font-weight: bold;
     cursor: pointer;
+
     box-shadow: 0 0 20px #ffd700;
 }
 
