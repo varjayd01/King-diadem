@@ -3,82 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <title>King Diadem</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="/static/style.css">
+<style>
+body {
+    margin: 0;
+    font-family: monospace;
+    background: radial-gradient(circle at center, #0b1220, #000);
+    color: #00ffff;
+    text-align: center;
+    overflow: hidden;
+}
 
+/* 🌌 background stars */
+.stars {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: url('https://www.transparenttextures.com/patterns/stardust.png');
+    opacity: 0.2;
+}
+
+/* 🌠 main card */
+.container {
+    position: relative;
+    top: 10%;
+    width: 400px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.6);
+    box-shadow: 0 0 40px #00ffff;
+}
+
+/* 🧠 logo */
+.logo {
+    width: 100px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #00ffff;
+}
+
+/* 🌟 title */
+h1 {
+    margin: 10px;
+    font-size: 32px;
+}
+
+/* 🔴 credit warning */
+.warning {
+    color: #ff4d6d;
+    margin: 10px 0;
+}
+
+/* 💬 input */
+input {
+    width: 80%;
+    padding: 10px;
+    background: black;
+    border: 1px solid #00ffff;
+    color: #00ffff;
+}
+
+/* 🚀 button */
+button {
+    padding: 10px;
+    background: gold;
+    border: none;
+    cursor: pointer;
+}
+
+/* 🧠 output */
+pre {
+    margin-top: 20px;
+    text-align: left;
+    background: black;
+    padding: 10px;
+    height: 150px;
+    overflow: auto;
+}
+
+/* 🌌 causal loop */
+.loop {
+    margin-top: 20px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+</style>
 </head>
 
 <body>
 
+<div class="stars"></div>
+
 <div class="container">
 
-<img src="/static/logo.png" class="logo">
+<img class="logo" src="https://i.imgur.com/yourlogo.png">
 
-<div class="title">
-  <h1>King Diadem</h1>
-  <div class="sub">AI Decision Civilization Platform</div>
-</div>
+<h1>King Diadem</h1>
+<div>AI Decision Civilization Platform</div>
 
-<div class="chat" id="chat">
-  <div class="msg-ai">SYSTEM READY...</div>
-</div>
+<div class="warning">❌ เครดิตหมด (AI ถูกจำกัด)</div>
 
-<div class="input-box">
-  <input id="input" placeholder="พิมพ์สถานการณ์ของคุณ...">
-  <button onclick="send()">→</button>
+<input id="input" placeholder="พิมพ์สถานการณ์ของคุณ...">
+<br><br>
+
+<button onclick="run()">→</button>
+
+<pre id="output">SYSTEM READY...</pre>
+
+<div class="loop">
+เหตุ → ความคิด → การตัดสินใจ → ผลลัพธ์ → วนซ้ำ
 </div>
 
 </div>
 
 <script>
 
-function addMessage(text, type){
-  const chat = document.getElementById("chat")
+async function run() {
 
-  const div = document.createElement("div")
-  div.className = type === "user" ? "msg-user" : "msg-ai"
-  div.innerText = text
+    const input = document.getElementById("input").value;
 
-  chat.appendChild(div)
-  chat.scrollTop = chat.scrollHeight
-}
+    // 🧠 เรียก core จริง (ของพี่)
+    const res = await fetch("/run", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            input: input,
+            state: { energy: 50, food: true, safe_place: true }
+        })
+    });
 
-async function send(){
+    const data = await res.json();
 
-  const inputEl = document.getElementById("input")
-  const input = inputEl.value
+    // ❌ AI intentionally blocked
+    const ai = "⚠️ AI ถูกจำกัด (เครดิตหมด)";
 
-  if(!input) return
-
-  addMessage(input, "user")
-
-  inputEl.value = ""
-
-  // thinking...
-  const thinking = document.createElement("div")
-  thinking.className = "msg-ai thinking"
-  thinking.innerText = "thinking..."
-  document.getElementById("chat").appendChild(thinking)
-
-  try {
-
-    const res = await fetch("/ai",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({input})
-    })
-
-    const data = await res.json()
-
-    thinking.remove()
-
-    addMessage(data.ai, "ai")
-
-  } catch(e){
-    thinking.remove()
-    addMessage("SYSTEM ERROR", "ai")
-  }
+    document.getElementById("output").textContent =
+        JSON.stringify(data, null, 2) +
+        "\n\n" + ai;
 }
 
 </script>
