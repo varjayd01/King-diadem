@@ -1,151 +1,91 @@
-/* =========================
-   🌌 KING DIADEM — FINAL UI
-   ========================= */
-
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  color: #e6fbff;
-  overflow: hidden;
-
-  background: radial-gradient(circle at center, #020617, #000);
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    font-family: monospace;
+    color: #00ffff;
+    text-align: center;
+    overflow: hidden;
 }
 
-/* ✨ stars */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-
-  background-image:
-    radial-gradient(white 1px, transparent 1px),
-    radial-gradient(white 1px, transparent 1px);
-
-  background-size: 200px 200px, 300px 300px;
-  animation: starsMove 80s linear infinite;
-
-  opacity: 0.3;
+/* 🌌 STAR CANVAS */
+#stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background: black;
 }
 
-@keyframes starsMove {
-  from { transform: translateY(0); }
-  to { transform: translateY(-300px); }
-}
-
-/* 🧊 MAIN PANEL */
+/* 🧠 CENTER */
 .container {
-  width: 420px;
-  margin: 70px auto;
-  padding: 25px;
-
-  background: rgba(0, 20, 30, 0.75);
-  backdrop-filter: blur(20px);
-
-  border-radius: 20px;
-  border: 1px solid rgba(0,255,255,0.2);
-
-  box-shadow: 0 0 50px rgba(0,255,255,0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-/* 🔷 LOGO */
-.logo {
-  display: block;
-  margin: auto;
-  width: 90px;
-  border-radius: 50%;
-
-  box-shadow:
-    0 0 20px #00eaff,
-    0 0 50px rgba(0,255,255,0.4);
-
-  animation: pulse 3s infinite;
+/* 💎 CARD */
+.card {
+    width: 380px;
+    padding: 25px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.85);
+    box-shadow: 0 0 50px #00ffff;
+    backdrop-filter: blur(10px);
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-/* 🧠 TITLE */
-.title {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.title h1 {
-  margin: 0;
-  color: #00eaff;
+/* 👑 TITLE */
+h1 {
+    margin: 10px 0;
+    font-size: 32px;
+    text-shadow: 0 0 20px #00ffff;
 }
 
 .sub {
-  font-size: 13px;
-  opacity: 0.6;
+    opacity: 0.6;
+    margin-bottom: 15px;
 }
 
-/* 💬 CHAT */
-.chat {
-  height: 260px;
-  overflow-y: auto;
-  margin: 15px 0;
-  padding: 10px;
-
-  background: rgba(0,0,0,0.7);
-  border-radius: 10px;
+/* ❌ STATUS */
+.status {
+    color: #ff4d4d;
+    margin-bottom: 15px;
 }
 
-/* 👤 USER */
-.msg-user {
-  text-align: right;
-  margin: 8px;
-  color: #00eaff;
-}
-
-/* 🤖 AI */
-.msg-ai {
-  text-align: left;
-  margin: 8px;
-  color: #ffffff;
-}
-
-/* ✍️ INPUT */
-.input-box {
-  display: flex;
-  gap: 10px;
-}
-
+/* 📝 INPUT */
 input {
-  flex: 1;
-  padding: 12px;
-
-  background: black;
-  color: #00eaff;
-
-  border: 1px solid #00eaff;
-  border-radius: 10px;
+    width: 90%;
+    padding: 12px;
+    background: black;
+    border: 2px solid #00ffff;
+    color: #00ffff;
+    font-size: 14px;
 }
 
-/* 🔘 BUTTON */
+/* 🚀 BUTTON */
 button {
-  padding: 12px 15px;
-
-  border: none;
-  border-radius: 10px;
-
-  background: linear-gradient(45deg, #fff8e7, #ffd700);
-  color: black;
-
-  cursor: pointer;
-  transition: 0.2s;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: gold;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px gold;
 }
 
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px gold;
+/* 📦 OUTPUT */
+pre {
+    margin-top: 15px;
+    text-align: left;
+    background: black;
+    padding: 10px;
+    border: 1px solid #00ffff;
+    height: 150px;
+    overflow: auto;
+    font-size: 12px;
 }
-
-/* ⚡ thinking effect */
-.thinking {
-  opacity: 0.5;
-  font-style: italic;
-}
+</style>
