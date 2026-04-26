@@ -5,128 +5,8 @@
 <title>King Diadem</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
+<link rel="stylesheet" href="/static/style.css">
 
-/* 🌌 BACKGROUND */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  color: #00eaff;
-  overflow: hidden;
-
-  background: radial-gradient(circle at center, #020617, #000);
-}
-
-/* ✨ stars */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    radial-gradient(white 1px, transparent 1px),
-    radial-gradient(white 1px, transparent 1px);
-  background-size: 200px 200px, 300px 300px;
-  animation: moveStars 60s linear infinite;
-  opacity: 0.4;
-}
-
-@keyframes moveStars {
-  from { transform: translateY(0); }
-  to { transform: translateY(-200px); }
-}
-
-/* 🧊 MAIN BOX */
-.container {
-  width: 420px;
-  margin: 80px auto;
-  padding: 20px;
-
-  background: rgba(0,20,30,0.7);
-  backdrop-filter: blur(15px);
-
-  border-radius: 20px;
-  border: 1px solid rgba(0,255,255,0.2);
-
-  box-shadow: 0 0 40px rgba(0,255,255,0.2);
-}
-
-/* 🔷 LOGO CORE */
-.logo {
-  display: block;
-  margin: auto;
-  width: 90px;
-  border-radius: 50%;
-
-  box-shadow:
-    0 0 20px #00eaff,
-    0 0 40px rgba(0,255,255,0.3);
-
-  animation: pulse 3s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-/* 🧠 TITLE */
-h1 {
-  text-align: center;
-  margin: 10px 0;
-}
-
-/* 💬 CHAT */
-.chat {
-  height: 260px;
-  overflow-y: auto;
-  margin: 15px 0;
-  padding: 10px;
-
-  background: rgba(0,0,0,0.6);
-  border-radius: 10px;
-}
-
-.msg-user {
-  text-align: right;
-  margin: 8px;
-  color: #00eaff;
-}
-
-.msg-ai {
-  text-align: left;
-  margin: 8px;
-  color: #fff;
-}
-
-/* ✍️ INPUT */
-.input-box {
-  display: flex;
-  gap: 10px;
-}
-
-input {
-  flex: 1;
-  padding: 10px;
-
-  background: black;
-  color: #00eaff;
-
-  border: 1px solid #00eaff;
-  border-radius: 10px;
-}
-
-/* 🔘 BUTTON */
-button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 10px;
-
-  background: linear-gradient(45deg, #fff8e7, #ffd700);
-  cursor: pointer;
-}
-
-</style>
 </head>
 
 <body>
@@ -135,15 +15,18 @@ button {
 
 <img src="/static/logo.png" class="logo">
 
-<h1>King Diadem</h1>
+<div class="title">
+  <h1>King Diadem</h1>
+  <div class="sub">AI Decision Civilization Platform</div>
+</div>
 
 <div class="chat" id="chat">
-<div class="msg-ai">SYSTEM READY...</div>
+  <div class="msg-ai">SYSTEM READY...</div>
 </div>
 
 <div class="input-box">
-<input id="input" placeholder="พิมพ์สถานการณ์...">
-<button onclick="send()">→</button>
+  <input id="input" placeholder="พิมพ์สถานการณ์ของคุณ...">
+  <button onclick="send()">→</button>
 </div>
 
 </div>
@@ -163,22 +46,39 @@ function addMessage(text, type){
 
 async function send(){
 
-  const input = document.getElementById("input").value
+  const inputEl = document.getElementById("input")
+  const input = inputEl.value
+
   if(!input) return
 
   addMessage(input, "user")
 
-  const res = await fetch("/ai",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({input})
-  })
+  inputEl.value = ""
 
-  const data = await res.json()
+  // thinking...
+  const thinking = document.createElement("div")
+  thinking.className = "msg-ai thinking"
+  thinking.innerText = "thinking..."
+  document.getElementById("chat").appendChild(thinking)
 
-  addMessage(data.ai, "ai")
+  try {
 
-  document.getElementById("input").value = ""
+    const res = await fetch("/ai",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({input})
+    })
+
+    const data = await res.json()
+
+    thinking.remove()
+
+    addMessage(data.ai, "ai")
+
+  } catch(e){
+    thinking.remove()
+    addMessage("SYSTEM ERROR", "ai")
+  }
 }
 
 </script>
