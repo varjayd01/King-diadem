@@ -1,13 +1,24 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse
+# app.py
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import os
-import stripe
-
-app = FastAPI()
 
 # =========================
-# STATIC
+# IMPORT KING DIADEM CORE
+# =========================
+try:
+    from core.llm_gemini import GeminiLLM
+    from ENGINE.decision_engine import DecisionEngine
+except Exception as e:
+    print(f"IMPORT ERROR: {e}")
+    GeminiLLM = None
+    DecisionEngine = None
+
+app = FastAPI(title="King-Diadem Decision Engine")
+
+# =========================
+# STATIC FILES
 # =========================
 @app.get("/")
 def root():
@@ -16,33 +27,39 @@ def root():
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # =========================
-# FAKE DB
+# INITIALIZE ENGINES
 # =========================
-USERS = {}
+llm = None
+engine = None
 
-# =========================
-# ENGINE LOAD
-# =========================
 try:
-    from ENGINE.decision_engine import DecisionEngine
-    engine = DecisionEngine()
+    if GeminiLLM:
+        llm = GeminiLLM(model="gemini-2.5-flash")
+    
+    if DecisionEngine:
+        engine = DecisionEngine()          # จะเรียก __init__ ของ DecisionEngine
+    
+    print("✅ King-Diadem initialized successfully")
 except Exception as e:
-    print("ENGINE LOAD ERROR:", e)
+    print(f"❌ ENGINE INITIALIZATION FAILED: {e}")
     engine = None
 
 # =========================
-# RUN ENGINE (ตัวหลัก)
+# MAIN ENDPOINT
 # =========================
 @app.post("/run")
+@app.post("/decision")   # รองรับทั้งสอง path
 async def run_engine(data: dict):
+    user_input = data.get("input") or data.get("text") or data.get("message") or ""
 
-    user_input = data.get("input") or data.get("text") or ""
+    if not user_input:
+        return {
+            "observer": "KING DIADEM",
+            "status": "ERROR",
+            "message": "ไม่พบ input ใน request"
+        }
 
-    payload = {
-        "input": user_input
-    }
-
-    # fallback ถ้า engine ไม่มี
+    # ถ้า engine โหลดไม่สำเร็จ ให้ fallback
     if not engine:
         return {
             "observer": "KING DIADEM",
@@ -55,32 +72,50 @@ async def run_engine(data: dict):
             ]
         }
 
+    payload = {"input": user_input}
+
     try:
         result = engine.run(payload)
         return result
 
     except Exception as e:
+        print(f"Run Engine Error: {e}")
         return {
             "observer": "KING DIADEM",
+            "status": "ERROR",
             "error": str(e),
             "fallback": [
-                "รักษาสถานการณ์",
-                "ลดความเสี่ยง",
-                "ขอความช่วยเหลือ",
-                "หลีกเลี่ยงการตัดสินใจเร่งด่วน"
+                "รักษาสถานการณ์ปัจจุบัน",
+                "ลดความเสี่ยงทันที",
+                "ขอความช่วยเหลือจากภายนอก",
+                "หลีกเลี่ยงการตัดสินใจใหญ่"
             ]
         }
 
-# =========================
-# ALIAS (กันพลาด)
-# =========================
-@app.post("/decision")
-async def decision_alias(data: dict):
-    return await run_engine(data)
 
 # =========================
-# HEALTH
+# HEALTH CHECK
 # =========================
 @app.get("/health")
 def health():
-    return {"status": "alive 👑"}
+    status = {
+        "status": "alive 👑",
+        "engine_loaded": engine is not None,
+        "llm_loaded": llm is not None,
+        "model": getattr(llm, "model", None) if llm else None
+    }
+    return status
+
+
+# =========================
+# OPTIONAL: แสดงข้อมูลระบบ
+# =========================
+@app.get("/status")
+def system_status():
+    return {
+        "service": "King-Diadem",
+        "version": "0.1.0",
+        "llm": "Gemini" if llm else "None",
+        "engine": "Loaded" if engine else "Offline",
+        "message": "DriftZero Governance Framework"
+    }
