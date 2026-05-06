@@ -4,407 +4,196 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KING DIADEM</title>
 <style>
-html, body {
-    margin: 0; padding: 0;
-    overflow: hidden;
-    background: #000000;
-    font-family: monospace;
-    color: #cdefff;
-}
+html, body { margin:0; padding:0; background:#000; font-family:monospace; color:#cdefff; }
+#stars { position:fixed; width:100%; height:100%; z-index:0; }
+body::before { content:""; position:fixed; width:100%; height:100%; background:radial-gradient(circle at center,rgba(0,255,255,0.03),transparent); z-index:1; pointer-events:none; }
+.container { position:relative; z-index:2; min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:20px 0 40px; box-sizing:border-box; }
+.card { width:480px; max-width:96vw; padding:28px; border-radius:20px; background:rgba(0,0,0,0.82); box-shadow:0 0 80px rgba(0,255,255,0.3),inset 0 0 30px rgba(0,255,255,0.07); backdrop-filter:blur(15px); }
 
-#stars {
-    position: fixed;
-    width: 100%; height: 100%;
-    z-index: 0;
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    width: 100%; height: 100%;
-    background: radial-gradient(circle at center, rgba(0,255,255,0.03), transparent);
-    z-index: 1;
-}
-
-.orbit-system {
-    position: absolute;
-    top: -140px; left: 50%;
-    transform: translateX(-50%);
-    width: 300px; height: 300px;
-}
-.ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; }
-.ring1 { border: 1px solid rgba(255,120,0,0.4); box-shadow: 0 0 25px rgba(255,120,0,0.4); animation: spin 18s linear infinite; }
-.ring2 { border: 1px dashed rgba(0,150,255,0.4); box-shadow: 0 0 25px rgba(0,150,255,0.4); animation: spinReverse 25s linear infinite; }
-.sun { width:14px; height:14px; background: radial-gradient(circle,#ff6a00,#ff0000); box-shadow: 0 0 20px #ff6a00; position:absolute; top:0; left:50%; transform:translateX(-50%); border-radius:50%; }
-.planet { width:12px; height:12px; background: radial-gradient(circle,#00ccff,#0044ff); box-shadow: 0 0 15px #00ccff; position:absolute; bottom:0; left:50%; transform:translateX(-50%); border-radius:50%; }
-
+.orbit-wrap { position:relative; height:70px; margin-bottom:6px; }
+.orbit-system { position:absolute; top:-115px; left:50%; transform:translateX(-50%); width:250px; height:250px; pointer-events:none; }
+.ring { position:absolute; width:100%; height:100%; border-radius:50%; }
+.ring1 { border:1px solid rgba(255,120,0,0.35); animation:spin 18s linear infinite; }
+.ring2 { border:1px dashed rgba(0,150,255,0.35); animation:spinR 25s linear infinite; }
+.sun { width:12px; height:12px; background:radial-gradient(circle,#ff6a00,#f00); box-shadow:0 0 18px #ff6a00; position:absolute; top:0; left:50%; transform:translateX(-50%); border-radius:50%; }
+.planet { width:10px; height:10px; background:radial-gradient(circle,#00ccff,#004ff); box-shadow:0 0 12px #0cf; position:absolute; bottom:0; left:50%; transform:translateX(-50%); border-radius:50%; }
 @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-@keyframes spinReverse { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
+@keyframes spinR { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
 
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow-y: auto;
-}
+h1 { font-size:30px; margin:0 0 2px; background:linear-gradient(90deg,#ffd27f,#66ccff,#9999ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.sub { font-size:11px; color:#ffd27f; margin-bottom:10px; }
 
-.card {
-    width: 440px;
-    max-height: 95vh;
-    overflow-y: auto;
-    padding: 30px;
-    border-radius: 20px;
-    background: rgba(0,0,0,0.75);
-    box-shadow: 0 0 80px rgba(0,255,255,0.35), inset 0 0 30px rgba(0,255,255,0.1);
-    backdrop-filter: blur(15px);
-    position: relative;
-    z-index: 2;
-    scrollbar-width: none;
-}
-.card::-webkit-scrollbar { display: none; }
+.badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
+.badge { font-size:10px; padding:3px 8px; border-radius:20px; border:1px solid; }
+.badge.ok { border-color:#00ff88; color:#00ff88; }
+.badge.err { border-color:#ff5e5e; color:#ff5e5e; }
+.badge.warn { border-color:#ffd700; color:#ffd700; }
 
-h1 {
-    font-size: 36px;
-    background: linear-gradient(90deg,#ffd27f,#66ccff,#9999ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 0 0 4px 0;
-}
-.sub { font-size: 12px; color: #ffd27f; margin-bottom: 8px; }
+.input-row { display:flex; gap:6px; margin-bottom:5px; }
+input[type=text] { flex:1; padding:10px 12px; background:rgba(0,0,0,0.9); border:1px solid #00ccff; color:#cdefff; border-radius:6px; outline:none; font-family:monospace; font-size:13px; }
 
-/* STATUS BAR */
-.status-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-}
-.badge {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    border: 1px solid;
-}
-.badge.ok { border-color: #00ff88; color: #00ff88; }
-.badge.err { border-color: #ff5e5e; color: #ff5e5e; }
-.badge.warn { border-color: #ffd700; color: #ffd700; }
+.btn { padding:10px 16px; border:none; font-weight:bold; cursor:pointer; border-radius:6px; font-family:monospace; font-size:13px; transition:opacity .2s; width:100%; margin-bottom:6px; }
+.btn:hover { opacity:.85; }
+.btn:disabled { opacity:.35; cursor:not-allowed; }
+.btn-run { background:linear-gradient(90deg,#ffd700,#ff9966); box-shadow:0 0 18px rgba(255,215,0,.4); }
+.btn-sim { background:linear-gradient(90deg,#7b2fff,#00ccff); box-shadow:0 0 18px rgba(123,47,255,.4); }
 
-input {
-    width: 92%; padding: 12px;
-    background: rgba(0,0,0,0.9);
-    border: 1px solid #00ccff;
-    color: #cdefff;
-    border-radius: 4px;
-    outline: none;
-}
+.out-label { font-size:10px; color:rgba(0,255,255,.4); margin-bottom:4px; }
+pre { background:#000; padding:12px; border:1px solid rgba(0,255,255,.2); border-radius:6px; min-height:90px; max-height:200px; overflow-y:auto; font-size:11px; white-space:pre-wrap; word-break:break-word; margin:0 0 10px; }
+pre.sim { border-color:rgba(123,47,255,.35); }
 
-.btn-run {
-    margin-top: 10px;
-    padding: 12px 20px;
-    background: linear-gradient(90deg,#ffd700,#ff9966);
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 20px #ffd700;
-    border-radius: 4px;
-    width: 100%;
-    font-family: monospace;
-    font-size: 14px;
-    transition: opacity 0.2s;
-}
-.btn-run:hover { opacity: 0.85; }
-.btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:10px; }
+.box { padding:9px 11px; border:1px solid rgba(0,255,255,.18); border-radius:10px; cursor:pointer; transition:all .2s; font-size:12px; user-select:none; }
+.box:hover { border-color:rgba(0,255,255,.55); background:rgba(0,255,255,.05); }
+.box.active { border-color:#ffd700; background:rgba(255,215,0,.07); }
+.box .rt { font-size:9px; color:rgba(0,255,255,.35); display:block; margin-top:1px; }
+.route-tag { font-size:10px; color:rgba(0,255,255,.4); margin:3px 0 8px; min-height:14px; }
 
-pre {
-    margin-top: 12px;
-    text-align: left;
-    background: black;
-    padding: 12px;
-    border: 1px solid #00ccff;
-    height: 130px;
-    overflow-y: auto;
-    font-size: 11px;
-    border-radius: 4px;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
+.sim-section { border-top:1px solid rgba(123,47,255,.2); padding-top:10px; margin-bottom:10px; }
+.sim-label { font-size:11px; color:#9999ff; margin-bottom:6px; }
+.paths-grid { display:flex; flex-direction:column; gap:5px; margin-bottom:7px; }
+.path-row input { font-size:11px; padding:6px 9px; }
+.btn-add { font-size:11px; padding:5px 10px; background:rgba(0,255,255,.07); border:1px solid rgba(0,255,255,.2); color:#cdefff; border-radius:5px; cursor:pointer; margin-bottom:7px; }
+.btn-add:hover { background:rgba(0,255,255,.14); }
 
-/* ENGINE GRID */
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.box {
-    padding: 10px 12px;
-    border: 1px solid rgba(0,255,255,0.2);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 12px;
-    user-select: none;
-    position: relative;
-    overflow: hidden;
-}
-.box:hover {
-    border-color: rgba(0,255,255,0.6);
-    background: rgba(0,255,255,0.05);
-    box-shadow: 0 0 15px rgba(0,255,255,0.15);
-}
-.box.active {
-    border-color: #ffd700;
-    background: rgba(255,215,0,0.08);
-    box-shadow: 0 0 20px rgba(255,215,0,0.2);
-}
-.box .route-tag {
-    font-size: 9px;
-    color: rgba(0,255,255,0.4);
-    display: block;
-    margin-top: 2px;
-}
-
-/* STRIPE SECTION */
-.stripe-section {
-    margin-top: 14px;
-    border-top: 1px solid rgba(0,255,255,0.1);
-    padding-top: 12px;
-}
-.stripe-section .label {
-    font-size: 11px;
-    color: #ffd27f;
-    margin-bottom: 8px;
-}
-.btn-stripe {
-    width: 100%;
-    padding: 10px;
-    background: linear-gradient(90deg, #635bff, #a259ff);
-    border: none;
-    color: white;
-    font-weight: bold;
-    font-family: monospace;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 13px;
-    box-shadow: 0 0 20px rgba(99,91,255,0.4);
-    transition: opacity 0.2s;
-}
-.btn-stripe:hover { opacity: 0.85; }
-
-/* ROUTE INDICATOR */
-.route-display {
-    font-size: 10px;
-    color: rgba(0,255,255,0.5);
-    margin-top: 6px;
-    height: 14px;
-}
+.stripe-section { border-top:1px solid rgba(0,255,255,.08); padding-top:10px; }
+.stripe-label { font-size:11px; color:#ffd27f; margin-bottom:6px; }
+.btn-stripe { width:100%; padding:10px; background:linear-gradient(90deg,#635bff,#a259ff); border:none; color:#fff; font-weight:bold; font-family:monospace; cursor:pointer; border-radius:6px; font-size:13px; box-shadow:0 0 18px rgba(99,91,255,.35); transition:opacity .2s; }
+.btn-stripe:hover { opacity:.85; }
 </style>
 </head>
 <body>
-
 <canvas id="stars"></canvas>
+<div class="container"><div class="card">
 
-<div class="container">
-<div class="card">
-
-<div class="orbit-system">
+<div class="orbit-wrap">
+  <div class="orbit-system">
     <div class="ring ring1"><div class="sun"></div></div>
     <div class="ring ring2"><div class="planet"></div></div>
+  </div>
 </div>
 
 <h1>King Diadem</h1>
-<div class="sub">Decision Engine Core</div>
+<div class="sub">DriftZero · Decision Engine · LYLA Kernel</div>
 
-<div class="status-bar">
-    <span class="badge" id="badge-ai">⟳ AI Loading...</span>
-    <span class="badge" id="badge-engine">⟳ Engine...</span>
+<div class="badges">
+  <span class="badge warn" id="b-ai">⟳ AI...</span>
+  <span class="badge warn" id="b-eng">⟳ Engine...</span>
+  <span class="badge warn" id="b-lyla">⟳ LYLA...</span>
+  <span class="badge warn" id="b-stripe">⟳ Stripe...</span>
 </div>
 
-<input id="input" placeholder="พิมพ์สถานการณ์..." onkeydown="if(event.key==='Enter')run()">
-<div class="route-display" id="route-display"></div>
+<div class="input-row">
+  <input type="text" id="input" placeholder="พิมพ์สถานการณ์..." onkeydown="if(event.key==='Enter')run()">
+</div>
+<div class="route-tag" id="route-tag"></div>
 
-<button class="btn-run" id="btn-run" onclick="run()">▶ RUN DECISION ENGINE</button>
+<button class="btn btn-run" id="btn-run" onclick="run()">▶ RUN DECISION ENGINE</button>
 
-<pre id="output">System Ready — กด Engine ด้านล่างหรือพิมพ์สถานการณ์แล้วกด RUN</pre>
+<div class="out-label">OUTPUT</div>
+<pre id="output">System Ready — กด engine หรือพิมพ์สถานการณ์แล้วกด RUN</pre>
 
-<!-- ENGINE BOXES — แต่ละตัวยิง route ตรงๆ -->
 <div class="grid">
-    <div class="box" id="box-choice" onclick="runRoute('general')">
-        🧠 Choice Engine
-        <span class="route-tag">route: general</span>
-    </div>
-    <div class="box" id="box-risk" onclick="runRoute('risk')">
-        ⚖️ Risk Engine
-        <span class="route-tag">route: risk</span>
-    </div>
-    <div class="box" id="box-survival" onclick="runRoute('survival')">
-        🛡 Survival Engine
-        <span class="route-tag">route: survival</span>
-    </div>
-    <div class="box" id="box-collapse" onclick="runRoute('collapse')">
-        🔗 Collapse Detector
-        <span class="route-tag">route: collapse</span>
-    </div>
+  <div class="box" id="bx-general" onclick="runRoute('general')">🧠 Choice Engine<span class="rt">route: general</span></div>
+  <div class="box" id="bx-risk" onclick="runRoute('risk')">⚖️ Risk Engine<span class="rt">route: risk</span></div>
+  <div class="box" id="bx-survival" onclick="runRoute('survival')">🛡 Survival Engine<span class="rt">route: survival</span></div>
+  <div class="box" id="bx-collapse" onclick="runRoute('collapse')">💥 Collapse Detector<span class="rt">route: collapse</span></div>
 </div>
 
-<!-- STRIPE TOP-UP -->
+<div class="sim-section">
+  <div class="sim-label">🔮 จำลองอนาคต — เดินทางนี้จะเจออะไร?</div>
+  <div class="paths-grid" id="paths-grid">
+    <div class="path-row"><input type="text" value="เดินหน้าต่อแบบเดิม"></div>
+    <div class="path-row"><input type="text" value="หยุดและประเมินใหม่"></div>
+    <div class="path-row"><input type="text" value="หาพันธมิตร/ทรัพยากรเพิ่ม"></div>
+  </div>
+  <button class="btn-add" onclick="addPath()">+ เพิ่มทางเลือก</button>
+  <button class="btn btn-sim" id="btn-sim" onclick="simulate()">🔮 SIMULATE FUTURES</button>
+  <div class="out-label">SIMULATION RESULT</div>
+  <pre class="sim" id="sim-output">รอการจำลอง...</pre>
+</div>
+
 <div class="stripe-section">
-    <div class="label">💳 เติมเครดิต AI</div>
-    <button class="btn-stripe" onclick="stripeCheckout()">
-        ⚡ TOP UP — Stripe
-    </button>
+  <div class="stripe-label">💳 เติมเครดิต AI</div>
+  <button class="btn-stripe" onclick="stripeCheckout()">⚡ TOP UP — Stripe</button>
 </div>
 
-</div>
-</div>
+</div></div>
 
 <script>
-/* ── STARS ── */
-const canvas = document.getElementById("stars");
-const ctx = canvas.getContext("2d");
-function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
-resize(); window.addEventListener("resize",resize);
-let stars=[];
-for(let i=0;i<400;i++) stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2.5,speed:Math.random()*0.4+0.05,alpha:Math.random(),flicker:Math.random()*0.05,drift:(Math.random()-0.5)*0.4,color:Math.random()});
-function drawStars(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(let s of stars){
-        s.alpha+=s.flicker; if(s.alpha>1||s.alpha<0) s.flicker*=-1;
-        s.y+=s.speed; s.x+=s.drift;
-        if(s.y>canvas.height) s.y=0; if(s.x>canvas.width) s.x=0; if(s.x<0) s.x=canvas.width;
-        let c=s.color<0.33?"255,255,255":s.color<0.66?"0,200,255":"255,120,0";
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
-        ctx.fillStyle=`rgba(${c},${s.alpha})`; ctx.fill();
-    }
-    requestAnimationFrame(drawStars);
-}
-drawStars();
+/* STARS */
+const cv=document.getElementById("stars"),cx=cv.getContext("2d");
+function rsz(){cv.width=innerWidth;cv.height=innerHeight;}rsz();addEventListener("resize",rsz);
+const st=[];for(let i=0;i<400;i++)st.push({x:Math.random()*cv.width,y:Math.random()*cv.height,s:Math.random()*2.5,sp:Math.random()*.4+.05,a:Math.random(),f:Math.random()*.05,d:(Math.random()-.5)*.4,c:Math.random()});
+function draw(){cx.clearRect(0,0,cv.width,cv.height);for(const s of st){s.a+=s.f;if(s.a>1||s.a<0)s.f*=-1;s.y+=s.sp;s.x+=s.d;if(s.y>cv.height)s.y=0;if(s.x>cv.width)s.x=0;if(s.x<0)s.x=cv.width;const c=s.c<.33?"255,255,255":s.c<.66?"0,200,255":"255,120,0";cx.beginPath();cx.arc(s.x,s.y,s.s,0,Math.PI*2);cx.fillStyle=`rgba(${c},${s.a})`;cx.fill();}requestAnimationFrame(draw);}draw();
 
-/* ── HEALTH CHECK ── */
+/* HEALTH */
 async function checkHealth(){
-    try {
-        const r = await fetch("/health");
-        const d = await r.json();
-        const aiEl = document.getElementById("badge-ai");
-        const engEl = document.getElementById("badge-engine");
-        if(d.llm_loaded){
-            aiEl.textContent = "✅ Gemini ON";
-            aiEl.className = "badge ok";
-        } else {
-            aiEl.textContent = "❌ AI Offline";
-            aiEl.className = "badge err";
-        }
-        if(d.engine_loaded){
-            engEl.textContent = "✅ Engine ON";
-            engEl.className = "badge ok";
-        } else {
-            engEl.textContent = "⚠ Engine Offline";
-            engEl.className = "badge warn";
-        }
-    } catch(e){
-        document.getElementById("badge-ai").textContent = "❌ No Connection";
-        document.getElementById("badge-ai").className = "badge err";
-    }
+  try{
+    const d=await(await fetch("/health")).json();
+    setBadge("b-ai",d.llm_loaded,"✅ Gemini","❌ AI Off");
+    setBadge("b-eng",d.engine_loaded,"✅ Engine","⚠ Engine Off");
+    setBadge("b-lyla",d.lyla_loaded,"✅ LYLA","⚠ LYLA Off");
+    setBadge("b-stripe",d.stripe_loaded,"✅ Stripe","⚠ Stripe Off");
+  }catch(e){setBadge("b-ai",false,"","❌ No Conn");}
 }
+function setBadge(id,ok,a,b){const el=document.getElementById(id);el.textContent=ok?a:b;el.className="badge "+(ok?"ok":"warn");}
 checkHealth();
 
-/* ── RUN (input text → auto route) ── */
+/* RUN */
 async function run(){
-    const text = document.getElementById("input").value.trim();
-    if(!text){ document.getElementById("output").innerText = "⚠ กรุณาพิมพ์สถานการณ์ก่อนกด RUN"; return; }
-    setLoading(true);
-    clearActiveBox();
-
-    const res = await fetch("/run",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({input: text})
-    });
-    const data = await res.json();
-    showResult(data);
-    setLoading(false);
+  const t=document.getElementById("input").value.trim();
+  if(!t){document.getElementById("output").innerText="⚠ กรุณาพิมพ์สถานการณ์";return;}
+  setL("btn-run",true);clearB();
+  showOut(await post("/run",{input:t}));
+  setL("btn-run",false);
+}
+async function runRoute(r){
+  const t=document.getElementById("input").value.trim()||`[${r}]`;
+  setL("btn-run",true);clearB();hlBox(r);
+  const sig={survival:{resource:10,entropy:85},risk:{stability:20},collapse:{entropy:75,stability:30},uncertain:{confidence:.2},general:{}};
+  const d=await post("/run",{input:t,...(sig[r]||{})});
+  document.getElementById("route-tag").textContent=`→ routed: ${d.route||r}`;
+  showOut(d);setL("btn-run",false);
 }
 
-/* ── RUN SPECIFIC ROUTE ── */
-async function runRoute(route){
-    const text = document.getElementById("input").value.trim() || `[${route} mode]`;
-    setLoading(true);
-    clearActiveBox();
-    highlightBox(route);
-
-    // map route → signals ที่จะ trigger pattern_engine ให้เลือก route ถูก
-    const signals = {
-        survival:  { resource: 10, entropy: 85 },
-        risk:      { stability: 20 },
-        collapse:  { entropy: 75, stability: 30 },
-        uncertain: { confidence: 0.2 },
-        general:   {}
-    };
-
-    const payload = { input: text, ...(signals[route] || {}) };
-
-    const res = await fetch("/run",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    document.getElementById("route-display").textContent = `→ routed: ${data.route || route}`;
-    showResult(data);
-    setLoading(false);
+/* SIMULATE */
+async function simulate(){
+  const t=document.getElementById("input").value.trim();
+  if(!t){document.getElementById("sim-output").innerText="⚠ ใส่สถานการณ์ก่อน";return;}
+  const paths=[...document.querySelectorAll("#paths-grid input")].map(i=>i.value).filter(v=>v.trim());
+  setL("btn-sim",true);
+  document.getElementById("sim-output").innerText="⟳ กำลังจำลองอนาคต...";
+  const d=await post("/simulate",{input:t,paths});
+  let txt=d.simulation||d.error||JSON.stringify(d,null,2);
+  if(d.lyla_observation)txt+="\n\n— LYLA —\n"+JSON.stringify(d.lyla_observation,null,2);
+  document.getElementById("sim-output").innerText=txt;
+  setL("btn-sim",false);
+}
+function addPath(){
+  const g=document.getElementById("paths-grid"),n=g.children.length+1;
+  const r=document.createElement("div");r.className="path-row";
+  r.innerHTML=`<input type="text" placeholder="ทางเลือกที่ ${n}...">`;g.appendChild(r);
 }
 
-function showResult(data){
-    const out = document.getElementById("output");
-    if(data.result){
-        // แสดง result หลักก่อน ตามด้วย metadata
-        let text = "";
-        if(typeof data.result === "string") text = data.result;
-        else if(data.result.advice) text = data.result.advice;
-        else if(data.result.plan) text = data.result.plan;
-        else if(data.result.message) text = data.result.message;
-        else text = JSON.stringify(data.result, null, 2);
-
-        out.innerText = `[${data.route?.toUpperCase() || "ENGINE"}]\n\n${text}`;
-    } else {
-        out.innerText = JSON.stringify(data, null, 2);
-    }
+/* HELPERS */
+function showOut(d){
+  const o=document.getElementById("output");
+  if(d.ai_response)o.innerText=`[${(d.route||"ENGINE").toUpperCase()}]\n\n${d.ai_response}`;
+  else if(d.engine_result)o.innerText=`[${(d.route||"ENGINE").toUpperCase()}]\n\n`+JSON.stringify(d.engine_result,null,2);
+  else o.innerText=JSON.stringify(d,null,2);
+  if(d.risk_score!==undefined)document.getElementById("route-tag").textContent=`→ route: ${d.route||"?"} | risk: ${Math.round(d.risk_score)}`;
 }
+async function post(u,b){try{const r=await fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});return await r.json();}catch(e){return{error:String(e)};}}
+function setL(id,on){document.getElementById(id).disabled=on;}
+function hlBox(r){const m={general:"bx-general",risk:"bx-risk",survival:"bx-survival",collapse:"bx-collapse"};const el=document.getElementById(m[r]);if(el)el.classList.add("active");}
+function clearB(){document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"));document.getElementById("route-tag").textContent="";}
 
-function setLoading(on){
-    const btn = document.getElementById("btn-run");
-    const out = document.getElementById("output");
-    btn.disabled = on;
-    if(on) out.innerText = "⟳ Running engine...";
-}
-
-function highlightBox(route){
-    const map = { general:"box-choice", risk:"box-risk", survival:"box-survival", collapse:"box-collapse", uncertain:"box-choice" };
-    const el = document.getElementById(map[route]);
-    if(el) el.classList.add("active");
-}
-
-function clearActiveBox(){
-    document.querySelectorAll(".box").forEach(b => b.classList.remove("active"));
-    document.getElementById("route-display").textContent = "";
-}
-
-/* ── STRIPE ── */
+/* STRIPE */
 async function stripeCheckout(){
-    try {
-        const r = await fetch("/payment/create-checkout",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({credits: 100})
-        });
-        const d = await r.json();
-        if(d.url) window.location.href = d.url;
-        else document.getElementById("output").innerText = "❌ Stripe: " + (d.error || "ไม่สามารถสร้าง checkout ได้");
-    } catch(e){
-        document.getElementById("output").innerText = "❌ Stripe endpoint ยังไม่พร้อม\nต้องเพิ่ม POST /payment/create-checkout ใน app.py";
-    }
+  const d=await post("/payment/create-checkout",{});
+  if(d.url)window.location.href=d.url;
+  else document.getElementById("output").innerText="❌ Stripe: "+(d.error||"checkout ไม่สำเร็จ");
 }
 </script>
 </body>
