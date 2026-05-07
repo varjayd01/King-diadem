@@ -1,240 +1,262 @@
-# =========================
-# 👑 KING DIADEM — app.py
-# Full Stack: Gemini + LYLA + Stripe + Future Simulation
-# =========================
+"""
+KING DIADEM - Main Application
+Connects: AI (Gemini) + Decision Engine + Frontend + Database
+"""
 
-from fastapi import FastAPI, Request, Header
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
 import os
+import sys
+from typing import Optional, Dict, Any, List
 
-# ── CORE ──────────────────────────────────────────────────────────
-try:
-    from core.llm_gemini import GeminiLLM
-    from core.emptiness_guard import emptiness_guard
-    from core.core_loop import run_core
-except Exception as e:
-    print(f"CORE IMPORT ERROR: {e}")
-    GeminiLLM = None
-    emptiness_guard = None
-    run_core = None
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# ── LYLA KERNEL ───────────────────────────────────────────────────
-try:
-    from core.lyla_kernel import LylaKernel
-    lyla = LylaKernel()
-    print("✅ LYLA Kernel loaded")
-except Exception as e:
-    print(f"⚠ LYLA Kernel not loaded: {e}")
-    lyla = None
+# Import core systems
+from core.llm_gemini_final import GeminiAI
+from ENGINE.decision_core import DecisionCore
 
-# ── ENGINE ────────────────────────────────────────────────────────
-try:
-    from ENGINE.decision_engine import DecisionEngine
-    from ENGINE.pattern_engine import analyze_pattern
-except Exception as e:
-    print(f"ENGINE IMPORT ERROR: {e}")
-    DecisionEngine = None
-    analyze_pattern = None
+# ============================================
+# APP INITIALIZATION
+# ============================================
 
-# ── PAYMENT ───────────────────────────────────────────────────────
-try:
-    import stripe
-    stripe.api_key = os.getenv("STRIPE_SECRET")
-    STRIPE_PRICE_ID = os.getenv("STRIPE_PRICE_")
-    STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_")
-    from DATABASE.user_db import add_credit, init_db
-    init_db()
-    STRIPE_OK = True
-    print("✅ Stripe + DB loaded")
-except Exception as e:
-    print(f"⚠ Stripe/DB not loaded: {e}")
-    STRIPE_OK = False
+app = FastAPI(
+    title="KING DIADEM",
+    description="Decision Intelligence System - Stable Before Great",
+    version="1.0.0"
+)
 
-# ── INIT ──────────────────────────────────────────────────────────
-app = FastAPI(title="King-Diadem Decision Engine")
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-llm = None
-engine = None
+# ============================================
+# REQUEST MODELS
+# ============================================
 
-try:
-    if GeminiLLM:
-        llm = GeminiLLM(model="gemini-2.5-flash")
-    if DecisionEngine:
-        engine = DecisionEngine()
-    print("✅ King-Diadem initialized")
-except Exception as e:
-    print(f"❌ ENGINE INIT FAILED: {e}")
+class DecisionRequest(BaseModel):
+    """Request for decision analysis"""
+    situation: str
+    resources: Optional[Dict[str, Any]] = {}
+    constraints: Optional[Dict[str, Any]] = {}
+    urgency: Optional[str] = "medium"
 
-# ── STATIC ────────────────────────────────────────────────────────
+class ChatRequest(BaseModel):
+    """Simple chat request"""
+    message: str
+    user_id: Optional[str] = None
+
+# ============================================
+# CORE SYSTEM - Master Brain
+# ============================================
+
+class MasterBrain:
+    """
+    Master orchestrator for KING DIADEM
+    Combines: Gemini AI + Decision Engine + Memory
+    """
+    
+    def __init__(self):
+        self.ai = None
+        self.decision_engine = None
+        self.ready = False
+        self.initialize()
+    
+    def initialize(self):
+        """Initialize all systems"""
+        print("\n" + "="*60)
+        print("KING DIADEM SYSTEM INITIALIZING")
+        print("="*60)
+        
+        # 1. Initialize Gemini AI
+        try:
+            self.ai = GeminiAI()
+            if self.ai.is_ready():
+                print("✓ Gemini AI: READY")
+            else:
+                print("⚠ Gemini AI: NOT CONFIGURED (set GEMINI_API_KEY)")
+        except Exception as e:
+            print(f"✗ Gemini AI: FAILED - {e}")
+        
+        # 2. Initialize Decision Engine
+        try:
+            self.decision_engine = DecisionCore()
+            print("✓ Decision Engine: READY")
+        except Exception as e:
+            print(f"✗ Decision Engine: FAILED - {e}")
+        
+        self.ready = True
+        print("="*60)
+        print("STATUS: OPERATIONAL")
+        print("="*60 + "\n")
+    
+    async def process_decision(self, request: DecisionRequest) -> Dict:
+        """Main decision processing pipeline"""
+        
+        # Build context
+        context = {
+            "situation": request.situation,
+            "resources": request.resources,
+            "constraints": request.constraints,
+            "urgency": request.urgency
+        }
+        
+        # Step 1: Generate base choices (Decision Engine)
+        base_choices = self.decision_engine.generate_choices(context)
+        
+        # Step 2: AI Analysis (if available)
+        ai_analysis = None
+        if self.ai and self.ai.is_ready():
+            ai_analysis = await self.ai.analyze_situation(context)
+        
+        # Step 3: Combine results
+        result = {
+            "status": "success",
+            "situation": request.situation,
+            "urgency": self.decision_engine.evaluate_urgency(context),
+            "choices": base_choices,
+            "ai_insights": ai_analysis,
+            "metadata": {
+                "choice_count": len(base_choices),
+                "ai_available": self.ai is not None and self.ai.is_ready()
+            }
+        }
+        
+        return result
+    
+    async def chat(self, message: str) -> str:
+        """Simple chat interface"""
+        
+        if self.ai and self.ai.is_ready():
+            response = await self.ai.ask(message)
+            return response
+        else:
+            return "AI ไม่พร้อมใช้งาน - กรุณาตั้งค่า GEMINI_API_KEY"
+
+# Initialize Master Brain
+brain = MasterBrain()
+
+# ============================================
+# API ENDPOINTS
+# ============================================
+
 @app.get("/")
-def root():
+async def root():
+    """Serve main page"""
     return FileResponse("static/index.html")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# ── HEALTH ────────────────────────────────────────────────────────
 @app.get("/health")
-def health():
+async def health():
+    """System health check"""
     return {
-        "status": "alive 👑",
-        "engine_loaded": engine is not None,
-        "llm_loaded": llm is not None,
-        "lyla_loaded": lyla is not None,
-        "stripe_loaded": STRIPE_OK,
-        "model": getattr(llm, "model", None) if llm else None
+        "status": "operational",
+        "systems": {
+            "ai": brain.ai.is_ready() if brain.ai else False,
+            "decision_engine": brain.decision_engine is not None,
+            "ready": brain.ready
+        },
+        "version": "1.0.0"
     }
 
-# ── MAIN DECISION ENGINE ──────────────────────────────────────────
-@app.post("/run")
-@app.post("/decision")
-async def run_engine(data: dict):
-    user_input = data.get("input") or data.get("text") or data.get("message") or ""
-
-    if not user_input:
-        return {"observer": "KING DIADEM", "status": "ERROR", "message": "ไม่พบ input"}
-
-    # fallback ถ้า engine offline
-    if not engine:
-        return {
-            "observer": "KING DIADEM",
-            "status": "ENGINE OFFLINE",
-            "fallback": ["ลดการใช้ทรัพยากร", "หาความร่วมมือ", "รักษาความปลอดภัย", "ย้ายไปพื้นที่เสี่ยงต่ำ"]
-        }
-
+@app.post("/api/decision")
+async def make_decision(request: DecisionRequest):
+    """Generate decision choices"""
     try:
-        result = engine.run(data)
+        result = await brain.process_decision(request)
         return result
     except Exception as e:
-        return {"observer": "KING DIADEM", "status": "ERROR", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-# ── FUTURE SIMULATION (จำลองอนาคตหลายเส้นทาง) ───────────────────
-@app.post("/simulate")
-async def simulate_future(data: dict):
-    """
-    รับ: input (สถานการณ์), paths (list ของทางเลือก)
-    คืน: แต่ละทางเลือกจะเจออะไรถ้าเดินไปเรื่อยๆ
-    """
-    user_input = data.get("input", "")
-    paths = data.get("paths", [])
-
-    if not user_input:
-        return {"status": "ERROR", "message": "ไม่พบ input"}
-
-    if not llm:
-        return {"status": "ENGINE OFFLINE", "message": "Gemini ไม่พร้อม"}
-
-    # ถ้าไม่ส่ง paths มา ให้ระบบสร้างเองจาก pattern
-    if not paths:
-        paths = ["เดินหน้าต่อแบบเดิม", "หยุดและประเมินใหม่", "หาพันธมิตร/ทรัพยากรเพิ่ม", "ถอยและ pivot"]
-
-    simulation_prompt = f"""สถานการณ์: {user_input}
-
-จำลองอนาคตสำหรับแต่ละทางเลือกต่อไปนี้ โดยวิเคราะห์แบบกลางๆ ไม่ตัดสิน ไม่ว่าจะเป็นสีขาว เทา หรือดำ:
-
-{chr(10).join([f'{i+1}. {p}' for i, p in enumerate(paths)])}
-
-สำหรับแต่ละทางเลือก ให้ระบุ:
-- ผลลัพธ์ที่น่าจะเกิดใน 30 วัน / 90 วัน / 1 ปี
-- จุดที่ระบบจะเริ่ม "พัง" (Collapse Signal)
-- ทางเลือกที่เหลืออยู่ (Remaining Choice)
-- คะแนน Drift Risk (0-100)
-
-ตอบแบบตรงไปตรงมา ระบุความเสี่ยงจริง ไม่เน้น optimism เกินจริง"""
-
+@app.post("/api/chat")
+async def chat(request: ChatRequest):
+    """Chat with AI"""
     try:
-        raw = llm.generate_with_governance(simulation_prompt, additional_context=user_input)
-
-        # ถ้ามี LYLA kernel ให้กรองผ่านด้วย
-        lyla_note = None
-        if lyla:
-            try:
-                lyla_note = lyla.observe(user_input)
-            except Exception:
-                pass
-
+        response = await brain.chat(request.message)
         return {
-            "observer": "KING DIADEM",
-            "status": "SUCCESS",
-            "simulation": raw,
-            "paths_analyzed": paths,
-            "lyla_observation": lyla_note
+            "response": response,
+            "ai_available": brain.ai.is_ready() if brain.ai else False
         }
-
     except Exception as e:
-        return {"status": "ERROR", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-# ── STRIPE CHECKOUT ───────────────────────────────────────────────
-@app.post("/payment/create-checkout")
-async def payment_checkout():
-    if not STRIPE_OK:
-        return JSONResponse({"error": "Stripe ยังไม่พร้อม"}, status_code=503)
+@app.post("/api/analyze")
+async def analyze(request: DecisionRequest):
+    """Quick analysis endpoint"""
     try:
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
-            mode="payment",
-            success_url="https://king-diadem.onrender.com/success",
-            cancel_url="https://king-diadem.onrender.com/cancel",
-        )
-        return {"url": session.url}
+        if not brain.ai or not brain.ai.is_ready():
+            raise HTTPException(
+                status_code=503, 
+                detail="AI not available - configure GEMINI_API_KEY"
+            )
+        
+        analysis = await brain.ai.analyze_situation({
+            "situation": request.situation,
+            "resources": request.resources
+        })
+        
+        return analysis
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-# ── STRIPE WEBHOOK ────────────────────────────────────────────────
-_processed_events = set()
-
-@app.post("/payment/webhook")
-async def payment_webhook(
-    request: Request,
-    stripe_signature: str = Header(None, alias="stripe-signature")
-):
-    payload = await request.body()
+# WebSocket for real-time
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """Real-time decision stream"""
+    await websocket.accept()
+    
     try:
-        event = stripe.Webhook.construct_event(payload, stripe_signature, STRIPE_WEBHOOK_SECRET)
+        while True:
+            data = await websocket.receive_json()
+            
+            # Process decision
+            request = DecisionRequest(**data)
+            result = await brain.process_decision(request)
+            
+            await websocket.send_json(result)
+    
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=400)
+        print(f"WebSocket error: {e}")
+    finally:
+        await websocket.close()
 
-    event_id = event["id"]
-    if event_id in _processed_events:
-        return JSONResponse({"status": "duplicate"})
-    _processed_events.add(event_id)
+# Mount static files
+try:
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+except:
+    print("⚠ Warning: static directory not found")
 
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        email = session.get("customer_details", {}).get("email", "")
-        amount = session.get("amount_total", 0) // 100
-        if email:
-            try:
-                add_credit(email, amount)
-                print(f"✅ Credit added: {email} +{amount}")
-            except Exception as e:
-                print(f"❌ add_credit failed: {e}")
+# ============================================
+# STARTUP
+# ============================================
 
-    return JSONResponse({"status": "ok"})
+@app.on_event("startup")
+async def startup():
+    """Run on startup"""
+    print("\n🚀 KING DIADEM is running")
+    print(f"📍 Open: http://localhost:8000")
+    print(f"📊 Health: http://localhost:8000/health")
+    print(f"📖 Docs: http://localhost:8000/docs\n")
 
+# ============================================
+# RUN
+# ============================================
 
-# ── SUCCESS / CANCEL ──────────────────────────────────────────────
-@app.get("/success")
-def success():
-    return HTMLResponse("""
-    <html><body style='background:#000;color:#00ff88;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;'>
-    <div style='text-align:center'>
-        <h1>✅ ชำระเงินสำเร็จ</h1>
-        <p>เครดิตจะเข้าระบบภายในไม่กี่วินาที</p>
-        <a href='/' style='color:#00ccff'>← กลับ King Diadem</a>
-    </div></body></html>
-    """)
-
-@app.get("/cancel")
-def cancel():
-    return HTMLResponse("""
-    <html><body style='background:#000;color:#ff5e5e;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;'>
-    <div style='text-align:center'>
-        <h1>❌ ยกเลิกการชำระเงิน</h1>
-        <a href='/' style='color:#00ccff'>← กลับหน้าหลัก</a>
-    </div></body></html>
-    """)
+if __name__ == "__main__":
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
