@@ -1,99 +1,192 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>KING DIADEM™</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KING DIADEM</title>
 
 <style>
 
-/* 🌌 Background */
-body {
+/* 🌌 GLOBAL */
+html, body {
     margin: 0;
-    background: radial-gradient(circle at center, #020611, #000000);
-    color: #00f7ff;
-    font-family: 'Courier New', monospace;
+    padding: 0;
     overflow: hidden;
+
+    background:
+        radial-gradient(circle at 20% 50%, rgba(255,80,0,0.25), transparent 40%),
+        radial-gradient(circle at 80% 50%, rgba(0,150,255,0.25), transparent 40%),
+        radial-gradient(circle at center, #000000 30%, #020617 100%);
+
+    font-family: monospace; /* 👈 กลับเป็นของพี่ */
+    color: #cdefff;
 }
 
-/* ✨ Glow */
-@keyframes glow {
-    0% { text-shadow: 0 0 10px #00f7ff; }
-    50% { text-shadow: 0 0 40px #00f7ff; }
-    100% { text-shadow: 0 0 10px #00f7ff; }
-}
-
-canvas {
+/* ⭐ STARS */
+#stars {
     position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+}
+
+/* 🌫 LIGHT */
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(0,255,255,0.05), transparent);
+    z-index: -1;
+}
+
+/* 🌍 ORBIT */
+.orbit-system {
+    position: absolute;
+    top: -140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+}
+
+.ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.ring1 {
+    border: 1px solid rgba(255,120,0,0.4);
+    box-shadow: 0 0 25px rgba(255,120,0,0.4);
+    animation: spin 18s linear infinite;
+}
+
+.ring2 {
+    border: 1px dashed rgba(0,150,255,0.4);
+    box-shadow: 0 0 25px rgba(0,150,255,0.4);
+    animation: spinReverse 25s linear infinite;
+}
+
+.sun {
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle, #ff6a00, #ff0000);
+    box-shadow: 0 0 20px #ff6a00;
+    position: absolute;
     top: 0;
-    left: 0;
-    z-index: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
 }
 
+.planet {
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #00ccff, #0044ff);
+    box-shadow: 0 0 15px #00ccff;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+/* CENTER */
 .container {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    top: 10vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.title {
-    font-size: 70px;
-    animation: glow 3s infinite;
-}
-
-.subtitle {
-    opacity: 0.5;
-    margin-bottom: 40px;
-}
-
+/* 💎 CARD */
 .card {
-    margin: auto;
-    width: 420px;
-    padding: 25px;
-    border: 1px solid #00f7ff;
-    border-radius: 10px;
-    box-shadow: 0 0 30px rgba(0,255,255,0.5);
-    backdrop-filter: blur(10px);
+    width: 440px;
+    padding: 30px;
+    border-radius: 20px;
+
+    background: rgba(0,0,0,0.75);
+
+    box-shadow:
+        0 0 80px rgba(0,255,255,0.35),
+        inset 0 0 30px rgba(0,255,255,0.1);
+
+    backdrop-filter: blur(15px);
+    position: relative;
 }
 
-textarea {
-    width: 100%;
-    height: 120px;
-    background: black;
-    color: #00f7ff;
-    border: 1px solid #00f7ff;
-    padding: 10px;
+/* 👑 TITLE */
+h1 {
+    font-size: 36px;
+    background: linear-gradient(90deg,#ffd27f,#66ccff,#9999ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-input[type=range] {
-    width: 100%;
+/* SUB */
+.sub {
+    font-size: 12px;
+    color: #ffd27f;
 }
 
+/* STATUS */
+.status {
+    color: #ff5e5e;
+    margin-bottom: 15px;
+}
+
+/* INPUT */
+input {
+    width: 92%;
+    padding: 12px;
+    background: rgba(0,0,0,0.9);
+    border: 1px solid #00ccff;
+    color: #cdefff;
+}
+
+/* BUTTON */
 button {
-    margin-top: 15px;
-    padding: 15px;
-    width: 100%;
-    background: #00f7ff;
-    color: black;
+    margin-top: 12px;
+    padding: 12px 20px;
+    background: linear-gradient(90deg,#ffd700,#ff9966);
     border: none;
-    cursor: pointer;
     font-weight: bold;
-    transition: 0.3s;
+    cursor: pointer;
+    box-shadow: 0 0 20px #ffd700;
 }
 
-button:hover {
-    box-shadow: 0 0 20px #00f7ff;
-}
-
-.output {
-    margin-top: 20px;
+/* OUTPUT */
+pre {
+    margin-top: 15px;
     text-align: left;
-    font-size: 13px;
-    white-space: pre-wrap;
-    max-height: 200px;
-    overflow-y: auto;
+    background: black;
+    padding: 12px;
+    border: 1px solid #00ccff;
+    height: 150px;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.box {
+    padding: 10px;
+    border: 1px solid rgba(0,255,255,0.2);
+    border-radius: 10px;
 }
 
 </style>
@@ -104,99 +197,104 @@ button:hover {
 <canvas id="stars"></canvas>
 
 <div class="container">
+<div class="card">
 
-    <div class="title">KING DIADEM</div>
-    <div class="subtitle">DRIFTZERO WATERLINE GOVERNANCE OS</div>
+<div class="orbit-system">
+    <div class="ring ring1"><div class="sun"></div></div>
+    <div class="ring ring2"><div class="planet"></div></div>
+</div>
 
-    <div class="card">
+<h1>King Diadem</h1>
+<div class="sub">Decision Engine Core</div>
+<div class="status">❌ เครดิตหมด (AI ถูกจำกัด)</div>
 
-        <textarea id="inputBox" placeholder="Reality Input..."></textarea>
+<input id="input" placeholder="พิมพ์สถานการณ์...">
+<br>
+<button onclick="run()">RUN DECISION ENGINE</button>
 
-        <br><br>
+<pre id="output">System Ready</pre>
 
-        Energy
-        <input type="range" id="energy" min="0" max="100" value="50">
+<div class="grid">
+    <div class="box">🧠 Choice Engine</div>
+    <div class="box">⚖️ Risk Engine</div>
+    <div class="box">🛡 Survival Engine</div>
+    <div class="box">🔗 Cooperation Engine</div>
+</div>
 
-        <button onclick="runEngine()">RUN COSMIC ENGINE</button>
-
-        <div class="output" id="output"></div>
-
-    </div>
-
+</div>
 </div>
 
 <script>
 
-/* 🌠 Stars */
+/* 🌌 STAR ENGINE (มีชีวิต) */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
 let stars = [];
 
-for (let i = 0; i < 150; i++) {
+for (let i = 0; i < 260; i++) {
     stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        r: Math.random() * 1.5
+        size: Math.random() * 2,
+        speed: Math.random() * 0.2 + 0.05,
+        alpha: Math.random(),
+        flicker: Math.random() * 0.03,
+        drift: (Math.random() - 0.5) * 0.3
     });
 }
 
-function drawStars() {
+function drawStars(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = "#00f7ff";
 
-    stars.forEach(s => {
+    for(let s of stars){
+
+        s.alpha += s.flicker;
+        if(s.alpha > 1 || s.alpha < 0) s.flicker *= -1;
+
+        s.y += s.speed;
+        s.x += s.drift;
+
+        if(s.y > canvas.height) s.y = 0;
+        if(s.x > canvas.width) s.x = 0;
+        if(s.x < 0) s.x = canvas.width;
+
+        const colors = ["255,255,255","0,200,255","255,120,0"];
+        const c = colors[Math.floor(Math.random()*colors.length)];
+
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+        ctx.fillStyle = `rgba(${c},${s.alpha})`;
         ctx.fill();
-    });
+    }
 
     requestAnimationFrame(drawStars);
 }
 
 drawStars();
 
-/* 🚀 REAL ENGINE */
-async function runEngine() {
+/* ENGINE */
+async function run(){
+    const text = document.getElementById("input").value;
+    document.getElementById("output").innerText = "Running...";
 
-    const input = document.getElementById("inputBox").value;
-    const energy = document.getElementById("energy").value;
-    const out = document.getElementById("output");
+    const res = await fetch("/run",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({input:text})
+    });
 
-    out.innerText = "⏳ Connecting to core system...";
+    const data = await res.json();
 
-    try {
-
-        const res = await fetch("/ask", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({input, energy})
-        });
-
-        const data = await res.json();
-
-        out.innerText =
-`[REALITY SIGNAL]
-Input: ${input}
-
-[STATE]
-Energy: ${energy}
-
-[DECISION]
-${data.decision}
-
-[SURVIVAL]
-${data.survival}
-
-[RISK]
-${data.risk}`;
-
-    } catch (err) {
-        out.innerText = "❌ SYSTEM OFFLINE (backend not running)";
-    }
+    document.getElementById("output").innerText =
+        JSON.stringify(data,null,2);
 }
 
 </script>
