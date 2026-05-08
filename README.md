@@ -1,180 +1,66 @@
-KING DIADEM
+# KING DIADEM
 
-DriftZero Waterline Governance Framework
+**DriftZero Waterline Governance Framework**
 
-A governance framework designed to detect and prevent Choice Collapse — the moment when a system loses all viable options.
+Detect and prevent Choice Collapse before it becomes irreversible.
 
 Created by Nithikorn Bunsrang
 
 ---
 
-Why This Exists
+## What It Does
 
-Most systems do not collapse because of a single catastrophic event.
+KING DIADEM monitors systems for shrinking choices.
 
-They collapse when small problems accumulate over time and the number of viable choices slowly disappears.
+When viable options approach zero — collapse is inevitable.
+This framework detects that moment early enough to intervene.
 
-When no safe option remains, collapse becomes unavoidable.
-
-KING DIADEM exists to detect that moment before it becomes irreversible.
-
----
-
-Core Principle
-
-Systems collapse when Choice → 0
-
-KING DIADEM models structural risk using the relationship:
-
-Risk = Drift × Exposure / Remaining Choice
-
-Where
-
-Drift
-Small unnoticed degradation accumulating inside a system.
-
-Exposure
-How long drift is allowed to continue without intervention.
-
-Remaining Choice
-The number of viable options that keep the system alive.
-
-When remaining choice approaches zero, collapse becomes inevitable.
+**Risk = Drift × Exposure / Remaining Choice**
 
 ---
 
-Design Philosophy
+## Core Output
 
-Fail Less
-Harm Less
-Restore Choice
-
-The objective is not to optimize victory.
-
-The objective is to prevent irreversible failure.
+- Detects accumulating drift before it compounds
+- Flags when viable options are disappearing
+- Triggers governance intervention before the floor collapses
+- Restores choice where it has been lost
 
 ---
 
-Core Concepts
+## Who It's For
 
-Drift
+Any system where choices must remain available:
 
-Small daily degradation that often goes unnoticed until it accumulates.
-
-Waterline
-
-The minimum survivability threshold that a system must maintain.
-
-Evidence
-
-Observable artifacts that anchor decisions to reality.
-
-Choice Preservation
-
-Ensuring that Valid Option ≥ 1 at all times.
+Business governance · Infrastructure resilience · AI oversight  
+Supply chain risk · Public policy · Personal decision frameworks
 
 ---
 
-Governance Principles
-
-Ego OFF
-Evidence ON
-
-Authority must be supported by verifiable evidence.
-
-Stop-the-Line Authority
-Any operator may halt a process when harm is detected.
-
-Stabilize Before Optimize
-Improvement must never occur on a broken foundation.
-
-Energy Discipline
-Creation must exceed consumption.
-
----
-
-System Architecture
-
-Human Decision Layer
-↓
-Evidence Validation
-↓
-Drift Detection
-↓
-Choice Evaluation
-↓
-Waterline Integrity Check
-↓
-Governance Intervention
-↓
-Choice Restoration
-
----
-
-Applications
-
-KING DIADEM can be applied across many domains:
-
-• Business governance
-• Infrastructure resilience
-• AI system oversight
-• Supply chain risk detection
-• Public policy evaluation
-• Personal decision frameworks
-
-Any system where choices must remain available can benefit from this framework.
-
----
-
-Early Warning Signals
-
-KING DIADEM focuses on detecting signals that indicate shrinking choices:
-
-• Accumulating hidden drift
-• Increasing dependency fragility
-• Loss of recovery pathways
-• Governance failure or corruption
-• Resource imbalance
-
-These signals indicate a system moving toward Choice Collapse.
-
----
-
-Quick Evaluation
-
-Evaluate any situation using three questions:
+## How to Evaluate Any Situation
 
 1. What drift is accumulating?
 2. What evidence confirms it?
 3. How many real choices remain?
 
-If viable options approach zero, intervention must occur immediately.
+If the answer to (3) approaches zero — intervene now.
 
 ---
 
-System Nature
+## Governance Principles
 
-KING DIADEM is not an algorithm.
+**Ego OFF · Evidence ON**  
+Authority requires verifiable evidence.
 
-It is a governance structure designed to maintain survivability in complex systems.
+**Stop-the-Line Authority**  
+Any operator may halt a process when harm is detected.
 
-The framework can operate with or without AI.
+**Stabilize Before Optimize**  
+Never improve a broken foundation.
 
----
-
-Final Principle
-
-Collapse happens when choices disappear.
-
-Governance exists to prevent that moment.
-
-Fail Less
-Harm Less
-Restore Choice
+**Energy Discipline**  
+Creation must exceed consumption.
 
 ---
 
-License
-
-Open governance framework.
-Use responsibly.
+## System Architecture
