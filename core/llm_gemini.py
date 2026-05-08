@@ -19,9 +19,13 @@ class GeminiLLM:
     """
 
     def __init__(self, model: str = "gemini-2.5-flash"):
-        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.api_key = (
+            os.getenv("GEMINI_API_KEY1") or
+            os.getenv("GEMINI_API_KEY2") or
+            os.getenv("GEMINI_API_KEY")
+        )
         if not self.api_key:
-            raise ValueError("❌ GEMINI_API_KEY ไม่พบใน Environment Variables บน Render")
+            raise ValueError("❌ GEMINI_API_KEY1 ไม่พบใน Environment Variables บน Render")
 
         self.client = genai.Client(api_key=self.api_key)
         self.model = model

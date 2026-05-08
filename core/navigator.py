@@ -31,7 +31,11 @@ async def run_truth_engine(user_input, resource):
 
     # 🔑 ENV
     gpt_key = os.getenv("CHATGPT_API_KEY")
-    gemini_key = os.getenv("GEMINI_API_KEY")
+    gemini_key = (
+        os.getenv("GEMINI_API_KEY1") or
+        os.getenv("GEMINI_API_KEY2") or
+        os.getenv("GEMINI_API_KEY")
+    )
 
     # 🧠 SAFE GPT
     async def get_gpt_view():

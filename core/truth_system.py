@@ -22,7 +22,11 @@ class TruthSystem:
     def __init__(self):
         self.keys = {
             "gpt": os.getenv("CHATGPT_API_KEY"),
-            "gemini": os.getenv("GEMINI_API_KEY")
+            "gemini": (
+                os.getenv("GEMINI_API_KEY1") or
+                os.getenv("GEMINI_API_KEY2") or
+                os.getenv("GEMINI_API_KEY")
+            )
         }
 
         # init client ครั้งเดียว

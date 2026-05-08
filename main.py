@@ -10,7 +10,11 @@ from typing import Dict, Any
 # CONFIG
 # ================================
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = (
+    os.getenv("GEMINI_API_KEY1") or
+    os.getenv("GEMINI_API_KEY2") or
+    os.getenv("GEMINI_API_KEY")
+)
 
 # (optional search API เช่น SerpAPI หรือ Bing)
 SEARCH_API_KEY = os.getenv("SEARCH_API_KEY")
