@@ -34,6 +34,7 @@ app = FastAPI(title="KING DIADEM OS")
 engine = DecisionEngine() if DecisionEngine else None
 
 @app.get("/")
+@app.head("/")
 def root():
     return FileResponse("static/index.html")
 
@@ -54,31 +55,28 @@ def health():
 @app.post("/decision")
 async def run_kernel(data: dict):
     user_input = data.get("input") or data.get("text") or ""
-    context = data.get("context", {"energy": 50, "money": 50, "stress": 50})
     if not user_input:
         return {"error": "Input is required"}
 
     if record_question:
         record_question()
 
-    human_state = analyze_human(context) if analyze_human else {"entropy": 40, "resource": 50, "stability": 60, "risk_score": 10}
+    human_state = analyze_human(data.get("context", {})) if analyze_human else {"entropy": 40, "resource": 50, "stability": 60, "risk_score": 10}
     intent = analyze_intent(user_input) if analyze_intent else {"intent": "general", "confidence": 0.5}
 
-    if llm:
-        context_str = f"entropy={human_state.get('entropy')}, stability={human_state.get('stability')}, resource={human_state.get('resource')}"
-        try:
-            reply = llm.generate_with_governance(prompt=user_input, additional_context=context_str)
-        except Exception as e:
-            reply = f"[Gemini Error: {e}]\n— Fail Less. Harm Less. Restore Choice. —"
+    if engine:
+        result = engine.run(data)
     else:
-        reply = f"[KING DIADEM — Offline]\nInput: {user_input}\n— Fail Less. Harm Less. Restore Choice. —"
+        result = {
+            "observer": "KING DIADEM",
+            "status": "OFFLINE",
+            "message": "Decision engine offline",
+            "route": intent.get("intent", "general") if isinstance(intent, dict) else "general",
+            "governance": {"intent": intent, "human_state": human_state},
+            "ai_response": f"[KING DIADEM — Offline]\nInput: {user_input}\n— Fail Less. Harm Less. Restore Choice. —"
+        }
 
-    return {
-        "observer": "KING DIADEM",
-        "ai_response": reply,
-        "route": intent.get("intent", "general") if isinstance(intent, dict) else "general",
-        "governance": {"intent": intent, "human_state": human_state}
-    }
+    return result
 
 @app.post("/simulate")
 async def simulate_future(data: dict):
