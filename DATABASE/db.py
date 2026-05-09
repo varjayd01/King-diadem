@@ -1,6 +1,4 @@
-# DATABASE/db.py
-import sqlite3
-import os
+import sqlite3, os
 
 DB_PATH = os.getenv("DB_PATH", "data/king_diadem.db")
 
@@ -12,8 +10,7 @@ def get_conn():
 
 def init_db():
     conn = get_conn()
-    c = conn.cursor()
-    c.executescript("""
+    conn.executescript("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
@@ -45,38 +42,29 @@ def init_db():
     conn.commit()
     conn.close()
 
-def log_decision(user_email: str, input_text: str, route: str, response: str):
+def log_decision(user_email, input_text, route, response):
     conn = get_conn()
-    conn.execute(
-        "INSERT INTO decision_log (user_email, input, route, response) VALUES (?,?,?,?)",
-        (user_email, input_text, route, response)
-    )
+    conn.execute("INSERT INTO decision_log (user_email,input,route,response) VALUES (?,?,?,?)",
+                 (user_email, input_text, route, response))
     conn.commit()
     conn.close()
 
-def get_credits(user_email: str) -> int:
+def get_credits(user_email):
     conn = get_conn()
-    row = conn.execute(
-        "SELECT amount FROM credits WHERE user_email=? ORDER BY updated_at DESC LIMIT 1",
-        (user_email,)
-    ).fetchone()
+    row = conn.execute("SELECT amount FROM credits WHERE user_email=? ORDER BY updated_at DESC LIMIT 1",
+                       (user_email,)).fetchone()
     conn.close()
     return row["amount"] if row else 0
 
-def add_credits(user_email: str, amount: int):
+def add_credits(user_email, amount):
     conn = get_conn()
-    conn.execute(
-        "INSERT INTO credits (user_email, amount) VALUES (?,?)",
-        (user_email, amount)
-    )
+    conn.execute("INSERT INTO credits (user_email,amount) VALUES (?,?)", (user_email, amount))
     conn.commit()
     conn.close()
 
-def record_payment(user_email: str, amount_usd: float, session_id: str):
+def record_payment(user_email, amount_usd, session_id):
     conn = get_conn()
-    conn.execute(
-        "INSERT INTO payments (user_email, amount_usd, stripe_session_id, status) VALUES (?,?,?,'completed')",
-        (user_email, amount_usd, session_id)
-    )
+    conn.execute("INSERT INTO payments (user_email,amount_usd,stripe_session_id,status) VALUES (?,?,?,'completed')",
+                 (user_email, amount_usd, session_id))
     conn.commit()
     conn.close()
