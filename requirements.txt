@@ -8,3 +8,6 @@ stripe
 python-multipart
 requests
 jinja2
+numpy
+pandas
+scikit-learn
