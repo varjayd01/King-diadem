@@ -41,6 +41,10 @@ except Exception as e:
     llm = None
     lyla = None
 
+# ── STRIPE ───────────────────────────────────────────────────────
+import stripe
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 # ── INIT APP ─────────────────────────────────────────────────────
 app = FastAPI(title="KING DIADEM OS")
 engine = DecisionEngine() if DecisionEngine else None
@@ -78,7 +82,6 @@ async def run_kernel(data: dict):
     if record_question:
         record_question()
 
-    # Fallback ถ้า import ล้มเหลว
     human_state = analyze_human(context) if analyze_human else {"entropy": 40, "resource": 50, "stability": 60, "risk_score": 10}
     intent = analyze_intent(user_input) if analyze_intent else {"intent": "general", "confidence": 0.5}
 
@@ -117,9 +120,12 @@ async def simulate_future(data: dict):
 
     simulation_prompt = f"สถานการณ์: {user_input}\nวิเคราะห์ 30/90/365 วัน ตามกฎ HUMAN_PROTOCOL..."
 
-    raw = llm.generate_with_governance(simulation_prompt)
+    try:
+        raw = llm.generate_with_governance(simulation_prompt)
+    except Exception as e:
+        raw = f"Simulation error: {str(e)}"
 
-    observation = lyla.observe(user_input) if lyla else "Standard Observation"
+    observation = lyla.observe(user_input) if lyla else {"stability": "NOMINAL", "observation": "Standard Observation"}
 
     return {
         "status": "SUCCESS",
@@ -128,15 +134,21 @@ async def simulate_future(data: dict):
     }
 
 # ── PAYMENT SYSTEM (Stripe) ──────────────────────────────────────
-import stripe
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
 @app.post("/payment/create-checkout")
 async def create_checkout():
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
-            line_items=[{"price": os.getenv("STRIPE_PRICE_ID"), "quantity": 1}],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "King Diadem AI Credits"
+                    },
+                    "unit_amount": 500
+                },
+                "quantity": 1
+            }],
             mode="payment",
             success_url="https://king-diadem.onrender.com/success",
             cancel_url="https://king-diadem.onrender.com/cancel",
