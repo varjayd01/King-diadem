@@ -1,32 +1,35 @@
 # ENGINE/engine_router.py
 
-from AI.intent_engine import detect_intent
-from ENGINE.decision_engine import make_decision
-from ENGINE.simulation_engine import simulate
-from ENGINE.risk_engine import evaluate_risk
-from AI.freedom_signal import freedom_index
+try:
+    from AI.intent_engine import analyze_intent as detect_intent
+except Exception:
+    detect_intent = None
 
-def run_system(user_input):
+try:
+    from ENGINE.decision_engine import DecisionEngine
+    _engine = DecisionEngine()
+except Exception:
+    _engine = None
 
-    # 1. เข้าใจเจตนา
-    intent = detect_intent(user_input)
+try:
+    from AI.freedom_signal import freedom_index
+except Exception:
+    freedom_index = lambda: 0
 
-    # 2. ประมวลผลการตัดสินใจ
-    decision = make_decision(user_input, intent)
+def run_system(user_input: str) -> dict:
+    intent = detect_intent(user_input) if detect_intent else {"intent": "general", "confidence": 0.5}
 
-    # 3. จำลองผลลัพธ์
-    sim = simulate(decision)
+    if _engine:
+        decision = _engine.run({"input": user_input})
+    else:
+        decision = {"status": "OFFLINE", "message": "Engine offline"}
 
-    # 4. ประเมินความเสี่ยง
-    risk = evaluate_risk(sim)
-
-    # 5. วัด freedom
+    risk = decision.get("risk_score", 0)
     freedom = freedom_index()
 
     return {
         "intent": intent,
         "decision": decision,
-        "simulation": sim,
         "risk": risk,
         "freedom": freedom
     }
