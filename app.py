@@ -20,35 +20,28 @@ except Exception as e:
     analyze_human = analyze_intent = record_question = freedom_index = None
 
 try:
-    from AUTH.auth import router as auth_router
-    from core.database import init_db as init_database
-    from core.axioms import AXIOMS
-except Exception as e:
-    print(f"⚠ DB/Axiom IMPORT ERROR: {e}")
-    auth_router = None
-    init_database = None
-    AXIOMS = {}
-
-try:
     from core.llm_gemini import GeminiLLM
     from core.lyla_kernel import LylaKernel
+    from core.axioms import AXIOMS
     lyla = LylaKernel()
     llm = GeminiLLM(model="gemini-2.0-flash")
     print("✅ LYLA & Gemini Loaded")
 except Exception as e:
     print(f"⚠ LLM/LYLA ERROR: {e}")
     llm = lyla = None
+    AXIOMS = {}
+
+try:
+    from DATABASE.db import init_db, log_decision, get_credits
+    init_db()
+    print("✅ Database initialized")
+except Exception as e:
+    print(f"⚠ DB ERROR: {e}")
+    init_db = log_decision = get_credits = None
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
-if init_database:
-    init_database()
-
 app = FastAPI(title="KING DIADEM OS")
 engine = DecisionEngine() if DecisionEngine else None
-
-if auth_router:
-    app.include_router(auth_router, prefix="/auth")
 
 @app.get("/")
 @app.head("/")
@@ -66,13 +59,8 @@ def health():
         "lyla_loaded": lyla is not None,
         "stripe_loaded": bool(os.getenv("STRIPE_SECRET_KEY")),
         "freedom_score": freedom_index() if freedom_index else 0,
-        "db_initialized": bool(init_database),
-        "axioms": AXIOMS
+        "db_initialized": init_db is not None,
     }
-
-@app.get("/axioms")
-def axioms():
-    return {"axioms": AXIOMS}
 
 @app.post("/run")
 @app.post("/decision")
@@ -90,14 +78,30 @@ async def run_kernel(data: dict):
     if engine:
         result = engine.run(data)
     else:
+        if llm:
+            try:
+                reply = llm.generate_with_governance(
+                    prompt=user_input,
+                    additional_context=f"entropy={human_state.get('entropy')}, stability={human_state.get('stability')}"
+                )
+            except Exception as e:
+                reply = f"[Gemini Error: {e}]"
+        else:
+            reply = f"[KING DIADEM — Offline]\n{user_input}\n— Fail Less. Harm Less. Restore Choice. —"
+
         result = {
             "observer": "KING DIADEM",
-            "status": "OFFLINE",
-            "message": "Decision engine offline",
+            "status": "SUCCESS",
             "route": intent.get("intent", "general") if isinstance(intent, dict) else "general",
-            "governance": {"intent": intent, "human_state": human_state},
-            "ai_response": f"[KING DIADEM — Offline]\nInput: {user_input}\n— Fail Less. Harm Less. Restore Choice. —"
+            "ai_response": reply,
+            "governance": {"intent": intent, "human_state": human_state}
         }
+
+    if log_decision and result.get("ai_response"):
+        try:
+            log_decision("anonymous", user_input, result.get("route", "general"), str(result.get("ai_response", "")))
+        except Exception:
+            pass
 
     return result
 
@@ -129,3 +133,9 @@ async def create_checkout():
         return {"url": session.url}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.get("/credits")
+async def credits(email: str = "anonymous"):
+    if get_credits:
+        return {"email": email, "credits": get_credits(email)}
+    return {"credits": 0}
