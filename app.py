@@ -156,3 +156,49 @@ async def create_checkout():
         return {"url": session.url}
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+@app.post("/run")
+@app.post("/decision")
+async def run_kernel(data: dict):
+    user_input = data.get("input") or data.get("text") or ""
+    context = data.get("context", {"energy": 50, "money": 50, "stress": 50})
+
+    if not user_input:
+        return {"error": "Input is required"}
+
+    if record_question:
+        record_question()
+
+    human_state = analyze_human(context) if analyze_human else {"entropy": 40, "resource": 50, "stability": 60, "risk_score": 10}
+    intent = analyze_intent(user_input) if analyze_intent else {"intent": "general", "confidence": 0.5}
+
+    # ── ใช้ Gemini จริง ──────────────────────────────────────────
+    if llm:
+        context_str = f"entropy={human_state.get('entropy')}, stability={human_state.get('stability')}, resource={human_state.get('resource')}"
+        reply = llm.generate_with_governance(
+            prompt=user_input,
+            additional_context=context_str
+        )
+    else:
+        # fallback rule-based
+        if engine:
+            raw_result = engine.run(data)
+        else:
+            raw_result = {"action": "maintain", "message": "Standard fallback activated"}
+
+        if council_engine and consensus_engine:
+            council_votes = council_engine(raw_result, state=human_state)
+            final_consensus = consensus_engine(council_votes, state=human_state)
+        else:
+            final_consensus = {"final_action": "maintain", "confidence": 50, "message": "Council offline"}
+
+        reply = f"[KING DIADEM — Offline Mode]\n\nInput: {user_input}\nAction: {final_consensus.get('final_action', 'maintain')}\n\n— Fail Less. Harm Less. Restore Choice. —"
+
+    return {
+        "observer": "KING DIADEM",
+        "ai_response": reply,
+        "route": intent.get("intent", "general") if isinstance(intent, dict) else "general",
+        "governance": {
+            "intent": intent,
+            "human_state": human_state
+        }
+    }
