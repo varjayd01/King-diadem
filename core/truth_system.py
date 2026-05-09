@@ -1,6 +1,5 @@
 import os
 import asyncio
-from openai import AsyncOpenAI
 
 # 🔥 Gemini (optional)
 try:
@@ -21,16 +20,11 @@ KERNEL_PROMPT = """
 class TruthSystem:
     def __init__(self):
         self.keys = {
-            "gpt": os.getenv("CHATGPT_API_KEY"),
             "gemini": (
-                os.getenv("GEMINI_API_KEY1") or
-                os.getenv("GEMINI_API_KEY2") or
-                os.getenv("GEMINI_API_KEY")
+                os.getenv("GEMINI_API_KEY") or
+                os.getenv("GEMINI_API_KEY2")
             )
         }
-
-        # init client ครั้งเดียว
-        self.gpt_client = AsyncOpenAI(api_key=self.keys["gpt"]) if self.keys["gpt"] else None
 
         if genai and self.keys["gemini"]:
             self.gemini_client = genai.Client(api_key=self.keys["gemini"])
@@ -38,21 +32,7 @@ class TruthSystem:
             self.gemini_client = None
 
     async def gpt_view(self, context):
-        if not self.gpt_client:
-            return "[GPT KEY MISSING]"
-
-        try:
-            res = await self.gpt_client.chat.completions.create(
-                model="gpt-4o-mini",  # ⚠️ เร็ว + เสถียรกว่า
-                messages=[
-                    {"role": "system", "content": KERNEL_PROMPT},
-                    {"role": "user", "content": context}
-                ]
-            )
-            return res.choices[0].message.content
-
-        except Exception as e:
-            return f"[GPT FAIL] {str(e)}"
+        return "[GPT REMOVED]"
 
     async def gemini_view(self, context):
         if not self.gemini_client:

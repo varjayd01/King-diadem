@@ -1,10 +1,7 @@
 import os
 import asyncio
 
-# 🔒 OpenAI ใหม่
-from openai import AsyncOpenAI
-
-# 🔒 Google GenAI ใหม่ (แทน generativeai)
+# 🔒 Google GenAI ใหม่
 try:
     from google import genai
 except Exception as e:
@@ -32,30 +29,13 @@ async def run_truth_engine(user_input, resource):
     # 🔑 ENV
     gpt_key = os.getenv("CHATGPT_API_KEY")
     gemini_key = (
-        os.getenv("GEMINI_API_KEY1") or
-        os.getenv("GEMINI_API_KEY2") or
-        os.getenv("GEMINI_API_KEY")
+        os.getenv("GEMINI_API_KEY") or
+        os.getenv("GEMINI_API_KEY2")
     )
 
-    # 🧠 SAFE GPT
+    # 🧠 SAFE GPT (OpenAI removed)
     async def get_gpt_view():
-        if not gpt_key:
-            return "[GPT NOT CONFIGURED]"
-
-        try:
-            client = AsyncOpenAI(api_key=gpt_key)
-
-            res = await client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": TRUTH_PROMPT},
-                    {"role": "user", "content": user_input}
-                ]
-            )
-            return res.choices[0].message.content
-
-        except Exception as e:
-            return f"[GPT ERROR] {str(e)}"
+        return "[GPT REMOVED]"
 
     # 🧠 SAFE GEMINI
     async def get_gemini_view():

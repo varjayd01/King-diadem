@@ -11,9 +11,8 @@ from typing import Dict, Any
 # ================================
 
 GEMINI_API_KEY = (
-    os.getenv("GEMINI_API_KEY1") or
-    os.getenv("GEMINI_API_KEY2") or
-    os.getenv("GEMINI_API_KEY")
+    os.getenv("GEMINI_API_KEY") or
+    os.getenv("GEMINI_API_KEY2")
 )
 
 # (optional search API เช่น SerpAPI หรือ Bing)

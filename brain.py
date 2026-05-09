@@ -1,27 +1,40 @@
 import os
 import requests
 
-OPENAI_API_KEY = os.getenv("CHATGPT_API_KEY")
+try:
+    from google import genai
+except Exception:
+    genai = None
 
-def ask_openai(message):
-    url = "https://api.openai.com/v1/responses"
+GEMINI_KEY = (
+    os.getenv("GEMINI_API_KEY") or
+    os.getenv("GEMINI_API_KEY2")
+)
 
-    headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "Content-Type": "application/json"
-    }
 
-    data = {
-        "model": "gpt-4.1-mini",
-        "input": message
-    }
+def ask_gemini(message):
+    if genai is None:
+        return "[Gemini SDK not installed]"
 
-    r = requests.post(url, headers=headers, json=data)
+    if not GEMINI_KEY:
+        return "[Gemini key missing]"
+
+    client = genai.Client(api_key=GEMINI_KEY)
 
     try:
-        return r.json()["output"][0]["content"][0]["text"]
-    except:
-        return str(r.text)
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=[
+                {
+                    "parts": [
+                        {"text": message}
+                    ]
+                }
+            ]
+        )
+        return getattr(response, "text", str(response))
+    except Exception as e:
+        return f"[Gemini error] {e}"
 
 
 # ===== MASTER BRAIN =====
@@ -33,4 +46,4 @@ def run_brain(message):
     # - Gemini
     # - Memory
 
-    return ask_openai(message)
+    return ask_gemini(message)
