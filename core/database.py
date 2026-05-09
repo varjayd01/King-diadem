@@ -1,6 +1,6 @@
 import sqlite3
 
-DB_FILE = "database.db"
+DB_FILE = "king_diadem.db"
 
 def get_db():
     conn = sqlite3.connect(DB_FILE)

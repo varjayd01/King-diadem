@@ -20,6 +20,16 @@ except Exception as e:
     analyze_human = analyze_intent = record_question = freedom_index = None
 
 try:
+    from AUTH.auth import router as auth_router
+    from core.database import init_db as init_database
+    from core.axioms import AXIOMS
+except Exception as e:
+    print(f"⚠ DB/Axiom IMPORT ERROR: {e}")
+    auth_router = None
+    init_database = None
+    AXIOMS = {}
+
+try:
     from core.llm_gemini import GeminiLLM
     from core.lyla_kernel import LylaKernel
     lyla = LylaKernel()
@@ -30,8 +40,15 @@ except Exception as e:
     llm = lyla = None
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+if init_database:
+    init_database()
+
 app = FastAPI(title="KING DIADEM OS")
 engine = DecisionEngine() if DecisionEngine else None
+
+if auth_router:
+    app.include_router(auth_router, prefix="/auth")
 
 @app.get("/")
 @app.head("/")
@@ -49,7 +66,13 @@ def health():
         "lyla_loaded": lyla is not None,
         "stripe_loaded": bool(os.getenv("STRIPE_SECRET_KEY")),
         "freedom_score": freedom_index() if freedom_index else 0,
+        "db_initialized": bool(init_database),
+        "axioms": AXIOMS
     }
+
+@app.get("/axioms")
+def axioms():
+    return {"axioms": AXIOMS}
 
 @app.post("/run")
 @app.post("/decision")
