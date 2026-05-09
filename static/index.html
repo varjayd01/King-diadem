@@ -57,6 +57,13 @@ pre.sim { border-color:rgba(123,47,255,.35); }
 .path-row input { font-size:11px; padding:6px 9px; }
 .btn-add { font-size:11px; padding:5px 10px; background:rgba(0,255,255,.07); border:1px solid rgba(0,255,255,.2); color:#cdefff; border-radius:5px; cursor:pointer; margin-bottom:7px; }
 .btn-add:hover { background:rgba(0,255,255,.14); }
+.options-section { border-top:1px solid rgba(123,47,255,.18); padding-top:10px; margin-bottom:10px; }
+.options-label { font-size:11px; color:#66ccff; margin-bottom:6px; }
+.options-grid { display:flex; flex-direction:column; gap:5px; margin-bottom:7px; }
+.option-row { display:flex; gap:6px; }
+.option-row input { flex:1; font-size:11px; padding:8px 10px; background:rgba(0,0,0,.85); border:1px solid rgba(0,204,255,.2); color:#cdefff; border-radius:6px; }
+.option-remove { font-size:11px; padding:8px 10px; background:rgba(255,0,0,.12); border:1px solid rgba(255,0,0,.25); color:#ff8f8f; border-radius:6px; cursor:pointer; }
+.option-remove:hover { background:rgba(255,0,0,.2); }
 
 .stripe-section { border-top:1px solid rgba(0,255,255,.08); padding-top:10px; }
 .stripe-label { font-size:11px; color:#ffd27f; margin-bottom:6px; }
@@ -94,6 +101,15 @@ pre.sim { border-color:rgba(123,47,255,.35); }
 
 <div class="input-row">
   <input type="text" id="input" placeholder="พิมพ์สถานการณ์..." onkeydown="if(event.key==='Enter')run()">
+</div>
+<div class="options-section">
+  <div class="options-label">🧾 Civil Work Options — เพิ่มหลายทางเลือกจากความล้มเหลวเพื่อให้ระบบประเมิน</div>
+  <div class="options-grid" id="civil-options-grid">
+    <div class="option-row"><input type="text" placeholder="ทางเลือก 1: ..."></div>
+    <div class="option-row"><input type="text" placeholder="ทางเลือก 2: ..."></div>
+    <div class="option-row"><input type="text" placeholder="ทางเลือก 3: ..."></div>
+  </div>
+  <button class="btn-add" onclick="addCivilOption()">+ เพิ่มทางเลือก</button>
 </div>
 <div class="route-tag" id="route-tag"></div>
 
@@ -162,7 +178,12 @@ async function runRoute(r){
   const t=document.getElementById("input").value.trim()||`[${r}]`;
   setL("btn-run",true);clearB();hlBox(r);
   const sig={survival:{resource:10,entropy:85},risk:{stability:20},collapse:{entropy:75,stability:30},uncertain:{confidence:.2},general:{}};
-  const d=await post("/run",{input:t,...(sig[r]||{})});
+  const payload={input:t,...(sig[r]||{})};
+  if(r==='civil'){
+    const tasks=[...document.querySelectorAll("#civil-options-grid input")].map(i=>i.value.trim()).filter(v=>v).map(v=>({description:v}));
+    if(tasks.length) payload.tasks=tasks;
+  }
+  const d=await post("/run",payload);
   document.getElementById("route-tag").textContent=`→ routed: ${d.route||r}`;
   showOut(d);setL("btn-run",false);
 }
@@ -185,10 +206,37 @@ function addPath(){
   const r=document.createElement("div");r.className="path-row";
   r.innerHTML=`<input type="text" placeholder="ทางเลือกที่ ${n}...">`;g.appendChild(r);
 }
+function addCivilOption(){
+  const g=document.getElementById("civil-options-grid"),n=g.children.length+1;
+  const r=document.createElement("div");r.className="option-row";
+  r.innerHTML=`<input type="text" placeholder="ทางเลือก ${n}...">`;
+  g.appendChild(r);
+}
 
 /* HELPERS */
 function showOut(d){
   const o=document.getElementById("output");
+  if(d.choices){
+    const lines=[];
+    if(d.summary) lines.push(d.summary);
+    if(d.recommendation) lines.push(`Recommendation: ${d.recommendation.description} | score: ${d.recommendation.score}`);
+    if(d.rejected_count) lines.push(`Rejected: ${d.rejected_count}`);
+    if(d.recovery_actions?.length){
+      lines.push(`Recovery actions:`);
+      d.recovery_actions.forEach((a,i)=>{
+        lines.push(`  ${i+1}. ${a.action}: ${a.reason}`);
+      });
+    }
+    lines.push("");
+    d.choices.forEach((c,i)=>{
+      lines.push(`[${i+1}] ${c.description}`);
+      lines.push(`  valid: ${c.valid} | score: ${c.score} | canon: ${c.canon?.canon_aligned}`);
+      if(c.notes?.length) lines.push(`  notes: ${c.notes.join(', ')}`);
+      lines.push("");
+    });
+    o.innerText=lines.join("\n");
+    return;
+  }
   if(d.ai_response)o.innerText=`[${(d.route||"ENGINE").toUpperCase()}]\n\n${d.ai_response}`;
   else if(d.engine_result)o.innerText=`[${(d.route||"ENGINE").toUpperCase()}]\n\n`+JSON.stringify(d.engine_result,null,2);
   else o.innerText=JSON.stringify(d,null,2);

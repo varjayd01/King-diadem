@@ -261,10 +261,25 @@ def evaluate_work_plan(items):
     recommendation = best[0] if best else None
 
     summary = ""
+    recovery_actions = []
     if recommendation:
         summary = "เลือกงานที่น่าเชื่อถือที่สุดตามหลัก CIVIL_WORK_CORE"
     else:
         summary = "งานทั้งหมดไม่ผ่านเงื่อนไขความปลอดภัยและความมีทางออก"
+        recovery_actions = [
+            {
+                "action": "pause_and_assess",
+                "reason": "หยุดและประเมินสถานการณ์ใหม่ก่อนลงมือ เพื่อรักษาทางเลือกที่เหลือ"
+            },
+            {
+                "action": "restore_choice",
+                "reason": "สร้างทางเลือกสำรองเพื่อเพิ่ม Remaining Choice และลดความเสี่ยง"
+            },
+            {
+                "action": "limit_scope",
+                "reason": "ลดขอบเขตงานลงเพื่อป้องกันการขาดแคลนทรัพยากรและการล้มเหลว"
+            }
+        ]
 
     return {
         "system": "CIVIL_WORK_CORE",
