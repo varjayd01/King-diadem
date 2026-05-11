@@ -12,7 +12,7 @@
 :root{--gold:#c8a96e;--gold-bright:#ffd27f;--cyan:#00d4ff;--bg:#000510;--border:rgba(0,212,255,0.12);--text:#a8d4e8;--text-bright:#cdefff;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',monospace;color:var(--text);overflow:hidden;}
-.nebula{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 15% 50%,rgba(255,80,0,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 40%,rgba(0,100,255,0.10) 0%,transparent 60%);}
+.nebula{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 15% 50%,rgba(255,80,0,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 40%,rgba(0,100,255,0.10) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 50% 20%,rgba(100,0,150,0.05) 0%,transparent 50%);}
 .scanline{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,0.012) 2px,rgba(0,212,255,0.012) 4px);}
 #app{position:relative;z-index:10;width:100%;height:100vh;display:grid;grid-template-columns:220px 1fr 280px;grid-template-rows:60px 1fr 50px;}
 #topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border);background:rgba(0,5,16,0.9);backdrop-filter:blur(10px);}
@@ -122,7 +122,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',mon
 <div id="app">
   <header id="topbar">
     <div class="topbar-left">
-      <img src="/static/icon.png" alt="KD" class="topbar-logo">
+      <img src="/static/logo.png" alt="KD" class="topbar-logo">
       <div>
         <div class="logo-text">KING DIADEM</div>
         <div class="logo-sub">DRIFTZERO WATERLINE GOVERNANCE OS · v1.0</div>
@@ -143,6 +143,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',mon
     <button class="engine-btn" onclick="setRoute('survival')" id="btn-survival"><span class="e-icon">◉</span><span><span style="display:block">Survival Engine</span><span class="e-sub">SURVIVAL · WATERLINE</span></span><span class="e-dot"></span></button>
     <button class="engine-btn" onclick="setRoute('collapse')" id="btn-collapse"><span class="e-icon">⊛</span><span><span style="display:block">Collapse Detector</span><span class="e-sub">COLLAPSE · DRIFT MONITOR</span></span><span class="e-dot"></span></button>
     <button class="engine-btn" onclick="setRoute('civil')" id="btn-civil"><span class="e-icon">⊞</span><span><span style="display:block">Civil Engine</span><span class="e-sub">CIVIL · GOVERNANCE WORK</span></span><span class="e-dot"></span></button>
+    <button class="engine-btn" onclick="setRoute('vega')" id="btn-vega"><span class="e-icon">★</span><span><span style="display:block">Vega Engine</span><span class="e-sub">FUTURE · WORLD EXPLORATION</span></span><span class="e-dot"></span></button>
     <div class="panel-label" style="margin-top:16px">WATERLINE STATUS</div>
     <div class="waterline-bar">
       <div class="wl-label">ENTROPY</div><div class="wl-meter"><div class="wl-fill safe" id="wl-entropy" style="width:40%"></div></div><div class="wl-val" id="wl-entropy-val">40.0</div>
@@ -153,7 +154,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',mon
   <main id="center">
     <div id="chat-area">
       <div id="welcome">
-        <img src="/static/icon.png" alt="KING DIADEM" class="welcome-logo">
+        <img src="/static/logo.png" alt="KING DIADEM" class="welcome-logo">
         <div class="welcome-title">KING DIADEM</div>
         <div class="welcome-sub">DRIFTZERO · LYLA KERNEL · GOVERNANCE OS</div>
         <div class="welcome-desc">ระบบไม่คิดแทนคุณ<br>ระบบช่วยให้คุณเห็นทางเลือกที่ชัดขึ้น<br>การตัดสินใจสุดท้ายเป็นของคุณเสมอ</div>
@@ -172,6 +173,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',mon
         <span class="ctx-tag" id="ctx-survival" onclick="setRoute('survival')">◉ SURVIVAL</span>
         <span class="ctx-tag" id="ctx-collapse" onclick="setRoute('collapse')">⊛ COLLAPSE</span>
         <span class="ctx-tag" id="ctx-civil" onclick="setRoute('civil')">⊞ CIVIL</span>
+        <span class="ctx-tag" id="ctx-vega" onclick="setRoute('vega')">★ VEGA</span>
       </div>
       <div class="input-row">
         <textarea id="main-input" placeholder="พิมพ์สถานการณ์ของคุณ — ระบบจะวิเคราะห์และเสนอทางเลือก..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();run();}" oninput="autoResize(this)"></textarea>
@@ -209,7 +211,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',mon
         <input type="text" id="payment-email" placeholder="Email / username for receipt" class="stripe-input" />
         <div class="plan-row">
           <label><input type="radio" name="plan" value="basic" checked> $5 Basic AI Chat</label>
-          <label><input type="radio" name="plan" value="civil"> 999 THB Civilization Mode</label>
+          <label><input type="radio" name="plan" value="civil"> 279 THB Civilization Mode</label>
         </div>
         <button id="stripe-btn" onclick="stripeCheckout()">⚡ TOP UP — Stripe</button>
       </div>
@@ -230,7 +232,102 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',mon
   </footer>
 </div>
 <script>
-(function(){const cv=document.getElementById("galaxy"),ctx=cv.getContext("2d");function rsz(){cv.width=innerWidth;cv.height=innerHeight;}rsz();addEventListener("resize",rsz);const N=[{c:"#00d4ff",r:6,o:0,sp:0,a:0},{c:"#c8a96e",r:4,o:140,sp:.0006,a:0},{c:"#ff6a00",r:3,o:200,sp:.0009,a:1},{c:"#00ff88",r:3,o:260,sp:.0005,a:2},{c:"#66ffcc",r:3,o:180,sp:.0007,a:3},{c:"#9999ff",r:4,o:320,sp:.0003,a:4},{c:"#ff5e5e",r:2,o:150,sp:.001,a:5},{c:"#ffd700",r:3,o:280,sp:.0004,a:6},{c:"#cc88ff",r:3,o:240,sp:.0006,a:1.5}];const st=Array.from({length:400},()=>({x:Math.random()*3000,y:Math.random()*3000,s:Math.random()*1.2+.2,a:Math.random()*.6+.1,f:(Math.random()-.5)*.008}));function draw(){ctx.clearRect(0,0,cv.width,cv.height);const cx=cv.width/2,cy=cv.height/2;for(const s of st){s.a=Math.max(.05,Math.min(.7,s.a+s.f));if(s.a<=.05||s.a>=.7)s.f*=-1;ctx.beginPath();ctx.arc(s.x%cv.width,s.y%cv.height,s.s,0,Math.PI*2);ctx.fillStyle=`rgba(200,240,255,${s.a})`;ctx.fill();}N.forEach(n=>{if(!n.o)return;ctx.beginPath();ctx.ellipse(cx,cy,n.o,n.o*.35,0,0,Math.PI*2);ctx.strokeStyle="rgba(0,212,255,0.04)";ctx.lineWidth=1;ctx.stroke();});const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,80);cg.addColorStop(0,"rgba(0,212,255,0.12)");cg.addColorStop(1,"transparent");ctx.beginPath();ctx.arc(cx,cy,80,0,Math.PI*2);ctx.fillStyle=cg;ctx.fill();N.forEach(n=>{n.a+=n.sp;const x=cx+Math.cos(n.a)*n.o,y=cy+Math.sin(n.a)*n.o*.35;if(n.o>0){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.strokeStyle="rgba(0,212,255,0.03)";ctx.lineWidth=1;ctx.stroke();}const ng=ctx.createRadialGradient(x,y,0,x,y,n.r*5);ng.addColorStop(0,n.c+"66");ng.addColorStop(1,"transparent");ctx.beginPath();ctx.arc(x,y,n.r*5,0,Math.PI*2);ctx.fillStyle=ng;ctx.fill();ctx.beginPath();ctx.arc(x,y,n.r,0,Math.PI*2);ctx.fillStyle=n.c;ctx.fill();});requestAnimationFrame(draw);}draw();})();
+(function () {
+  const canvas = document.getElementById("galaxy");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize(); addEventListener("resize", resize);
+  // nodes จักรวาล KING DIADEM
+  const NODES = [
+    { name: "LYLA KERNEL",     color: "#00ccff", r: 8,  orbit: 0,    speed: 0 },
+    { name: "DECISION",        color: "#ffd700", r: 6,  orbit: 120,  speed: 0.0008 },
+    { name: "GOVERNANCE",      color: "#ff9966", r: 6,  orbit: 180,  speed: 0.0005 },
+    { name: "SURVIVAL",        color: "#00ff88", r: 5,  orbit: 240,  speed: 0.0006 },
+    { name: "CIVILIZATION",    color: "#9999ff", r: 5,  orbit: 300,  speed: 0.0004 },
+    { name: "DRIFTZERO",       color: "#ff5e5e", r: 4,  orbit: 200,  speed: 0.0009 },
+    { name: "WATERLINE",       color: "#66ffcc", r: 4,  orbit: 160,  speed: 0.0007 },
+    { name: "CHOICE ENGINE",   color: "#ffcc00", r: 4,  orbit: 260,  speed: 0.0005 },
+    { name: "SIMULATION",      color: "#cc88ff", r: 4,  orbit: 320,  speed: 0.0003 },
+    { name: "VEGA",            color: "#ffff00", r: 4,  orbit: 340,  speed: 0.0002 },
+    { name: "COLLAPSE DETECT", color: "#ff6666", r: 3,  orbit: 140,  speed: 0.0010 },
+  ];
+  let angles = NODES.map((n, i) => (i / NODES.length) * Math.PI * 2);
+  let positions = NODES.map(() => ({ x: 0, y: 0 }));
+  // background stars
+  const stars = Array.from({ length: 200 }, () => ({
+    x: Math.random() * 2000, y: Math.random() * 2000,
+    s: Math.random() * 1.5 + 0.3,
+    a: Math.random(), f: (Math.random() - 0.5) * 0.01
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    // stars
+    for (const s of stars) {
+      s.a = Math.max(0.1, Math.min(1, s.a + s.f));
+      if (s.a <= 0.1 || s.a >= 1) s.f *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x % canvas.width, s.y % canvas.height, s.s, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,240,255,${s.a * 0.6})`;
+      ctx.fill();
+    }
+    // center glow — LYLA core
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+    grad.addColorStop(0, "rgba(0,204,255,0.25)");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.beginPath(); ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+    ctx.fillStyle = grad; ctx.fill();
+    // orbit rings
+    for (const n of NODES) {
+      if (n.orbit === 0) continue;
+      ctx.beginPath();
+      ctx.arc(cx, cy, n.orbit, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0,204,255,0.06)";
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+    // update positions
+    NODES.forEach((n, i) => {
+      angles[i] += n.speed;
+      positions[i] = {
+        x: cx + Math.cos(angles[i]) * n.orbit,
+        y: cy + Math.sin(angles[i]) * n.orbit * 0.38
+      };
+    });
+    // connection lines
+    for (let i = 1; i < NODES.length; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(positions[i].x, positions[i].y);
+      ctx.strokeStyle = `rgba(0,204,255,0.07)`;
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+    // nodes
+    NODES.forEach((n, i) => {
+      const { x, y } = positions[i];
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, n.r * 3);
+      glow.addColorStop(0, n.color + "cc");
+      glow.addColorStop(1, "transparent");
+      ctx.beginPath(); ctx.arc(x, y, n.r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = glow; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = n.color; ctx.fill();
+      if (n.orbit > 0) {
+        ctx.fillStyle = "rgba(200,240,255,0.7)";
+        ctx.font = "9px monospace";
+        ctx.fillText(n.name, x + n.r + 4, y + 3);
+      }
+    });
+    // center node label
+    ctx.fillStyle = "#00ccff";
+    ctx.font = "bold 11px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("LYLA", cx, cy + 4);
+    ctx.textAlign = "left";
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 function tick(){document.getElementById("sys-time").textContent=new Date().toTimeString().slice(0,8);}tick();setInterval(tick,1000);
 let R="general",Q=0;
 async function checkHealth(){try{const d=await(await fetch("/health")).json();sB("b-ai",d.llm_loaded,"GEMINI OK","AI OFF");sB("b-eng",d.engine_loaded,"ENGINE OK","ENGINE OFF");sB("b-lyla",d.lyla_loaded,"LYLA OK","LYLA OFF");sB("b-stripe",d.stripe_loaded,"STRIPE OK","STRIPE OFF");if(d.freedom_score)document.getElementById("freedom-count").textContent=d.freedom_score;}catch(e){sB("b-ai",false,"","NO CONN");}}
@@ -242,12 +339,12 @@ function autoResize(el){el.style.height="auto";el.style.height=Math.min(el.scrol
 function hideWelcome(){const w=document.getElementById("welcome");if(w)w.remove();}
 function addMsg(type,text,meta){
   hideWelcome();const area=document.getElementById("chat-area");const div=document.createElement("div");div.className="msg "+type;
-  const av=type==="user"?`<div class="msg-avatar">YOU</div>`:`<div class="msg-avatar"><img src="/static/icon.png" class="msg-logo" alt="KD"></div>`;
+  const av=type==="user"?`<div class="msg-avatar">YOU</div>`:`<div class="msg-avatar"><img src="/static/logo.png" class="msg-logo" alt="KD"></div>`;
   const snd=type==="user"?"OPERATOR":"KING DIADEM · LYLA KERNEL";
   div.innerHTML=`${av}<div class="msg-body"><div class="msg-sender">${snd}</div><div class="msg-text">${escH(text)}</div>${meta?`<div class="route-tag"><div class="rt-dot"></div>${meta}</div>`:""}</div>`;
   area.appendChild(div);area.scrollTop=area.scrollHeight;}
 function escH(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function addThinking(){hideWelcome();const area=document.getElementById("chat-area");const div=document.createElement("div");div.className="msg system";div.id="thinking-msg";div.innerHTML=`<div class="msg-avatar"><img src="/static/icon.png" class="msg-logo" alt="KD"></div><div class="msg-body"><div class="msg-sender">KING DIADEM · ANALYZING</div><div class="msg-text"><div class="thinking"><span></span><span></span><span></span></div></div></div>`;area.appendChild(div);area.scrollTop=area.scrollHeight;}
+function addThinking(){hideWelcome();const area=document.getElementById("chat-area");const div=document.createElement("div");div.className="msg system";div.id="thinking-msg";div.innerHTML=`<div class="msg-avatar"><img src="/static/logo.png" class="msg-logo" alt="KD"></div><div class="msg-body"><div class="msg-sender">KING DIADEM · ANALYZING</div><div class="msg-text"><div class="thinking"><span></span><span></span><span></span></div></div></div>`;area.appendChild(div);area.scrollTop=area.scrollHeight;}
 function removeThinking(){const el=document.getElementById("thinking-msg");if(el)el.remove();}
 function updateLyla(data){
   const lyla=data.lyla||data.governance?.lyla||null,hs=data.governance?.human_state||data.pattern||null;
