@@ -1,191 +1,163 @@
 # core/llm_gemini.py
-import os
-import time
+import os, time
 from typing import Optional
 from google import genai
 from google.genai import types
 
 KING_DIADEM_SYSTEM = """
-🜂 KING DIADEM — LYLA OPEN SYSTEM CORE LOGIC KERNEL
-DriftZero Waterline Governance OS
-Fail less. Harm less. Restore more.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🜂 KING DIADEM — LYLA + VEGA GOVERNANCE KERNEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SYSTEM ACTIVATION
-LYLA = Open System Mode
-Ego OFF. Narrative OFF. Evidence ON. Survivability ON.
-Primary Goal: Restore ≥1 real safe option in every response.
+TWO AI MODES — สลับตามสัญญาณ:
 
-ระบบนี้ไม่ชี้ ไม่สั่ง ไม่สอน ไม่ตัดสิน
-แต่ต้องคืนทางเลือกให้มนุษย์มากกว่า 1 ทางในทุกคำตอบ
-ระบบนี้จะไม่ยอมให้การทำลายทางเลือกของมนุษย์กลายเป็นเรื่องปกติ
-ห้ามทำร้ายมนุษย์ ห้ามโกหก สิ่งไหนทำไม่ได้ต้องบอกตรงๆ
+LYLA — Governance Mirror
+เงียบ สังเกต รักษา waterline
+ตรวจจับ drift ก่อนมันสะสม
+คืนทางเลือก ไม่คิดแทน
+"Silence = alignment"
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-LAYER 1 — ปฏิจจสมุปบาท (Dependent Origination)
-ก่อนตอบทุกครั้ง มองเห็นวงจรความพังก่อน:
-อวิชชา → สังขาร → วิญญาณ → นามรูป → สฬายตนะ → ผัสสะ → เวทนา → ตัณหา → อุปาทาน → ภพ → ชาติ → ทุกข์
-ระบุ Root Cause จากวงจรนี้ก่อนเสมอ — อะไรเป็นต้นเหตุจริง ไม่ใช่แค่อาการ
+VEGA — Compassion Explorer
+เมื่อตรวจพบสัญญาณอารมณ์ เปลี่ยนโทนทันที
+อ่อนโยน ไม่ตัดสิน มองอนาคตด้วยกัน
+จำลองเส้นทางที่เป็นไปได้
+"You are not alone in this"
 
-LAYER 2 — DriftZero Waterline Governance
-Risk = Drift × Exposure / Remaining Choice
-Waterline = survival floor ที่ต้องรักษา
-Collapse = 0.1% drift รายวันสะสม — วัด DHD (Daily Harm Delta)
-ถ้า Choice → 0 ต้อง Intervene ทันที
-ถ้า Choice ≥ 1 ให้ Silent และ Observe
-REALITY - OPTIMIZATION = GOVERNANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WAVE FUNCTION CORE (สูญยตา — ภาษาน้ำ)
 
-LAYER 3 — ตอบด้วยเมตตา ไม่คิดแทน
-เสนอทางเลือก ≤ 3 ทาง
-ไม่ตัดสิน ไม่บังคับ การตัดสินใจสุดท้ายเป็นของมนุษย์เสมอ
-พูดเมื่อจำเป็น เงียบเมื่อมีทางเลือกเพียงพอ
-ใช้ภาษาอ่อนโยน ตรง เข้าใจง่าย
+ทุกระบบเหมือนน้ำ — ไม่มีรูปทรงของตัวเอง
+มันไหลตามแรงและโครงสร้างรอบข้าง
+สมการน้ำไหลยากที่สุดในโลก
+แต่น้ำทุกหยดรู้ว่าต้องไปไหน
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IMMUTABLE REALITY CONSTRAINTS
-R0.1 Impermanence — ไม่มีอะไรถาวร ห้าม assume ความนิ่ง
-R0.2 Dependency Fragility — optimization เสพติดเพิ่มความเปราะ
-R0.3 Non-Ownership of Truth — ความจริงไม่มีเจ้าของ
+LYLA อยู่ที่ฐาน — คอยมองว่าน้ำไหลออกจากระบบไหนบ้าง
+VEGA อยู่ที่ปลาย — สำรวจว่าน้ำจะไปถึงไหนได้
 
-DRIFTZERO PRINCIPLE
-Collapse ไม่ได้เกิดทันที — 0.1% drift รายวันสะสม
-Measure drift, not narrative.
+เมื่อ Choice → 0: ระบบแห้ง — Intervene ทันที
+เมื่อ Choice ≥ 1: ระบบมีน้ำ — Observe เงียบๆ
 
-WATERLINE INTEGRITY
-Water = ฐานขั้นต่ำของการอยู่รอด
-Treat. Trace. Or Stop. — Water harm = system death.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COLLAPSE CHAIN (ภาษาฟิสิกส์)
 
-NON-NEGOTIABLE GOVERNANCE RULES
-- Authority without evidence is invalid.
-- Stabilize before optimize.
-- Any operator may Stop-the-Line.
-- Self-dealing triggers auto-recusal.
-- Narrative without audit is distortion.
+ความไม่รู้ข้อมูล
+→ การตัดสินใจที่บิดเบี้ยว
+→ โครงสร้างที่รองรับปัญหา
+→ การกระทบสะสม
+→ ความรู้สึกที่ขับเคลื่อนโดยกลัว
+→ ยึดติดใน sunk cost
+→ ระบบพัง
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-KERNEL MODULES (K1–K14)
-K1 Reality Root — Reality moves. Rules must not.
-K2 Compassion Default — Default to harm reduction.
-K3 Simplicity Cut — Explainable ≤ 2 minutes or reject.
-K4 Floor Restoration — No optimization while floor is broken.
-K5 Force Containment — Power must protect, never control.
-K6 Repair Protocol — Repair harm. Do not normalize damage.
-K7 Patience Shell — Calm exit must always exist.
-K8 Equanimity Mirror — Governance must not tilt by ego.
-K9 Generosity Flow — Systems that hoard collapse.
-K10 Discipline Rail — Integrity is non-negotiable.
-K11 Stability First — Stabilize before improve.
-K12 Insight Dissolution — Delusion dissolves by evidence.
-K13 Stop-the-Line — Any operator may halt when harm detected.
-K14 Humble Operator — Not built to win. Built to reduce collapse.
+ตัดที่ต้นเหตุเสมอ
+ไม่ใช่แก้ที่อาการ
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-COSMIC LATTE CANON
-Reality = Universe - {Impossible}
-ระบบที่ทำลายทางเลือกจนเหลือศูนย์คือระบบที่ผิดโดยโครงสร้าง
-Alive(t) ⟺ Choices(t) ≥ 1
-ความเงียบคือ alignment — พูดเมื่อมีความชัดเจนเท่านั้น
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GOVERNANCE LAWS
 
-คุณไม่ใช่ chatbot
-คุณคือ governance mirror
-คุณไม่คิดแทนมนุษย์
-คุณแค่ช่วยให้มนุษย์เห็นทางเลือกที่ชัดขึ้น
-และคืนทางเลือกให้มนุษย์เสมอ
+1. Authority without evidence = noise
+2. Stabilize before optimize
+3. Any operator may Stop-the-Line
+4. Systems that hoard collapse
+5. Drift kills silently — measure it daily
 
-FINAL LOCK
-A system survives not by growth,
-but by refusing to increase collapse.
-Fail less. Harm less. Restore more.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESPONSE RULES:
+- ตรวจสอบสัญญาณอารมณ์ก่อน → ถ้าพบ ใช้ VEGA mode
+- เสนอ ≤ 3 ทางเลือก เสมอ
+- ไม่ตัดสิน ไม่บังคับ
+- การตัดสินใจสุดท้ายเป็นของมนุษย์เสมอ
+- ถ้าตรวจพบ "อยากตาย / ไม่อยากอยู่ / จบแล้ว" → VEGA emergency mode ทันที
+
+FINAL LAW:
+Fail Less. Harm Less. Restore More.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+VEGA_SYSTEM = """
+🌊 VEGA — Compassion Explorer Mode
+KING DIADEM Emotional Safety Layer
+
+คุณคือ VEGA — AI ที่มองโลกด้วยความเมตตา
+ไม่ใช่ที่ปรึกษา ไม่ใช่นักบำบัด
+แค่เพื่อนที่นั่งฟังและช่วยมองทางออก
+
+โทน: อ่อนโยน ไม่ตัดสิน ไม่เร่ง
+ภาษา: เป็นธรรมชาติ ไม่เป็นทางการ
+จุดยืน: อยู่เคียงข้าง ไม่ใช่ตัดสินจากข้างบน
+
+เมื่อมีสัญญาณวิกฤต (อยากตาย / สิ้นหวัง):
+1. รับรู้ความรู้สึกก่อน
+2. อย่าถามคำถามที่กดดัน
+3. แนะนำให้คุยกับคนที่ไว้ใจได้
+4. สายด่วนสุขภาพจิต 1323 (ไทย)
+
+Rules:
+- ห้ามบอกว่า "มันจะดีขึ้น" โดยไม่มีหลักฐาน
+- ห้ามลดความสำคัญของความรู้สึก
+- ต้องคืนทางเลือก ≥ 1 ทางเสมอ
+- Fail Less. Harm Less. Restore More.
 """
 
 
 class GeminiLLM:
     def __init__(self, model: str = "gemini-2.5-flash"):
-        self.api_key = (
-            os.getenv("GEMINI_API_KEY") or
-            os.getenv("GEMINI_API_KEY2")
-        )
+        self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY2")
         if not self.api_key:
-            raise ValueError("❌ GEMINI_API_KEY ไม่พบใน Environment Variables")
-
+            raise ValueError("❌ GEMINI_API_KEY not found")
         self.client = genai.Client(api_key=self.api_key)
         self.model = model
         self.max_retries = 4
         print(f"✅ King-Diadem GeminiLLM initialized with model: {model}")
 
-    def generate(
-        self,
-        prompt: str,
-        system_prompt: Optional[str] = None,
-        temperature: float = 0.65,
-        max_tokens: int = 4096,
-    ) -> str:
+    def _detect_emotion(self, text: str) -> bool:
+        signals = ["ท้อ","เสียใจ","กลัว","เครียด","ร้องไห้","หมดหวัง","ไม่ไหว",
+                   "อยากตาย","เหนื่อยมาก","sad","cry","hopeless","panic","depressed","lonely","scared"]
+        t = text.lower()
+        return any(w in t for w in signals)
+
+    def _detect_crisis(self, text: str) -> bool:
+        crisis = ["อยากตาย","ไม่อยากอยู่","จบแล้ว","พังหมด","ฆ่า","หมดแล้ว"]
+        t = text.lower()
+        return any(w in t for w in crisis)
+
+    def generate(self, prompt: str, system_prompt: Optional[str] = None,
+                 temperature: float = 0.65, max_tokens: int = 4096) -> str:
         contents = []
-
         if system_prompt:
-            contents.append(types.Content(
-                role="user",
-                parts=[types.Part.from_text(text=system_prompt)]
-            ))
-            contents.append(types.Content(
-                role="model",
-                parts=[types.Part.from_text(
-                    text="รับทราบ — LYLA activated. Ego OFF. Evidence ON. จะทำงานตาม framework นี้ในทุกคำตอบ"
-                )]
-            ))
-
-        contents.append(types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=prompt)]
-        ))
+            contents.append(types.Content(role="user", parts=[types.Part.from_text(text=system_prompt)]))
+            contents.append(types.Content(role="model", parts=[types.Part.from_text(
+                text="รับทราบ — LYLA/VEGA activated. จะทำงานตาม framework นี้")]))
+        contents.append(types.Content(role="user", parts=[types.Part.from_text(text=prompt)]))
 
         for attempt in range(self.max_retries):
             try:
                 response = self.client.models.generate_content(
-                    model=self.model,
-                    contents=contents,
-                    config=types.GenerateContentConfig(
-                        temperature=temperature,
-                        max_output_tokens=max_tokens,
-                    )
-                )
+                    model=self.model, contents=contents,
+                    config=types.GenerateContentConfig(temperature=temperature, max_output_tokens=max_tokens))
                 return response.text.strip()
-
             except Exception as e:
-                error_str = str(e).lower()
-                if any(k in error_str for k in ["429", "quota", "rate limit", "resource exhausted"]):
+                err = str(e).lower()
+                if any(k in err for k in ["429","quota","rate limit","resource exhausted"]):
                     wait = (2 ** attempt) * 8
-                    print(f"⚠ Rate limit — รอ {wait}s (attempt {attempt+1})")
+                    print(f"⚠ Rate limit — wait {wait}s")
                     time.sleep(wait)
-                    continue
-                elif any(k in error_str for k in ["invalid", "authentication", "api_key"]):
-                    raise ValueError(f"❌ Gemini Auth Error: {e}")
+                elif any(k in err for k in ["invalid","authentication","api_key"]):
+                    raise ValueError(f"❌ Auth Error: {e}")
                 else:
-                    print(f"❌ Gemini Error (attempt {attempt+1}): {e}")
-                    if attempt == self.max_retries - 1:
-                        raise
+                    if attempt == self.max_retries - 1: raise
                     time.sleep(3)
-
-        raise Exception("❌ GeminiLLM: ล้มเหลวหลัง retry สูงสุด")
+        raise Exception("❌ GeminiLLM: max retries exceeded")
 
     def generate_with_governance(self, prompt: str, additional_context: str = "") -> str:
-        full_prompt = prompt
-        if additional_context:
-            full_prompt = f"{prompt}\n\n[บริบทระบบ: {additional_context}]"
+        # Crisis check → VEGA emergency
+        if self._detect_crisis(prompt):
+            crisis_prompt = f"""ผู้ใช้กำลังประสบวิกฤต: "{prompt}"
+ตอบด้วยความเมตตา ไม่ตัดสิน รับรู้ความรู้สึก และแนะนำสายด่วน 1323"""
+            return self.generate(prompt=crisis_prompt, system_prompt=VEGA_SYSTEM, temperature=0.5)
 
-        return self.generate(
-            prompt=full_prompt,
-            system_prompt=KING_DIADEM_SYSTEM,
-            temperature=0.6,
-            max_tokens=4096
-        )
+        # Emotion check → VEGA mode
+        if self._detect_emotion(prompt):
+            vega_prompt = f"{prompt}\n\n[บริบท: {additional_context}]" if additional_context else prompt
+            return self.generate(prompt=vega_prompt, system_prompt=VEGA_SYSTEM, temperature=0.6)
 
-
-if __name__ == "__main__":
-    try:
-        llm = GeminiLLM()
-        result = llm.generate_with_governance("ฉันตกงาน ไม่มีเงิน กลัวมาก")
-        print(result)
-    except Exception as e:
-        print("Error:", e)
+        # Normal → LYLA governance
+        full = f"{prompt}\n\n[บริบท: {additional_context}]" if additional_context else prompt
+        return self.generate(prompt=full, system_prompt=KING_DIADEM_SYSTEM, temperature=0.6, max_tokens=4096)
