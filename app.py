@@ -6,19 +6,18 @@ from fastapi import FastAPI, Request, File, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-import os, json, stripe, hashlib
+import os, json, stripe
 
 try:
     from ENGINE.decision_engine import DecisionEngine
-    from ENGINE.council_engine import council_engine
-    from ENGINE.consensus_engine import consensus_engine
     from ENGINE.human_engine import analyze_human
     from AI.intent_engine import analyze_intent
-    from AI.freedom_signal import record_question, freedom_index
+    from AI.freedom_signal import record_question, freedom_index, record_choice, record_crisis
 except Exception as e:
     print(f"⚠ ENGINE IMPORT ERROR: {e}")
-    DecisionEngine = council_engine = consensus_engine = None
+    DecisionEngine = None
     analyze_human = analyze_intent = record_question = freedom_index = None
+    record_choice = record_crisis = None
 
 try:
     from core.llm_gemini import GeminiLLM
@@ -37,6 +36,16 @@ try:
 except Exception as e:
     print(f"⚠ DB ERROR: {e}")
     init_db = log_decision = get_credits = add_credits = None
+
+try:
+    from AI.planetary_dashboard import planetary_status
+    from AI.civilization_learning import record_learning, get_learning
+    from AI.civilization_engine import add_node, get_nodes
+    print("✅ Civilization Engine Loaded")
+except Exception as e:
+    print(f"⚠ CIVILIZATION ERROR: {e}")
+    planetary_status = get_learning = get_nodes = None
+    record_learning = add_node = None
 
 try:
     from authlib.integrations.starlette_client import OAuth
@@ -77,6 +86,45 @@ def health():
         "db_initialized": init_db is not None,
     }
 
+# ── DASHBOARD ─────────────────────────────────────────────────────
+@app.get("/dashboard")
+async def dashboard():
+    try:
+        status = planetary_status() if planetary_status else {}
+    except Exception as e:
+        status = {"error": str(e)}
+
+    try:
+        learning = get_learning() if get_learning else []
+    except Exception:
+        learning = []
+
+    try:
+        nodes = get_nodes() if get_nodes else []
+    except Exception:
+        nodes = []
+
+    # Supply chain world data (real-world drift signals)
+    supply_chain = {
+        "global_food_security": "DECLINING",
+        "energy_drift_daily": 0.1,
+        "water_stress_index": 72.4,
+        "biodiversity_loss_rate": "0.01%/day",
+        "choice_collapse_risk": "MODERATE",
+        "lyla_signal": "Systems losing 0.1% choice daily — waterline monitoring active",
+        "intervention_threshold": "Choice < 30%"
+    }
+
+    return {
+        "observer": "KING DIADEM",
+        "planetary": status,
+        "supply_chain": supply_chain,
+        "recent_learning": learning[-10:] if learning else [],
+        "active_nodes": nodes[-10:] if nodes else [],
+        "freedom_index": freedom_index() if freedom_index else 50,
+        "sunyata_signal": "ทุกระบบว่างเปล่าจากการมีอยู่โดยตัวเอง — ทางเลือกเกิดจากความสัมพันธ์เท่านั้น"
+    }
+
 # ── GOOGLE LOGIN ──────────────────────────────────────────────────
 @app.get("/login/google")
 async def google_login(request: Request):
@@ -94,14 +142,10 @@ async def google_callback(request: Request):
         user = token.get("userinfo")
         email = user.get("email", "unknown")
         name = user.get("name", email)
-
-        # บันทึก user ลง DB ถ้ายังไม่มี
-        if get_credits:
+        if get_credits and add_credits:
             credits = get_credits(email)
             if credits == 0:
-                if add_credits:
-                    add_credits(email, 10)  # ให้ 10 credits ฟรีเมื่อสมัคร
-
+                add_credits(email, 10)
         response = RedirectResponse("/")
         response.set_cookie("kd_email", email, max_age=86400*30)
         response.set_cookie("kd_name", name, max_age=86400*30)
@@ -125,13 +169,11 @@ async def logout():
     response.delete_cookie("kd_name")
     return response
 
-# ── EMAIL LOGIN / REGISTER ────────────────────────────────────────
 @app.post("/register")
 async def register(data: dict):
     email = data.get("email", "")
-    password = data.get("password", "")
-    if not email or not password:
-        return {"status": "error", "message": "กรุณากรอก email และ password"}
+    if not email:
+        return {"status": "error", "message": "กรุณากรอก email"}
     if add_credits and get_credits:
         if get_credits(email) == 0:
             add_credits(email, 10)
@@ -175,7 +217,7 @@ async def run_kernel(request: Request, data: dict):
             except Exception as e:
                 reply = f"[Gemini Error: {e}]"
         else:
-            reply = f"[KING DIADEM — Offline]\n{user_input}\n— Fail Less. Harm Less. Restore Choice. —"
+            reply = f"[KING DIADEM — Offline]\n— Fail Less. Harm Less. Restore Choice. —"
 
         result = {
             "observer": "KING DIADEM",
@@ -185,11 +227,26 @@ async def run_kernel(request: Request, data: dict):
             "governance": {"intent": intent, "human_state": human_state}
         }
 
+    # Log + Civilization learning
     if log_decision and result.get("ai_response"):
         try:
             log_decision(email, user_input, result.get("route", "general"), str(result.get("ai_response", "")))
         except Exception:
             pass
+
+    if record_learning and result.get("ai_response"):
+        try:
+            record_learning(
+                question=user_input,
+                decision=result.get("route", "general"),
+                planet_context={"entropy": human_state.get("entropy"), "stability": human_state.get("stability")},
+                success=None
+            )
+        except Exception:
+            pass
+
+    if record_choice:
+        record_choice()
 
     return result
 
@@ -202,40 +259,33 @@ async def simulate_future(data: dict):
     try:
         raw = llm.generate_with_governance(
             prompt=f"จำลองอนาคต 30/90/365 วัน: {user_input}",
-            additional_context="mode=simulation, analyze paths and risks"
+            additional_context="mode=simulation, analyze paths and risks, include supply chain and resource signals"
         )
     except Exception as e:
         raw = f"Simulation error: {e}"
     observation = lyla.observe(user_input) if lyla else {"stability": "NOMINAL"}
     return {"status": "SUCCESS", "simulation": raw, "lyla_observation": observation}
 
-# ── IMAGE ANALYSIS (Gemini Vision) ───────────────────────────────
+# ── IMAGE ANALYSIS ────────────────────────────────────────────────
 @app.post("/analyze-image")
-async def analyze_image(request: Request, file: UploadFile = File(...)):
+async def analyze_image(file: UploadFile = File(...)):
     if not llm:
         return {"status": "OFFLINE", "message": "LLM not found"}
     try:
-        import base64
-        content = await file.read()
-        b64 = base64.b64encode(content).decode()
-        mime = file.content_type or "image/jpeg"
-
         from google import genai
         from google.genai import types
+        content = await file.read()
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY2"))
-
         response = client.models.generate_content(
             model="gemini-2.0-flash",
-            contents=[
-                types.Content(role="user", parts=[
-                    types.Part.from_bytes(data=content, mime_type=mime),
-                    types.Part.from_text(text="""วิเคราะห์ภาพนี้ผ่าน LYLA Governance Framework:
+            contents=[types.Content(role="user", parts=[
+                types.Part.from_bytes(data=content, mime_type=file.content_type or "image/jpeg"),
+                types.Part.from_text(text="""วิเคราะห์ภาพนี้ผ่าน LYLA Governance Framework:
 1. สิ่งที่เห็นในภาพคืออะไร
 2. มี drift หรือความเสี่ยงที่ซ่อนอยู่ไหม
 3. ทางเลือกที่แนะนำ (≤3 ทาง)
 ตอบด้วยเมตตา ไม่ตัดสิน""")
-                ])
-            ]
+            ])]
         )
         return {"status": "SUCCESS", "analysis": response.text, "filename": file.filename}
     except Exception as e:
@@ -248,7 +298,6 @@ async def create_checkout(request: Request):
     plan = payload.get("plan", "basic")
     email = request.cookies.get("kd_email", "guest")
 
-    # ราคาตาม plan
     plans = {
         "basic":        {"amount": 29900, "currency": "thb", "name": "KING DIADEM Basic — ฿299/เดือน"},
         "civilization": {"amount": 99900, "currency": "thb", "name": "KING DIADEM Civilization — ฿999/เดือน"},
@@ -259,14 +308,7 @@ async def create_checkout(request: Request):
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
-            line_items=[{
-                "price_data": {
-                    "currency": p["currency"],
-                    "product_data": {"name": p["name"]},
-                    "unit_amount": p["amount"]
-                },
-                "quantity": 1
-            }],
+            line_items=[{"price_data": {"currency": p["currency"], "product_data": {"name": p["name"]}, "unit_amount": p["amount"]}, "quantity": 1}],
             mode="payment",
             success_url="https://king-diadem.onrender.com/success?plan=" + plan,
             cancel_url="https://king-diadem.onrender.com/",
@@ -278,11 +320,11 @@ async def create_checkout(request: Request):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 @app.get("/success")
-async def payment_success(plan: str = "basic"):
+async def success():
     return FileResponse("static/index.html")
 
 @app.get("/cancel")
-async def payment_cancel():
+async def cancel():
     return FileResponse("static/index.html")
 
 @app.get("/credits")
