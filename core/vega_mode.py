@@ -1,7 +1,7 @@
-# core/altair_mode.py
+# core/vega_mode.py
 
 """
-Altair Mode
+vega Mode
 
 Compassion scanner for KING DIADEM
 Detects emotional signals and switches to a warmth-preserving response.
