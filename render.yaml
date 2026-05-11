@@ -12,11 +12,17 @@ services:
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
 
     envVars:
-      - key: CHATGPT_API_KEY
-        sync: false
-      - key: GEMINI_API_KEY1
+      - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_API_KEY2
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: SECRET_KEY
         sync: false
       - key: STRIPE_PRICE_ID
         sync: false
