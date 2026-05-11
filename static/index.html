@@ -1,232 +1,368 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="/static/manifest.json">
-<title>KING DIADEM</title>
+<title>KING DIADEM | Decision Governance</title>
 <style>
-html, body { margin:0; padding:0; background:#000; font-family:monospace; color:#cdefff; }
+/* Base Setup */
+html, body { margin:0; padding:0; background:#000; font-family: 'JetBrains+Mono', 'Prompt', monospace; color:#cdefff; overflow-x:hidden; }
 #stars { position:fixed; width:100%; height:100%; z-index:0; }
-body::before { content:""; position:fixed; width:100%; height:100%; background:radial-gradient(circle at center,rgba(0,255,255,0.03),transparent); z-index:1; pointer-events:none; }
-.container { position:relative; z-index:2; min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:20px 0 40px; box-sizing:border-box; }
-.card { width:480px; max-width:96vw; padding:28px; border-radius:20px; background:rgba(0,0,0,0.82); box-shadow:0 0 80px rgba(0,255,255,0.3),inset 0 0 30px rgba(0,255,255,0.07); backdrop-filter:blur(15px); }
+body::before { content:""; position:fixed; width:100%; height:100%; background:radial-gradient(circle at center,rgba(0,255,255,0.05),transparent); z-index:1; pointer-events:none; }
 
-.orbit-wrap { position:relative; height:70px; margin-bottom:6px; }
-.orbit-system { position:absolute; top:-115px; left:50%; transform:translateX(-50%); width:250px; height:250px; pointer-events:none; }
+/* Cinematic Layout */
+.container { position:relative; z-index:2; min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:20px 0 40px; box-sizing:border-box; }
+.card { width:480px; max-width:96vw; padding:28px; border-radius:20px; background:rgba(5, 10, 15, 0.85); border: 1px solid rgba(0, 204, 255, 0.15); box-shadow:0 0 80px rgba(0,255,255,0.2), inset 0 0 30px rgba(0,255,255,0.05); backdrop-filter:blur(20px); }
+
+/* Planetary Orbit System */
+.orbit-wrap { position:relative; height:80px; margin-bottom:15px; }
+.orbit-system { position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:250px; height:250px; pointer-events:none; }
 .ring { position:absolute; width:100%; height:100%; border-radius:50%; }
-.ring1 { border:1px solid rgba(255,120,0,0.35); animation:spin 18s linear infinite; }
-.ring2 { border:1px dashed rgba(0,150,255,0.35); animation:spinR 25s linear infinite; }
-.sun { width:12px; height:12px; background:radial-gradient(circle,#ff6a00,#f00); box-shadow:0 0 18px #ff6a00; position:absolute; top:0; left:50%; transform:translateX(-50%); border-radius:50%; }
-.planet { width:10px; height:10px; background:radial-gradient(circle,#00ccff,#004ff); box-shadow:0 0 12px #0cf; position:absolute; bottom:0; left:50%; transform:translateX(-50%); border-radius:50%; }
+.ring1 { border:1px solid rgba(255,215,0,0.25); animation:spin 22s linear infinite; }
+.ring2 { border:1px dashed rgba(0,204,255,0.3); animation:spinR 30s linear infinite; }
+.sun { width:14px; height:14px; background:radial-gradient(circle,#ffd700,#ff6a00); box-shadow:0 0 20px #ff6a00; position:absolute; top:0; left:50%; transform:translateX(-50%); border-radius:50%; }
+.planet { width:10px; height:10px; background:radial-gradient(circle,#00ccff,#004fff); box-shadow:0 0 15px #0cf; position:absolute; bottom:0; left:50%; transform:translateX(-50%); border-radius:50%; }
 @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 @keyframes spinR { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
 
-h1 { font-size:30px; margin:0 0 2px; background:linear-gradient(90deg,#ffd27f,#66ccff,#9999ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.sub { font-size:11px; color:#ffd27f; margin-bottom:10px; }
+/* Typography & Branding */
+h1 { font-size:32px; margin:0 0 4px; font-weight: 300; letter-spacing: 3px; background:linear-gradient(90deg,#ffd700,#00ccff,#9999ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align: center; }
+.sub { font-size:11px; color:#ffd700; margin-bottom:15px; text-align: center; letter-spacing: 1px; opacity: 0.8; }
 
-.badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
-.badge { font-size:10px; padding:3px 8px; border-radius:20px; border:1px solid; }
-.badge.ok { border-color:#00ff88; color:#00ff88; }
-.badge.err { border-color:#ff5e5e; color:#ff5e5e; }
-.badge.warn { border-color:#ffd700; color:#ffd700; }
+/* Status Badges */
+.badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:15px; justify-content: center; }
+.badge { font-size:9px; padding:4px 10px; border-radius:20px; border:1px solid; text-transform: uppercase; letter-spacing: 1px; }
+.badge.ok { border-color:#00ff88; color:#00ff88; background: rgba(0, 255, 136, 0.05); }
+.badge.err { border-color:#ff5e5e; color:#ff5e5e; background: rgba(255, 94, 94, 0.05); }
+.badge.warn { border-color:#ffd700; color:#ffd700; background: rgba(255, 215, 0, 0.05); }
 
-.input-row { display:flex; gap:6px; margin-bottom:5px; }
-input[type=text] { flex:1; padding:10px 12px; background:rgba(0,0,0,0.9); border:1px solid #00ccff; color:#cdefff; border-radius:6px; outline:none; font-family:monospace; font-size:13px; }
+/* Inputs & Actions */
+.input-row { display:flex; gap:8px; margin-bottom:10px; }
+input[type=text] { flex:1; padding:12px 16px; background:rgba(0,0,0,0.6); border:1px solid rgba(0, 204, 255, 0.3); color:#fff; border-radius:10px; outline:none; font-family:inherit; font-size:14px; transition: 0.3s; }
+input[type=text]:focus { border-color: #00ccff; box-shadow: 0 0 15px rgba(0, 204, 255, 0.2); }
 
-.btn { padding:10px 16px; border:none; font-weight:bold; cursor:pointer; border-radius:6px; font-family:monospace; font-size:13px; transition:opacity .2s; width:100%; margin-bottom:6px; }
-.btn:hover { opacity:.85; }
-.btn:disabled { opacity:.35; cursor:not-allowed; }
-.btn-run { background:linear-gradient(90deg,#ffd700,#ff9966); box-shadow:0 0 18px rgba(255,215,0,.4); }
-.btn-sim { background:linear-gradient(90deg,#7b2fff,#00ccff); box-shadow:0 0 18px rgba(123,47,255,.4); }
+.btn { padding:12px 16px; border:none; font-weight:bold; cursor:pointer; border-radius:10px; font-family:inherit; font-size:14px; transition:all .3s; width:100%; margin-bottom:8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity:.35; cursor:not-allowed; transform: none; }
 
-.out-label { font-size:10px; color:rgba(0,255,255,.4); margin-bottom:4px; }
-pre { background:#000; padding:12px; border:1px solid rgba(0,255,255,.2); border-radius:6px; min-height:90px; max-height:200px; overflow-y:auto; font-size:11px; white-space:pre-wrap; word-break:break-word; margin:0 0 10px; }
-pre.sim { border-color:rgba(123,47,255,.35); }
+.btn-run { background: linear-gradient(90deg,#ffd700,#ff9966); color: #000; box-shadow:0 10px 20px rgba(255,215,0,.2); }
+.btn-sim { background: linear-gradient(90deg,#7b2fff,#00ccff); color: #fff; box-shadow:0 10px 20px rgba(123,47,255,.2); }
 
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:10px; }
-.box { padding:9px 11px; border:1px solid rgba(0,255,255,.18); border-radius:10px; cursor:pointer; transition:all .2s; font-size:12px; user-select:none; }
-.box:hover { border-color:rgba(0,255,255,.55); background:rgba(0,255,255,.05); }
-.box.active { border-color:#ffd700; background:rgba(255,215,0,.07); }
-.box .rt { font-size:9px; color:rgba(0,255,255,.35); display:block; margin-top:1px; }
-.route-tag { font-size:10px; color:rgba(0,255,255,.4); margin:3px 0 8px; min-height:14px; }
+/* Outputs */
+.out-label { font-size:10px; color:rgba(0,255,255,.5); margin-bottom:6px; display: flex; justify-content: space-between; }
+pre { background:rgba(0,0,0,0.5); padding:15px; border:1px solid rgba(0,255,255,0.1); border-radius:10px; min-height:100px; max-height:250px; overflow-y:auto; font-size:12px; line-height: 1.5; white-space:pre-wrap; word-break:break-word; margin:0 0 15px; color: #b0e0ff; }
+pre.sim { border-color:rgba(123,47,255,0.3); background: rgba(123,47,255,0.02); }
 
-.sim-section { border-top:1px solid rgba(123,47,255,.2); padding-top:10px; margin-bottom:10px; }
-.sim-label { font-size:11px; color:#9999ff; margin-bottom:6px; }
-.paths-grid { display:flex; flex-direction:column; gap:5px; margin-bottom:7px; }
-.path-row input { font-size:11px; padding:6px 9px; }
-.btn-add { font-size:11px; padding:5px 10px; background:rgba(0,255,255,.07); border:1px solid rgba(0,255,255,.2); color:#cdefff; border-radius:5px; cursor:pointer; margin-bottom:7px; }
-.btn-add:hover { background:rgba(0,255,255,.14); }
+/* Engine Grid */
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px; }
+.box { padding:12px; border:1px solid rgba(0,204,255,0.15); border-radius:12px; cursor:pointer; transition:all .2s; background: rgba(0,204,255,0.02); }
+.box:hover { border-color:rgba(0,204,255,0.6); background:rgba(0,204,255,0.08); }
+.box.active { border-color:#ffd700; background:rgba(255,215,0,0.1); box-shadow: 0 0 15px rgba(255,215,0,0.1); }
+.box strong { font-size: 13px; display: block; margin-bottom: 2px; }
+.box .rt { font-size:9px; color:rgba(0,204,255,0.4); text-transform: uppercase; }
+.route-tag { font-size:11px; color:#00ccff; margin:5px 0 12px; text-align: center; font-weight: bold; height: 16px; }
 
-.stripe-section { border-top:1px solid rgba(0,255,255,.08); padding-top:10px; }
-.stripe-label { font-size:11px; color:#ffd27f; margin-bottom:6px; }
-.btn-stripe { width:100%; padding:10px; background:linear-gradient(90deg,#635bff,#a259ff); border:none; color:#fff; font-weight:bold; font-family:monospace; cursor:pointer; border-radius:6px; font-size:13px; box-shadow:0 0 18px rgba(99,91,255,.35); transition:opacity .2s; }
-.btn-stripe:hover { opacity:.85; }
-.btn-install { width:auto; padding:10px 16px; background:linear-gradient(90deg,#00ccff,#7b2fff); color:#fff; border:none; box-shadow:0 0 18px rgba(0,204,255,.35); border-radius:6px; cursor:pointer; }
-.btn-install:hover { opacity:.9; }
-.install-row { display:flex; justify-content:center; margin-bottom:10px; }
-.info-box { font-size:12px; color:rgba(205,239,255,.8); background:rgba(0,255,255,.04); border:1px solid rgba(0,255,255,.12); border-radius:12px; padding:10px 14px; margin-bottom:12px; line-height:1.4; }
+/* Sections */
+.sim-section { border-top:1px solid rgba(123,47,255,0.2); padding-top:15px; margin-bottom:15px; }
+.sim-label { font-size:12px; color:#9999ff; margin-bottom:10px; display: flex; align-items: center; gap: 6px; }
+.paths-grid { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.path-row input { font-size:12px; padding:10px; background: rgba(123,47,255,0.05); border-color: rgba(123,47,255,0.2); }
+
+.btn-add { font-size:11px; padding:6px 12px; background:rgba(0,204,255,0.05); border:1px solid rgba(0,204,255,0.2); color:#cdefff; border-radius:8px; cursor:pointer; margin-bottom:10px; transition: 0.2s; }
+.btn-add:hover { background:rgba(0,204,255,0.15); border-color: #00ccff; }
+
+.stripe-section { border-top:1px solid rgba(255,215,0,0.15); padding-top:15px; }
+.btn-stripe { width:100%; padding:14px; background:linear-gradient(90deg,#635bff,#a259ff); border:none; color:#fff; font-weight:bold; cursor:pointer; border-radius:10px; font-size:14px; box-shadow:0 10px 20px rgba(99,91,255,0.2); }
+
+/* Global Info */
+.info-box { font-size:12px; color:rgba(205,239,255,0.7); background:rgba(0,204,255,0.03); border-left: 3px solid #00ccff; padding:12px 16px; margin-bottom:15px; line-height:1.5; }
+.footer-meta { text-align: center; font-size: 9px; opacity: 0.3; margin-top: 20px; letter-spacing: 2px; }
 </style>
 </head>
 <body>
 <canvas id="stars"></canvas>
-<div class="container"><div class="card">
 
-<div class="orbit-wrap">
-  <div class="orbit-system">
-    <div class="ring ring1"><div class="sun"></div></div>
-    <div class="ring ring2"><div class="planet"></div></div>
-  </div>
+<div class="container">
+<div class="card">
+
+    <!-- Orbit Display -->
+    <div class="orbit-wrap">
+      <div class="orbit-system">
+        <div class="ring ring1"><div class="sun" title="LYLA CORE"></div></div>
+        <div class="ring ring2"><div class="planet" title="VEGA PROBE"></div></div>
+      </div>
+    </div>
+
+    <h1>King Diadem</h1>
+    <div class="sub">DRIFTZERO | DECISION GOVERNANCE | LYLA KERNEL</div>
+
+    <div class="info-box">
+        [INTERFACE ACTIVE] ป้อนข้อมูลสถานการณ์เพื่อเข้าสู่กระบวนการตัดสินใจ ระบบจะประเมิน Entropy และสภาวะการรอดพ้นผ่าน Decision Engine
+    </div>
+
+    <!-- PWA Install -->
+    <div class="install-row" style="display: flex; justify-content: center; margin-bottom: 15px;">
+        <button class="btn-add" id="btn-install" style="display:none" onclick="promptInstall()">📥 INSTALL KING DIADEM</button>
+    </div>
+
+    <!-- Health Indicators -->
+    <div class="badges">
+      <span class="badge warn" id="b-ai">SYNCING AI...</span>
+      <span class="badge warn" id="b-eng">KERNEL...</span>
+      <span class="badge warn" id="b-lyla">LYLA...</span>
+      <span class="badge warn" id="b-stripe">STRIPE...</span>
+    </div>
+
+    <!-- Input Section -->
+    <div class="input-row">
+      <input type="text" id="input" placeholder="ป้อนตัวแปรสถานการณ์..." onkeydown="if(event.key==='Enter')run()">
+    </div>
+    <div class="route-tag" id="route-tag"></div>
+
+    <button class="btn btn-run" id="btn-run" onclick="run()">
+        <span>▶</span> RUN DECISION ENGINE
+    </button>
+
+    <div class="out-label">
+        <span>PRIMARY OUTPUT</span>
+        <span id="timestamp-ui">--:--:--</span>
+    </div>
+    <pre id="output">System Ready — รอรับพิกัดทางความคิดจากจอมทัพ</pre>
+
+    <!-- Engine Grid -->
+    <div class="grid">
+      <div class="box" id="bx-general" onclick="runRoute('general')">
+          <strong>Choice Engine</strong>
+          <span class="rt">route: general</span>
+      </div>
+      <div class="box" id="bx-risk" onclick="runRoute('risk')">
+          <strong>Risk Analysis</strong>
+          <span class="rt">route: risk</span>
+      </div>
+      <div class="box" id="bx-survival" onclick="runRoute('survival')">
+          <strong>Survival Mode</strong>
+          <span class="rt">route: survival</span>
+      </div>
+      <div class="box" id="bx-collapse" onclick="runRoute('collapse')">
+          <strong>Collapse Detect</strong>
+          <span class="rt">route: collapse</span>
+      </div>
+      <div class="box" id="bx-civil" onclick="runRoute('civil')" style="grid-column: span 2;">
+          <strong>Civilization Governance</strong>
+          <span class="rt">route: civil | strategic oversight</span>
+      </div>
+    </div>
+
+    <!-- Simulation Section (VEGA) -->
+    <div class="sim-section">
+      <div class="sim-label">🔮 VEGA PROBE — จำลองความน่าจะเป็นในอนาคต</div>
+      <div class="paths-grid" id="paths-grid">
+        <div class="path-row"><input type="text" value="ดำเนินการตามแผน A (Standard)"></div>
+        <div class="path-row"><input type="text" value="ใช้กลยุทธ์ DriftZero (Reset)"></div>
+      </div>
+      <div style="display:flex; gap:8px;">
+          <button class="btn-add" onclick="addPath()">+ เพิ่มมิติทางเลือก</button>
+      </div>
+      <button class="btn btn-sim" id="btn-sim" onclick="simulate()">
+          <span>🔮</span> SIMULATE TIMELINES
+      </button>
+      <div class="out-label">VEGA SIMULATION DATA</div>
+      <pre class="sim" id="sim-output">Awaiting projection data...</pre>
+    </div>
+
+    <!-- Financial / Stripe -->
+    <div class="stripe-section">
+      <button class="btn-stripe" onclick="stripeCheckout()">
+          ⚡ RECHARGE AI CREDITS
+      </button>
+    </div>
+
+    <div class="footer-meta">
+        XVIIVMM ENFORCEMENT | SYSTEM STABILITY 100%
+    </div>
+
 </div>
-
-<h1>King Diadem</h1>
-<div class="sub">DriftZero · Decision Engine · LYLA Kernel</div>
-<div class="info-box">พิมพ์สถานการณ์ของคุณ แล้วเลือก route ที่ต้องการ แล้วกด RUN เพื่อให้ระบบแนะนำและประเมินความเสี่ยง</div>
-<div class="install-row">
-  <button class="btn btn-install" id="btn-install" style="display:none" onclick="promptInstall()">Install App</button>
 </div>
-<div class="badges">
-  <span class="badge warn" id="b-ai">⟳ AI...</span>
-  <span class="badge warn" id="b-eng">⟳ Engine...</span>
-  <span class="badge warn" id="b-lyla">⟳ LYLA...</span>
-  <span class="badge warn" id="b-stripe">⟳ Stripe...</span>
-</div>
-
-<div class="input-row">
-  <input type="text" id="input" placeholder="พิมพ์สถานการณ์..." onkeydown="if(event.key==='Enter')run()">
-</div>
-<div class="route-tag" id="route-tag"></div>
-
-<button class="btn btn-run" id="btn-run" onclick="run()">▶ RUN DECISION ENGINE</button>
-
-<div class="out-label">OUTPUT</div>
-<pre id="output">System Ready — กด engine หรือพิมพ์สถานการณ์แล้วกด RUN</pre>
-
-<div class="grid">
-  <div class="box" id="bx-general" onclick="runRoute('general')">🧠 Choice Engine<span class="rt">route: general</span></div>
-  <div class="box" id="bx-risk" onclick="runRoute('risk')">⚖️ Risk Engine<span class="rt">route: risk</span></div>
-  <div class="box" id="bx-survival" onclick="runRoute('survival')">🛡 Survival Engine<span class="rt">route: survival</span></div>
-  <div class="box" id="bx-collapse" onclick="runRoute('collapse')">💥 Collapse Detector<span class="rt">route: collapse</span></div>
-  <div class="box" id="bx-civil" onclick="runRoute('civil')">🏛 Civil Engine<span class="rt">route: civil</span></div>
-</div>
-
-<div class="sim-section">
-  <div class="sim-label">🔮 จำลองอนาคต — เดินทางนี้จะเจออะไร?</div>
-  <div class="paths-grid" id="paths-grid">
-    <div class="path-row"><input type="text" value="เดินหน้าต่อแบบเดิม"></div>
-    <div class="path-row"><input type="text" value="หยุดและประเมินใหม่"></div>
-    <div class="path-row"><input type="text" value="หาพันธมิตร/ทรัพยากรเพิ่ม"></div>
-  </div>
-  <button class="btn-add" onclick="addPath()">+ เพิ่มทางเลือก</button>
-  <button class="btn btn-sim" id="btn-sim" onclick="simulate()">🔮 SIMULATE FUTURES</button>
-  <div class="out-label">SIMULATION RESULT</div>
-  <pre class="sim" id="sim-output">รอการจำลอง...</pre>
-</div>
-
-<div class="stripe-section">
-  <div class="stripe-label">💳 เติมเครดิต AI</div>
-  <button class="btn-stripe" onclick="stripeCheckout()">⚡ TOP UP — Stripe</button>
-</div>
-
-</div></div>
 
 <script>
-/* STARS */
+/* STARFIELD ENGINE (Optimized) */
 const cv=document.getElementById("stars"),cx=cv.getContext("2d");
 function rsz(){cv.width=innerWidth;cv.height=innerHeight;}rsz();addEventListener("resize",rsz);
-const st=[];for(let i=0;i<400;i++)st.push({x:Math.random()*cv.width,y:Math.random()*cv.height,s:Math.random()*2.5,sp:Math.random()*.4+.05,a:Math.random(),f:Math.random()*.05,d:(Math.random()-.5)*.4,c:Math.random()});
-function draw(){cx.clearRect(0,0,cv.width,cv.height);for(const s of st){s.a+=s.f;if(s.a>1||s.a<0)s.f*=-1;s.y+=s.sp;s.x+=s.d;if(s.y>cv.height)s.y=0;if(s.x>cv.width)s.x=0;if(s.x<0)s.x=cv.width;const c=s.c<.33?"255,255,255":s.c<.66?"0,200,255":"255,120,0";cx.beginPath();cx.arc(s.x,s.y,s.s,0,Math.PI*2);cx.fillStyle=`rgba(${c},${s.a})`;cx.fill();}requestAnimationFrame(draw);}draw();
+const st=[];
+for(let i=0;i<350;i++)st.push({
+    x:Math.random()*cv.width,
+    y:Math.random()*cv.height,
+    s:Math.random()*2,
+    sp:Math.random()*.3+.02,
+    a:Math.random(),
+    f:Math.random()*.02,
+    d:(Math.random()-.5)*.2,
+    c:Math.random()
+});
+function draw(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    for(const s of st){
+        s.a+=s.f; if(s.a>1||s.a<0)s.f*=-1;
+        s.y+=s.sp; s.x+=s.d;
+        if(s.y>cv.height)s.y=0; if(s.x>cv.width)s.x=0; if(s.x<0)s.x=cv.width;
+        const c=s.c<.4?"200,240,255":s.c<.7?"255,215,0":"0,204,255";
+        cx.beginPath();cx.arc(s.x,s.y,s.s,0,Math.PI*2);
+        cx.fillStyle=`rgba(${c},${s.a*0.8})`;cx.fill();
+    }
+    requestAnimationFrame(draw);
+}draw();
 
-/* HEALTH */
+/* KERNEL CLOCK */
+setInterval(() => {
+    document.getElementById('timestamp-ui').innerText = new Date().toLocaleTimeString();
+}, 1000);
+
+/* HEALTH & TELEMETRY */
 async function checkHealth(){
   try{
-    const d=await(await fetch("/health")).json();
-    setBadge("b-ai",d.llm_loaded,"✅ Gemini","❌ AI Off");
-    setBadge("b-eng",d.engine_loaded,"✅ Engine","⚠ Engine Off");
-    setBadge("b-lyla",d.lyla_loaded,"✅ LYLA","⚠ LYLA Off");
-    setBadge("b-stripe",d.stripe_loaded,"✅ Stripe","⚠ Stripe Off");
-  }catch(e){setBadge("b-ai",false,"","❌ No Conn");}
+    const r=await fetch("/health");
+    if(!r.ok) throw new Error();
+    const d=await r.json();
+    setBadge("b-ai",d.llm_loaded,"Gemini Online","Gemini Off");
+    setBadge("b-eng",d.engine_loaded,"Engine Active","Engine Fail");
+    setBadge("b-lyla",d.lyla_loaded,"LYLA Ready","LYLA Standby");
+    setBadge("b-stripe",d.stripe_loaded,"Stripe Sync","Stripe Off");
+  }catch(e){
+    setBadge("b-ai",false,"","COMM LOSS");
+    console.error("Kernel Telemetry Error");
+  }
 }
-function setBadge(id,ok,a,b){const el=document.getElementById(id);el.textContent=ok?a:b;el.className="badge "+(ok?"ok":"warn");}
+function setBadge(id,ok,a,b){
+    const el=document.getElementById(id);
+    el.textContent=ok?a:b;
+    el.className="badge "+(ok?"ok":"err");
+}
 checkHealth();
 
-/* RUN */
+/* ENGINE EXECUTION */
 async function run(){
   const t=document.getElementById("input").value.trim();
-  if(!t){document.getElementById("output").innerText="⚠ กรุณาพิมพ์สถานการณ์";return;}
-  setL("btn-run",true);clearB();
-  showOut(await post("/run",{input:t}));
+  if(!t){
+    updateOutput("⚠ กรุณาระบุตัวแปรสถานการณ์ก่อนดำเนินการ");
+    return;
+  }
+  setL("btn-run",true); clearB();
+  const res = await post("/run",{input:t});
+  showOut(res);
   setL("btn-run",false);
 }
+
 async function runRoute(r){
-  const t=document.getElementById("input").value.trim()||`[${r}]`;
-  setL("btn-run",true);clearB();hlBox(r);
-  const sig={survival:{resource:10,entropy:85},risk:{stability:20},collapse:{entropy:75,stability:30},uncertain:{confidence:.2},general:{}};
-  const d=await post("/run",{input:t,...(sig[r]||{})});
-  document.getElementById("route-tag").textContent=`→ routed: ${d.route||r}`;
-  showOut(d);setL("btn-run",false);
+  const t=document.getElementById("input").value.trim() || `[Diagnostic: ${r}]`;
+  setL("btn-run",true); clearB(); hlBox(r);
+  
+  // Specific Engine Signatures
+  const signatures = {
+      survival: { resource_priority: "life", entropy_threshold: 0.9 },
+      risk: { stability_focus: true },
+      collapse: { scan_depth: "extreme" },
+      civil: { long_term: true }
+  };
+  
+  const d = await post("/run", {input:t, route:r, ...signatures[r]});
+  showOut(d);
+  setL("btn-run",false);
 }
 
-/* SIMULATE */
+/* VEGA SIMULATION */
 async function simulate(){
   const t=document.getElementById("input").value.trim();
-  if(!t){document.getElementById("sim-output").innerText="⚠ ใส่สถานการณ์ก่อน";return;}
+  if(!t){
+      document.getElementById("sim-output").innerText="⚠ กรุณาระบุสถานการณ์ต้นทางเพื่อเริ่มการจำลอง";
+      return;
+  }
   const paths=[...document.querySelectorAll("#paths-grid input")].map(i=>i.value).filter(v=>v.trim());
   setL("btn-sim",true);
-  document.getElementById("sim-output").innerText="⟳ กำลังจำลองอนาคต...";
-  const d=await post("/simulate",{input:t,paths});
-  let txt=d.simulation||d.error||JSON.stringify(d,null,2);
-  if(d.lyla_observation)txt+="\n\n— LYLA —\n"+JSON.stringify(d.lyla_observation,null,2);
-  document.getElementById("sim-output").innerText=txt;
+  document.getElementById("sim-output").innerText="⟳ VEGA กำลังสแกน Timelines ความเป็นไปได้...";
+  
+  const d=await post("/simulate",{input:t, paths});
+  let txt = d.simulation || d.error || "ไม่สามารถกู้คืนข้อมูลการจำลองได้";
+  if(d.lyla_observation) txt += "\n\n[LYLA OBSERVATION]\n" + JSON.stringify(d.lyla_observation, null, 2);
+  
+  document.getElementById("sim-output").innerText = txt;
   setL("btn-sim",false);
 }
+
 function addPath(){
-  const g=document.getElementById("paths-grid"),n=g.children.length+1;
-  const r=document.createElement("div");r.className="path-row";
-  r.innerHTML=`<input type="text" placeholder="ทางเลือกที่ ${n}...">`;g.appendChild(r);
+  const g=document.getElementById("paths-grid");
+  const r=document.createElement("div"); r.className="path-row";
+  r.innerHTML=`<input type="text" placeholder="ทางเลือกใหม่...">`;
+  g.appendChild(r);
 }
 
-/* HELPERS */
+/* UTILITIES */
+function updateOutput(msg){ document.getElementById("output").innerText=msg; }
+
 function showOut(d){
   const o=document.getElementById("output");
-  if(d.ai_response)o.innerText=`[${(d.route||"ENGINE").toUpperCase()}]\n\n${d.ai_response}`;
-  else if(d.engine_result)o.innerText=`[${(d.route||"ENGINE").toUpperCase()}]\n\n`+JSON.stringify(d.engine_result,null,2);
-  else o.innerText=JSON.stringify(d,null,2);
-  if(d.risk_score!==undefined)document.getElementById("route-tag").textContent=`→ route: ${d.route||"?"} | risk: ${Math.round(d.risk_score)}`;
-}
-async function post(u,b){try{const r=await fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});return await r.json();}catch(e){return{error:String(e)};}}
-function setL(id,on){document.getElementById(id).disabled=on;}
-function hlBox(r){const m={general:"bx-general",risk:"bx-risk",survival:"bx-survival",collapse:"bx-collapse",civil:"bx-civil"};const el=document.getElementById(m[r]);if(el)el.classList.add("active");}
-function clearB(){document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"));document.getElementById("route-tag").textContent="";}
+  const tag=document.getElementById("route-tag");
+  
+  if(d.ai_response) o.innerText = d.ai_response;
+  else if(d.engine_result) o.innerText = JSON.stringify(d.engine_result,null,2);
+  else if(d.error) o.innerText = "❌ ERROR: " + d.error;
 
-/* STRIPE */
+  tag.textContent = `→ route: ${d.route||"auto"} | entropy: ${d.risk_score !== undefined ? d.risk_score.toFixed(2) : "0.00"}`;
+}
+
+async function post(u,b){
+    try{
+        const r=await fetch(u,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(b)
+        });
+        return await r.json();
+    }catch(e){ return{error: "Network Breach: "+String(e)}; }
+}
+
+function setL(id,on){ document.getElementById(id).disabled=on; }
+
+function hlBox(r){
+    const m={general:"bx-general",risk:"bx-risk",survival:"bx-survival",collapse:"bx-collapse",civil:"bx-civil"};
+    const el=document.getElementById(m[r]);
+    if(el) el.classList.add("active");
+}
+
+function clearB(){
+    document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"));
+    document.getElementById("route-tag").textContent="";
+}
+
+/* STRIPE FLOW */
 async function stripeCheckout(){
+  updateOutput("⚡ กำลังเชื่อมต่อ Stripe Secure Gateway...");
   const d=await post("/payment/create-checkout",{});
-  if(d.url)window.location.href=d.url;
-  else document.getElementById("output").innerText="❌ Stripe: "+(d.error||"checkout ไม่สำเร็จ");
+  if(d.url) window.location.href=d.url;
+  else updateOutput("❌ การเชื่อมต่อการชำระเงินล้มเหลว: "+(d.error||"Unknown Error"));
 }
 
+/* PWA & SERVICE WORKER */
 let deferredInstall = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstall = e;
-  const installButton = document.getElementById('btn-install');
-  if (installButton) installButton.style.display = 'inline-flex';
+  document.getElementById('btn-install').style.display = 'inline-flex';
 });
 
 function promptInstall() {
   if (!deferredInstall) return;
   deferredInstall.prompt();
-  deferredInstall.userChoice.then((choiceResult) => {
+  deferredInstall.userChoice.then(() => {
     deferredInstall = null;
     document.getElementById('btn-install').style.display = 'none';
   });
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/static/service-worker.js')
-    .then(() => console.log('Service Worker registered'))
-    .catch(err => console.warn('Service Worker failed', err));
+  navigator.serviceWorker.register('/static/service-worker.js').catch(()=>{});
 }
 </script>
 </body>
