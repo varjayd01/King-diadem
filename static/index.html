@@ -1,329 +1,411 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta name="theme-color" content="#000510">
-    <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" href="/static/favicon.ico">
-    <title>KING DIADEM — Adaptive DriftZero OS</title>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;600&display=swap');
-
-        :root {
-            --gold: #c8a96e;
-            --gold-bright: #ffd27f;
-            --cyan: #00d4ff;
-            --bg: #000510;
-            --border: rgba(0,212,255,0.12);
-            --text: #a8d4e8;
-            --text-bright: #cdefff;
-            --panel-bg: rgba(0, 5, 16, 0.85);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        html, body { 
-            width: 100%; height: 100%; 
-            background: #000; 
-            font-family: 'Rajdhani', sans-serif; 
-            color: var(--text); 
-            overflow: hidden; 
-        }
-
-        /* --- BACKGROUND LAYER --- */
-        #galaxy-3d { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        .nebula { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, rgba(0,100,255,0.05) 0%, transparent 80%); }
-        .scanline { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.01) 2px, rgba(0,212,255,0.01) 4px); }
-
-        /* --- CORE APP GRID --- */
-        #app {
-            position: relative; z-index: 10;
-            display: grid;
-            grid-template-columns: 240px 1fr 280px;
-            grid-template-rows: 60px 1fr 40px;
-            height: 100vh;
-        }
-
-        /* --- TOPBAR --- */
-        #topbar {
-            grid-column: 1/-1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border);
-            background: var(--panel-bg);
-            backdrop-filter: blur(15px);
-        }
-
-        .logo-text {
-            font-family: 'Cinzel', serif;
-            font-size: 18px;
-            letter-spacing: 3px;
-            background: linear-gradient(90deg, var(--gold), var(--gold-bright), var(--cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sys-badge {
-            font-family: 'Share Tech Mono'; font-size: 9px; padding: 2px 8px; border: 1px solid; border-radius: 2px;
-        }
-        .sys-badge.ok { border-color: #00ff88; color: #00ff88; }
-        .sys-badge.off { border-color: #ff5e5e; color: #ff5e5e; }
-
-        /* --- SIDE PANELS (Desktop Default) --- */
-        #left-panel, #right-panel {
-            background: rgba(0,5,16,0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .engine-btn {
-            display: flex; align-items: center; gap: 10px; width: 100%;
-            padding: 12px; background: transparent; border: none;
-            color: var(--text); border-left: 2px solid transparent;
-            cursor: pointer; transition: 0.2s; font-family: inherit;
-        }
-        .engine-btn.active { background: rgba(0,212,255,0.05); border-left-color: var(--gold); color: var(--gold-bright); }
-
-        /* --- CENTER: GEMINI STYLE CHAT --- */
-        #center { display: flex; flex-direction: column; overflow: hidden; }
-        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-
-        .msg-text {
-            max-width: 85%; padding: 12px 18px; border-radius: 18px;
-            font-size: 14px; line-height: 1.6;
-            background: rgba(0, 8, 20, 0.8); border: 1px solid rgba(0, 212, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        .msg-user { align-self: flex-end; border-color: var(--gold); color: var(--gold-bright); }
-        .msg-system { align-self: flex-start; }
-
-        /* --- ADAPTIVE MOBILE OVERRIDE --- */
-        @media (max-width: 768px) {
-            #app { grid-template-columns: 1fr; grid-template-rows: 60px 1fr auto; }
-            #left-panel, #right-panel {
-                position: fixed; top: 60px; height: calc(100% - 110px);
-                width: 80%; left: -100%; z-index: 100; transition: 0.4s ease;
-            }
-            #left-panel.active { left: 0; }
-            #right-panel.active { right: 0; left: auto; }
-            
-            #input-area {
-                position: sticky; bottom: 0; width: 100%;
-                background: linear-gradient(to top, var(--bg) 80%, transparent);
-                padding: 10px 15px 30px; z-index: 50;
-            }
-            .mobile-btn { display: block !important; }
-        }
-
-        .mobile-btn { display: none; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 5px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; }
-
-        /* --- INPUT INTERFACE --- */
-        .input-box {
-            display: flex; align-items: flex-end; gap: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 24px; padding: 8px 16px; border: 1px solid var(--border);
-        }
-        #main-input {
-            flex: 1; background: transparent; border: none; color: #fff;
-            padding: 10px 0; outline: none; font-size: 15px; resize: none;
-            max-height: 120px;
-        }
-        #run-btn {
-            background: var(--gold); border: none; width: 36px; height: 36px;
-            border-radius: 50%; color: #000; cursor: pointer; flex-shrink: 0; font-weight: bold;
-        }
-
-        /* --- WATERLINE METER --- */
-        .wl-meter { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin: 8px 0; overflow: hidden; }
-        .wl-fill { height: 100%; background: var(--cyan); transition: width 0.8s; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000510">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="icon" href="/static/favicon.ico">
+<title>KING DIADEM — DriftZero OS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;600&display=swap');
+:root{--gold:#c8a96e;--gold-bright:#ffd27f;--cyan:#00d4ff;--bg:#000510;--border:rgba(0,212,255,0.12);--text:#a8d4e8;--text-bright:#cdefff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;background:var(--bg);font-family:'Rajdhani',monospace;color:var(--text);overflow:hidden;}
+.nebula{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 15% 50%,rgba(255,80,0,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 40%,rgba(0,100,255,0.10) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 50% 20%,rgba(100,0,150,0.05) 0%,transparent 50%);}
+.scanline{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,0.012) 2px,rgba(0,212,255,0.012) 4px);}
+#app{position:relative;z-index:10;width:100%;height:100vh;display:grid;grid-template-columns:220px 1fr 280px;grid-template-rows:60px 1fr 50px;}
+#topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border);background:rgba(0,5,16,0.9);backdrop-filter:blur(10px);}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.topbar-logo{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,212,255,0.5));}
+.logo-text{font-family:'Cinzel',serif;font-size:18px;font-weight:600;letter-spacing:4px;background:linear-gradient(90deg,var(--gold),var(--gold-bright),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:rgba(0,212,255,0.4);margin-top:1px;}
+.topbar-right{display:flex;gap:16px;align-items:center;}
+.sys-badge{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 10px;border-radius:2px;border:1px solid;letter-spacing:2px;transition:all .3s;}
+.sys-badge.ok{border-color:rgba(0,255,120,0.4);color:#00ff88;background:rgba(0,255,120,0.05);}
+.sys-badge.off{border-color:rgba(255,60,60,0.4);color:#ff5e5e;background:rgba(255,60,60,0.05);}
+#sys-time{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,212,255,0.5);letter-spacing:2px;}
+#left-panel{border-right:1px solid var(--border);background:rgba(0,5,16,0.7);padding:20px 0;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.panel-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:3px;color:rgba(0,212,255,0.3);padding:8px 20px 4px;margin-top:8px;}
+.engine-btn{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;border:none;background:transparent;color:var(--text);font-family:'Rajdhani',monospace;font-size:13px;font-weight:400;letter-spacing:1px;transition:all .2s;text-align:left;width:100%;border-left:2px solid transparent;}
+.engine-btn:hover{background:rgba(0,212,255,0.05);border-left-color:var(--cyan);color:var(--text-bright);}
+.engine-btn.active{background:rgba(0,212,255,0.08);border-left-color:var(--gold);color:var(--gold-bright);}
+.engine-btn .e-icon{font-size:14px;width:20px;text-align:center;}
+.engine-btn .e-sub{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(0,212,255,0.3);display:block;letter-spacing:1px;}
+.engine-btn .e-dot{width:5px;height:5px;border-radius:50%;background:rgba(0,212,255,0.2);margin-left:auto;transition:all .3s;}
+.engine-btn.active .e-dot{background:var(--gold);box-shadow:0 0 6px var(--gold);}
+.waterline-bar{margin:16px 20px 0;padding:12px;border:1px solid rgba(0,212,255,0.1);border-radius:4px;background:rgba(0,212,255,0.03);}
+.wl-label{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(0,212,255,0.4);letter-spacing:2px;margin-bottom:6px;}
+.wl-meter{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;margin-bottom:4px;overflow:hidden;}
+.wl-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+.wl-fill.safe{background:linear-gradient(90deg,#00ff88,#00ccff);}
+.wl-fill.warn{background:linear-gradient(90deg,#ffb300,#ff6a00);}
+.wl-fill.crit{background:linear-gradient(90deg,#ff3c3c,#ff6a00);}
+.wl-val{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,212,255,0.5);}
+#center{display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#chat-area{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:16px;scrollbar-width:thin;scrollbar-color:rgba(0,212,255,0.1) transparent;}
+#chat-area::-webkit-scrollbar{width:3px;}
+#chat-area::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.15);border-radius:2px;}
+#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:40px;}
+.welcome-logo{width:100px;height:100px;object-fit:contain;filter:drop-shadow(0 0 30px rgba(0,212,255,0.6)) drop-shadow(0 0 60px rgba(200,169,110,0.4));animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.welcome-title{font-family:'Cinzel',serif;font-size:28px;font-weight:600;letter-spacing:6px;background:linear-gradient(135deg,var(--gold),var(--gold-bright) 40%,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.welcome-sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(0,212,255,0.4);}
+.welcome-desc{font-size:13px;color:rgba(168,212,232,0.6);max-width:420px;line-height:1.8;margin-top:4px;}
+.welcome-hint{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+.hint-chip{font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 14px;border:1px solid rgba(0,212,255,0.15);border-radius:2px;color:rgba(0,212,255,0.5);cursor:pointer;transition:all .2s;letter-spacing:1px;}
+.hint-chip:hover{border-color:rgba(0,212,255,0.4);color:var(--cyan);background:rgba(0,212,255,0.05);}
+.msg{display:flex;gap:12px;align-items:flex-start;animation:msgIn .3s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;}
+.msg-avatar{width:32px;height:32px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'Share Tech Mono',monospace;font-weight:bold;overflow:hidden;}
+.msg.user .msg-avatar{background:rgba(200,169,110,0.15);border:1px solid rgba(200,169,110,0.3);color:var(--gold);}
+.msg.system .msg-avatar{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);}
+.msg-logo{width:100%;height:100%;object-fit:contain;padding:3px;filter:drop-shadow(0 0 4px rgba(0,212,255,0.5));}
+.msg-body{max-width:75%;}
+.msg-sender{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,212,255,0.3);margin-bottom:4px;}
+.msg.user .msg-sender{text-align:right;color:rgba(200,169,110,0.4);}
+.msg-text{padding:12px 16px;border-radius:4px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+.msg.user .msg-text{background:rgba(200,169,110,0.07);border:1px solid rgba(200,169,110,0.15);color:var(--gold-bright);text-align:right;}
+.msg.system .msg-text{background:rgba(0,8,20,0.8);border:1px solid rgba(0,212,255,0.1);color:var(--text-bright);}
+.thinking{display:flex;gap:4px;align-items:center;padding:12px 16px;}
+.thinking span{width:4px;height:4px;border-radius:50%;background:var(--cyan);opacity:.4;animation:pulse 1.2s ease-in-out infinite;}
+.thinking span:nth-child(2){animation-delay:.2s;}.thinking span:nth-child(3){animation-delay:.4s;}
+@keyframes pulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.route-tag{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 10px;border-radius:2px;border:1px solid rgba(0,212,255,0.15);color:rgba(0,212,255,0.4);background:rgba(0,212,255,0.03);display:inline-flex;align-items:center;gap:6px;margin-top:6px;}
+.rt-dot{width:4px;height:4px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite;}
+#input-area{border-top:1px solid var(--border);background:rgba(0,5,16,0.9);padding:16px 24px;}
+.input-context{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.ctx-tag{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 10px;border:1px solid rgba(200,169,110,0.15);border-radius:2px;color:rgba(200,169,110,0.4);cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.ctx-tag.active{border-color:var(--gold);color:var(--gold);background:rgba(200,169,110,0.08);}
+.input-row{display:flex;gap:10px;align-items:flex-end;}
+#main-input{flex:1;background:rgba(0,8,20,0.9);border:1px solid rgba(0,212,255,0.15);border-radius:4px;padding:12px 16px;color:var(--text-bright);font-family:'Rajdhani',monospace;font-size:14px;resize:none;outline:none;min-height:44px;max-height:120px;transition:border-color .2s;line-height:1.5;}
+#main-input:focus{border-color:rgba(0,212,255,0.35);}
+#main-input::placeholder{color:rgba(168,212,232,0.2);}
+#run-btn{padding:12px 20px;background:linear-gradient(135deg,rgba(200,169,110,0.2),rgba(255,210,127,0.1));border:1px solid rgba(200,169,110,0.3);border-radius:4px;color:var(--gold-bright);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+#run-btn:hover{border-color:var(--gold);box-shadow:0 0 20px rgba(200,169,110,0.2);}
+#run-btn:disabled{opacity:.3;cursor:not-allowed;}
+#right-panel{border-left:1px solid var(--border);background:rgba(0,5,16,0.7);padding:20px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.rp-section{border:1px solid var(--border);border-radius:4px;background:rgba(0,8,20,0.5);overflow:hidden;}
+.rp-header{padding:8px 14px;border-bottom:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,212,255,0.4);display:flex;align-items:center;gap:6px;}
+.rp-dot{width:4px;height:4px;border-radius:50%;background:var(--cyan);opacity:.4;}
+.rp-body{padding:12px 14px;}
+.lyla-status{display:flex;flex-direction:column;gap:8px;}
+.lyla-item{display:flex;justify-content:space-between;align-items:center;}
+.lyla-key{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,212,255,0.3);letter-spacing:1px;}
+.lyla-val{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:bold;}
+.lyla-val.safe{color:#00ff88;}.lyla-val.warn{color:#ffb300;}.lyla-val.crit{color:#ff5e5e;}.lyla-val.nominal{color:var(--cyan);}
+.sim-paths{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.sim-path{background:rgba(0,8,20,0.8);border:1px solid rgba(0,212,255,0.08);border-radius:3px;padding:7px 10px;font-size:11px;color:rgba(168,212,232,0.6);display:flex;align-items:center;gap:8px;}
+.sim-path input{flex:1;background:transparent;border:none;outline:none;color:inherit;font-family:'Rajdhani',monospace;font-size:11px;}
+.sim-path-num{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(0,212,255,0.3);min-width:16px;}
+#sim-btn{width:100%;padding:8px;background:rgba(123,47,255,0.1);border:1px solid rgba(123,47,255,0.25);border-radius:3px;color:rgba(180,140,255,0.8);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+#sim-btn:hover{background:rgba(123,47,255,0.2);border-color:rgba(123,47,255,0.4);}
+.add-path{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(0,212,255,0.25);cursor:pointer;letter-spacing:1px;padding:4px 0;transition:color .2s;}
+.add-path:hover{color:rgba(0,212,255,0.5);}
+#sim-result{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(168,212,232,0.5);line-height:1.7;max-height:120px;overflow-y:auto;padding:8px;border:1px solid rgba(123,47,255,0.1);border-radius:3px;background:rgba(0,0,10,0.5);display:none;margin-top:8px;}
+#stripe-btn{width:100%;padding:10px;background:linear-gradient(135deg,rgba(99,91,255,0.15),rgba(162,89,255,0.1));border:1px solid rgba(99,91,255,0.25);border-radius:3px;color:rgba(180,160,255,0.8);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+#stripe-btn:hover{border-color:rgba(99,91,255,0.5);color:#fff;}
+.stripe-input{width:100%;padding:8px 10px;margin-bottom:8px;background:rgba(0,0,0,0.9);border:1px solid rgba(0,204,255,0.15);border-radius:6px;color:#cdefff;outline:none;font-size:11px;font-family:monospace;}
+.plan-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;font-size:11px;}
+.plan-row label{display:flex;align-items:center;gap:6px;color:#cdefff;}
+.photo-output{background:rgba(0,0,0,0.9);border:1px solid rgba(0,204,255,0.15);border-radius:8px;padding:10px;font-size:11px;color:#cdefff;min-height:80px;white-space:pre-wrap;overflow-wrap:break-word;}
+#bottombar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-top:1px solid var(--border);background:rgba(0,5,16,0.9);font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,212,255,0.25);letter-spacing:1px;}
+#freedom-count{color:rgba(200,169,110,0.4);}
+#galaxy{position:fixed;inset:0;z-index:0;pointer-events:none;}
+</style>
 </head>
 <body>
-
-<div id="galaxy-3d"></div>
+<canvas id="galaxy"></canvas>
 <div class="nebula"></div>
 <div class="scanline"></div>
-
 <div id="app">
-    <header id="topbar">
-        <button class="mobile-btn" onclick="toggleP('left')">ROUTES</button>
+  <header id="topbar">
+    <div class="topbar-left">
+      <img src="/static/logo.png" alt="KD" class="topbar-logo">
+      <div>
         <div class="logo-text">KING DIADEM</div>
-        <button class="mobile-btn" onclick="toggleP('right')">STATS ❯</button>
-        <div class="topbar-right" id="desktop-health" style="display: flex; gap: 5px;">
-            <span class="sys-badge off" id="b-ai">AI —</span>
-            <span class="sys-badge off" id="b-eng">ENG —</span>
-            <span class="sys-badge off" id="b-lyla">LYLA —</span>
+        <div class="logo-sub">DRIFTZERO WATERLINE GOVERNANCE OS · v1.0</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="sys-badge off" id="b-ai">AI —</span>
+      <span class="sys-badge off" id="b-eng">ENGINE —</span>
+      <span class="sys-badge off" id="b-lyla">LYLA —</span>
+      <span class="sys-badge off" id="b-stripe">STRIPE —</span>
+      <div id="sys-time">——:——:——</div>
+    </div>
+  </header>
+  <nav id="left-panel">
+    <div class="panel-label">GOVERNANCE ROUTES</div>
+    <button class="engine-btn active" onclick="setRoute('general')" id="btn-general"><span class="e-icon">◈</span><span><span style="display:block">Choice Engine</span><span class="e-sub">GENERAL · CHOICE ANALYSIS</span></span><span class="e-dot"></span></button>
+    <button class="engine-btn" onclick="setRoute('risk')" id="btn-risk"><span class="e-icon">⊘</span><span><span style="display:block">Risk Engine</span><span class="e-sub">RISK · EXPOSURE AUDIT</span></span><span class="e-dot"></span></button>
+    <button class="engine-btn" onclick="setRoute('survival')" id="btn-survival"><span class="e-icon">◉</span><span><span style="display:block">Survival Engine</span><span class="e-sub">SURVIVAL · WATERLINE</span></span><span class="e-dot"></span></button>
+    <button class="engine-btn" onclick="setRoute('collapse')" id="btn-collapse"><span class="e-icon">⊛</span><span><span style="display:block">Collapse Detector</span><span class="e-sub">COLLAPSE · DRIFT MONITOR</span></span><span class="e-dot"></span></button>
+    <button class="engine-btn" onclick="setRoute('civil')" id="btn-civil"><span class="e-icon">⊞</span><span><span style="display:block">Civil Engine</span><span class="e-sub">CIVIL · GOVERNANCE WORK</span></span><span class="e-dot"></span></button>
+    <button class="engine-btn" onclick="setRoute('vega')" id="btn-vega"><span class="e-icon">★</span><span><span style="display:block">Vega Engine</span><span class="e-sub">FUTURE · WORLD EXPLORATION</span></span><span class="e-dot"></span></button>
+    <div class="panel-label" style="margin-top:16px">WATERLINE STATUS</div>
+    <div class="waterline-bar">
+      <div class="wl-label">ENTROPY</div><div class="wl-meter"><div class="wl-fill safe" id="wl-entropy" style="width:40%"></div></div><div class="wl-val" id="wl-entropy-val">40.0</div>
+      <div class="wl-label" style="margin-top:8px">STABILITY</div><div class="wl-meter"><div class="wl-fill safe" id="wl-stability" style="width:60%"></div></div><div class="wl-val" id="wl-stability-val">60.0</div>
+      <div class="wl-label" style="margin-top:8px">RESOURCE</div><div class="wl-meter"><div class="wl-fill safe" id="wl-resource" style="width:50%"></div></div><div class="wl-val" id="wl-resource-val">50.0</div>
+    </div>
+  </nav>
+  <main id="center">
+    <div id="chat-area">
+      <div id="welcome">
+        <img src="/static/logo.png" alt="KING DIADEM" class="welcome-logo">
+        <div class="welcome-title">KING DIADEM</div>
+        <div class="welcome-sub">DRIFTZERO · LYLA KERNEL · GOVERNANCE OS</div>
+        <div class="welcome-desc">ระบบไม่คิดแทนคุณ<br>ระบบช่วยให้คุณเห็นทางเลือกที่ชัดขึ้น<br>การตัดสินใจสุดท้ายเป็นของคุณเสมอ</div>
+        <div class="welcome-hint">
+          <span class="hint-chip" onclick="useHint(this)">ฉันตกงาน ไม่รู้จะทำอะไร</span>
+          <span class="hint-chip" onclick="useHint(this)">ธุรกิจกำลังล้มเหลว</span>
+          <span class="hint-chip" onclick="useHint(this)">ฉันต้องตัดสินใจสำคัญ</span>
+          <span class="hint-chip" onclick="useHint(this)">ทรัพยากรกำลังหมด</span>
         </div>
-    </header>
-
-    <nav id="left-panel">
-        <h3 style="font-size: 10px; color: var(--cyan); margin-bottom: 15px;">GOVERNANCE ROUTES</h3>
-        <button class="engine-btn active" id="btn-general" onclick="setR('general')">◈ Choice Engine</button>
-        <button class="engine-btn" id="btn-risk" onclick="setR('risk')">⊘ Risk Engine</button>
-        <button class="engine-btn" id="btn-survival" onclick="setR('survival')">◉ Survival Engine</button>
-        <button class="engine-btn" id="btn-vega" onclick="setR('vega')">★ Vega Engine</button>
-        
-        <div style="margin-top: 30px;">
-            <p style="font-size: 10px; opacity: 0.5;">ENTROPY LEVEL</p>
-            <div class="wl-meter"><div id="wl-entropy" class="wl-fill" style="width: 40%;"></div></div>
-            <p id="wl-val" style="font-size: 10px; color: var(--cyan);">40.0</p>
+      </div>
+    </div>
+    <div id="input-area">
+      <div class="input-context">
+        <span class="ctx-tag active" id="ctx-general" onclick="setRoute('general')">◈ GENERAL</span>
+        <span class="ctx-tag" id="ctx-risk" onclick="setRoute('risk')">⊘ RISK</span>
+        <span class="ctx-tag" id="ctx-survival" onclick="setRoute('survival')">◉ SURVIVAL</span>
+        <span class="ctx-tag" id="ctx-collapse" onclick="setRoute('collapse')">⊛ COLLAPSE</span>
+        <span class="ctx-tag" id="ctx-civil" onclick="setRoute('civil')">⊞ CIVIL</span>
+        <span class="ctx-tag" id="ctx-vega" onclick="setRoute('vega')">★ VEGA</span>
+      </div>
+      <div class="input-row">
+        <textarea id="main-input" placeholder="พิมพ์สถานการณ์ของคุณ — ระบบจะวิเคราะห์และเสนอทางเลือก..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();run();}" oninput="autoResize(this)"></textarea>
+        <button id="run-btn" onclick="run()"><span>▶</span><span>ANALYZE</span></button>
+      </div>
+    </div>
+  </main>
+  <aside id="right-panel">
+    <div class="rp-section">
+      <div class="rp-header"><div class="rp-dot"></div>LYLA KERNEL STATUS</div>
+      <div class="rp-body"><div class="lyla-status">
+        <div class="lyla-item"><span class="lyla-key">STABILITY</span><span class="lyla-val nominal" id="lyla-stability">NOMINAL</span></div>
+        <div class="lyla-item"><span class="lyla-key">WATERLINE</span><span class="lyla-val safe" id="lyla-waterline">ABOVE LINE</span></div>
+        <div class="lyla-item"><span class="lyla-key">ACTION</span><span class="lyla-val nominal" id="lyla-action">OBSERVE</span></div>
+        <div class="lyla-item"><span class="lyla-key">DRIFT</span><span class="lyla-val safe" id="lyla-drift">0.0%</span></div>
+        <div class="lyla-item"><span class="lyla-key">CHOICES</span><span class="lyla-val safe" id="lyla-choices">≥ 1</span></div>
+      </div></div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-header"><div class="rp-dot" style="background:#9999ff"></div>FUTURE SIMULATION</div>
+      <div class="rp-body">
+        <div class="sim-paths" id="sim-paths">
+          <div class="sim-path"><span class="sim-path-num">01</span><input type="text" value="เดินหน้าต่อแบบเดิม"></div>
+          <div class="sim-path"><span class="sim-path-num">02</span><input type="text" value="หยุดและประเมินใหม่"></div>
+          <div class="sim-path"><span class="sim-path-num">03</span><input type="text" value="หาพันธมิตร/ทรัพยากรเพิ่ม"></div>
         </div>
-    </nav>
-
-    <main id="center">
-        <div id="chat-area">
-            <div id="welcome" style="text-align: center; margin-top: 100px; opacity: 0.4;">
-                <h2 style="font-family: 'Cinzel';">Welcome, Operator</h2>
-                <p>KING DIADEM DriftZero OS Is Active</p>
-            </div>
+        <div class="add-path" onclick="addPath()">+ ADD PATH</div>
+        <button id="sim-btn" onclick="simulate()">◈ SIMULATE FUTURES</button>
+        <div id="sim-result"></div>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-header"><div class="rp-dot" style="background:#635bff"></div>AI CREDITS</div>
+      <div class="rp-body">
+        <input type="text" id="payment-email" placeholder="Email / username for receipt" class="stripe-input" />
+        <div class="plan-row">
+          <label><input type="radio" name="plan" value="basic" checked> $5 Basic AI Chat</label>
+          <label><input type="radio" name="plan" value="civil"> 279 THB Civilization Mode</label>
         </div>
-
-        <div id="input-area">
-            <div class="input-box">
-                <textarea id="main-input" placeholder="พิมพ์สถานการณ์ของคุณ..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-                <button id="run-btn" onclick="run()">↑</button>
-            </div>
-        </div>
-    </main>
-
-    <aside id="right-panel">
-        <div class="rp-section" style="margin-bottom: 20px;">
-            <p style="font-size: 10px; color: var(--cyan);">LYLA KERNEL STATUS</p>
-            <div style="padding: 10px; background: rgba(0,0,0,0.4); margin-top: 5px;">
-                <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                    <span>STABILITY</span><span id="st-val" style="color: #00ff88;">NOMINAL</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px;">
-                    <span>DRIFT</span><span id="dr-val">0.00%</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="rp-section">
-            <p style="font-size: 10px; color: #7b2fff;">FUTURE SIMULATION</p>
-            <div id="sim-paths" style="margin-top: 8px;">
-                <input type="text" value="ดำเนินการตามแผน A" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 6px; font-size: 11px; margin-bottom: 5px;">
-            </div>
-            <button onclick="simulate()" style="width: 100%; background: rgba(123,47,255,0.2); border: 1px solid #7b2fff; color: #fff; padding: 6px; font-size: 9px; cursor: pointer;">◈ RUN SIMULATION</button>
-        </div>
-
-        <div class="rp-section" style="margin-top: 20px;">
-            <p style="font-size: 10px; color: var(--gold);">CREDIT & ANALYTICS</p>
-            <button onclick="stripeCheckout()" style="width: 100%; background: #635bff; color: #fff; border: none; padding: 8px; font-size: 10px; margin-top: 5px; cursor: pointer;">⚡ TOP UP STRIPE</button>
-            <input type="file" id="photo-file" style="font-size: 10px; margin-top: 10px; width: 100%;">
-            <button onclick="uploadImage()" style="width: 100%; background: var(--cyan); color: #000; border: none; padding: 6px; font-size: 10px; margin-top: 5px; cursor: pointer;">📸 ANALYZE PHOTO</button>
-            <pre id="photo-output" style="font-size: 8px; color: #fff; margin-top: 10px; white-space: pre-wrap;"></pre>
-        </div>
-    </aside>
-
-    <footer id="bottombar">
-        <span>FAIL LESS · HARM LESS · RESTORE MORE</span>
-        <span id="sys-time">00:00:00</span>
-    </footer>
+        <button id="stripe-btn" onclick="stripeCheckout()">⚡ TOP UP — Stripe</button>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-header"><div class="rp-dot" style="background:#00ccff"></div>Evidence Photo</div>
+      <div class="rp-body">
+        <input type="file" id="photo-file" accept="image/*" class="stripe-input" />
+        <button id="photo-btn" onclick="uploadImage()">📸 ANALYZE PHOTO</button>
+        <pre id="photo-output" class="photo-output">อัปโหลดภาพที่มีวันเวลาเพื่อวิเคราะห์ Timeline</pre>
+      </div>
+    </div>
+  </aside>
+  <footer id="bottombar">
+    <span>KING DIADEM OS · FAIL LESS · HARM LESS · RESTORE MORE</span>
+    <span>QUESTIONS PROCESSED: <span id="freedom-count">0</span></span>
+    <span>NITHIKORN BUNSRANG · BANGKOK</span>
+  </footer>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-    // --- 1. GALAXY ENGINE (3D) ---
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('galaxy-3d').appendChild(renderer.domElement);
-
-    const starGeom = new THREE.BufferGeometry();
-    const starCount = 15000;
-    const posArr = new Float32Array(starCount * 3);
-    for(let i=0; i < starCount * 3; i++) { posArr[i] = (Math.random() - 0.5) * 12; }
-    starGeom.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
-    const starMat = new THREE.PointsMaterial({ size: 0.006, color: 0x00f2ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
-    const starMesh = new THREE.Points(starGeom, starMat);
-    scene.add(starMesh); camera.position.z = 4;
-
-    function animate() { requestAnimationFrame(animate); starMesh.rotation.y += 0.0008; renderer.render(scene, camera); }
-    animate();
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+(function () {
+  const canvas = document.getElementById("galaxy");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize(); addEventListener("resize", resize);
+  // nodes จักรวาล KING DIADEM
+  const NODES = [
+    { name: "LYLA KERNEL",     color: "#00ccff", r: 8,  orbit: 0,    speed: 0 },
+    { name: "DECISION",        color: "#ffd700", r: 6,  orbit: 120,  speed: 0.0008 },
+    { name: "GOVERNANCE",      color: "#ff9966", r: 6,  orbit: 180,  speed: 0.0005 },
+    { name: "SURVIVAL",        color: "#00ff88", r: 5,  orbit: 240,  speed: 0.0006 },
+    { name: "CIVILIZATION",    color: "#9999ff", r: 5,  orbit: 300,  speed: 0.0004 },
+    { name: "DRIFTZERO",       color: "#ff5e5e", r: 4,  orbit: 200,  speed: 0.0009 },
+    { name: "WATERLINE",       color: "#66ffcc", r: 4,  orbit: 160,  speed: 0.0007 },
+    { name: "CHOICE ENGINE",   color: "#ffcc00", r: 4,  orbit: 260,  speed: 0.0005 },
+    { name: "SIMULATION",      color: "#cc88ff", r: 4,  orbit: 320,  speed: 0.0003 },
+    { name: "VEGA",            color: "#ffff00", r: 4,  orbit: 340,  speed: 0.0002 },
+    { name: "COLLAPSE DETECT", color: "#ff6666", r: 3,  orbit: 140,  speed: 0.0010 },
+  ];
+  let angles = NODES.map((n, i) => (i / NODES.length) * Math.PI * 2);
+  let positions = NODES.map(() => ({ x: 0, y: 0 }));
+  // background stars
+  const stars = Array.from({ length: 200 }, () => ({
+    x: Math.random() * 2000, y: Math.random() * 2000,
+    s: Math.random() * 1.5 + 0.3,
+    a: Math.random(), f: (Math.random() - 0.5) * 0.01
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    // stars
+    for (const s of stars) {
+      s.a = Math.max(0.1, Math.min(1, s.a + s.f));
+      if (s.a <= 0.1 || s.a >= 1) s.f *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x % canvas.width, s.y % canvas.height, s.s, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,240,255,${s.a * 0.6})`;
+      ctx.fill();
+    }
+    // center glow — LYLA core
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+    grad.addColorStop(0, "rgba(0,204,255,0.25)");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.beginPath(); ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+    ctx.fillStyle = grad; ctx.fill();
+    // orbit rings
+    for (const n of NODES) {
+      if (n.orbit === 0) continue;
+      ctx.beginPath();
+      ctx.arc(cx, cy, n.orbit, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0,204,255,0.06)";
+      ctx.lineWidth = 1; ctx.stroke();
+    }
+    // update positions
+    NODES.forEach((n, i) => {
+      angles[i] += n.speed;
+      positions[i] = {
+        x: cx + Math.cos(angles[i]) * n.orbit,
+        y: cy + Math.sin(angles[i]) * n.orbit * 0.38
+      };
     });
-
-    // --- 2. KERNEL SYSTEM LOGIC ---
-    let R = "general";
-    function toggleP(s) { document.getElementById(s + '-panel').classList.toggle('active'); }
-    function setR(r) { R = r; document.querySelectorAll(".engine-btn").forEach(b => b.classList.remove("active")); document.getElementById("btn-" + r).classList.add("active"); }
-
-    setInterval(() => { document.getElementById("sys-time").textContent = new Date().toTimeString().slice(0, 8); }, 1000);
-
-    async function checkHealth() {
-        try {
-            const res = await fetch("/health");
-            const d = await res.json();
-            sB("b-ai", d.llm_loaded, "AI OK", "AI OFF");
-            sB("b-eng", d.engine_loaded, "ENG OK", "ENG OFF");
-            sB("b-lyla", d.lyla_loaded, "LYLA OK", "LYLA OFF");
-        } catch(e) { sB("b-ai", false, "", "NO CONN"); }
+    // connection lines
+    for (let i = 1; i < NODES.length; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(positions[i].x, positions[i].y);
+      ctx.strokeStyle = `rgba(0,204,255,0.07)`;
+      ctx.lineWidth = 1; ctx.stroke();
     }
-    function sB(id, ok, a, b) { const el = document.getElementById(id); el.textContent = ok ? a : b; el.className = "sys-badge " + (ok ? "ok" : "off"); }
-    checkHealth();
+    // nodes
+    NODES.forEach((n, i) => {
+      const { x, y } = positions[i];
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, n.r * 3);
+      glow.addColorStop(0, n.color + "cc");
+      glow.addColorStop(1, "transparent");
+      ctx.beginPath(); ctx.arc(x, y, n.r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = glow; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = n.color; ctx.fill();
+      if (n.orbit > 0) {
+        ctx.fillStyle = "rgba(200,240,255,0.7)";
+        ctx.font = "9px monospace";
+        ctx.fillText(n.name, x + n.r + 4, y + 3);
+      }
+    });
+    // center node label
+    ctx.fillStyle = "#00ccff";
+    ctx.font = "bold 11px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("LYLA", cx, cy + 4);
+    ctx.textAlign = "left";
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+function tick(){document.getElementById("sys-time").textContent=new Date().toTimeString().slice(0,8);}tick();setInterval(tick,1000);
+let R="general",Q=0;
+async function checkHealth(){try{const d=await(await fetch("/health")).json();sB("b-ai",d.llm_loaded,"GEMINI OK","AI OFF");sB("b-eng",d.engine_loaded,"ENGINE OK","ENGINE OFF");sB("b-lyla",d.lyla_loaded,"LYLA OK","LYLA OFF");sB("b-stripe",d.stripe_loaded,"STRIPE OK","STRIPE OFF");if(d.freedom_score)document.getElementById("freedom-count").textContent=d.freedom_score;}catch(e){sB("b-ai",false,"","NO CONN");}}
+function sB(id,ok,a,b){const el=document.getElementById(id);el.textContent=ok?a:b;el.className="sys-badge "+(ok?"ok":"off");}
+checkHealth();setInterval(checkHealth,30000);
+function setRoute(r){R=r;document.querySelectorAll(".engine-btn").forEach(b=>b.classList.remove("active"));document.querySelectorAll(".ctx-tag").forEach(t=>t.classList.remove("active"));const b=document.getElementById("btn-"+r),c=document.getElementById("ctx-"+r);if(b)b.classList.add("active");if(c)c.classList.add("active");}
+function useHint(el){document.getElementById("main-input").value=el.textContent;autoResize(document.getElementById("main-input"));}
+function autoResize(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px";}
+function hideWelcome(){const w=document.getElementById("welcome");if(w)w.remove();}
+function addMsg(type,text,meta){
+  hideWelcome();const area=document.getElementById("chat-area");const div=document.createElement("div");div.className="msg "+type;
+  const av=type==="user"?`<div class="msg-avatar">YOU</div>`:`<div class="msg-avatar"><img src="/static/logo.png" class="msg-logo" alt="KD"></div>`;
+  const snd=type==="user"?"OPERATOR":"KING DIADEM · LYLA KERNEL";
+  div.innerHTML=`${av}<div class="msg-body"><div class="msg-sender">${snd}</div><div class="msg-text">${escH(text)}</div>${meta?`<div class="route-tag"><div class="rt-dot"></div>${meta}</div>`:""}</div>`;
+  area.appendChild(div);area.scrollTop=area.scrollHeight;}
+function escH(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function addThinking(){hideWelcome();const area=document.getElementById("chat-area");const div=document.createElement("div");div.className="msg system";div.id="thinking-msg";div.innerHTML=`<div class="msg-avatar"><img src="/static/logo.png" class="msg-logo" alt="KD"></div><div class="msg-body"><div class="msg-sender">KING DIADEM · ANALYZING</div><div class="msg-text"><div class="thinking"><span></span><span></span><span></span></div></div></div>`;area.appendChild(div);area.scrollTop=area.scrollHeight;}
+function removeThinking(){const el=document.getElementById("thinking-msg");if(el)el.remove();}
+function updateLyla(data){
+  const lyla=data.lyla||data.governance?.lyla||null,hs=data.governance?.human_state||data.pattern||null;
+  if(lyla){sT("lyla-stability",lyla.stability||"NOMINAL");sT("lyla-waterline",lyla.waterline||"ABOVE LINE");sT("lyla-action",lyla.action||"OBSERVE");sLC("lyla-stability",lyla.stability);sLC("lyla-waterline",lyla.waterline);sLC("lyla-action",lyla.action);}
+  if(hs){const e=hs.entropy||40,s=hs.stability||60,r=hs.resource||50;uM("wl-entropy",e,true);uM("wl-stability",s,false);uM("wl-resource",r,false);document.getElementById("wl-entropy-val").textContent=e.toFixed(1);document.getElementById("wl-stability-val").textContent=s.toFixed(1);document.getElementById("wl-resource-val").textContent=r.toFixed(1);document.getElementById("lyla-drift").textContent=(e/100*0.1).toFixed(2)+"%";}
+  document.getElementById("lyla-choices").textContent=data.risk_score>80?"CRITICAL":"≥ 1";}
+function sT(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function sLC(id,val){const el=document.getElementById(id);if(!el)return;el.className="lyla-val";if(["STABLE","ABOVE_LINE","MAINTAIN"].includes(val))el.classList.add("safe");else if(["CRITICAL","BREACHED","INTERVENE"].includes(val))el.classList.add("crit");else if(["DRIFTING","DECLINING","MONITOR","AUDIT"].includes(val))el.classList.add("warn");else el.classList.add("nominal");}
+function uM(id,val,inv){const f=document.getElementById(id);if(!f)return;const p=Math.min(100,Math.max(0,val));f.style.width=p+"%";const d=inv?p>70:p<30,w=inv?p>50:p<50;f.className="wl-fill "+(d?"crit":w?"warn":"safe");}
+async function run(){
+  const inp=document.getElementById("main-input"),text=inp.value.trim();if(!text)return;
+  addMsg("user",text);inp.value="";inp.style.height="auto";
+  document.getElementById("run-btn").disabled=true;addThinking();Q++;document.getElementById("freedom-count").textContent=Q;
+  try{const res=await fetch("/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({input:text,route:R})});const data=await res.json();removeThinking();
+    const reply=data.ai_response||data.message||JSON.stringify(data,null,2);
+    const risk=data.risk_score!==undefined?` · RISK: ${Math.round(data.risk_score)}`:"";
+    addMsg("system",reply,`ROUTE: ${(data.route||R).toUpperCase()}${risk}`);updateLyla(data);
+  }catch(e){removeThinking();addMsg("system","SYSTEM ERROR: "+e,"ERROR");}
+  document.getElementById("run-btn").disabled=false;}
+async function simulate(){
+  const input=document.getElementById("main-input").value.trim();
+  if(!input){document.getElementById("sim-result").style.display="block";document.getElementById("sim-result").textContent="⚠ พิมพ์สถานการณ์ก่อน";return;}
+  const paths=[...document.querySelectorAll("#sim-paths input")].map(i=>i.value).filter(v=>v.trim());
+  document.getElementById("sim-btn").disabled=true;document.getElementById("sim-result").style.display="block";document.getElementById("sim-result").textContent="⟳ กำลังจำลอง...";
+  try{const d=await post("/simulate",{input,paths});let txt=d.simulation||d.error||"No result";if(d.lyla_observation?.observation)txt+="\n\n— LYLA —\n"+d.lyla_observation.observation;document.getElementById("sim-result").textContent=txt;if(d.lyla_observation)updateLyla({lyla:d.lyla_observation});}catch(e){document.getElementById("sim-result").textContent="ERROR: "+e;}
+  document.getElementById("sim-btn").disabled=false;}
+function addPath(){const g=document.getElementById("sim-paths"),n=g.children.length+1;const d=document.createElement("div");d.className="sim-path";d.innerHTML=`<span class="sim-path-num">0${n}</span><input type="text" placeholder="ทางเลือก ${n}...">`;g.appendChild(d);}
+async function stripeCheckout(){
+  const email = document.getElementById("payment-email").value.trim() || "guest";
+  const plan = document.querySelector('input[name="plan"]:checked')?.value || "basic";
+  const d = await post("/payment/create-checkout", {api_key: email, plan});
+  if(d.url) window.location.href = d.url;
+  else document.getElementById("photo-output").textContent = "❌ Stripe: " + (d.error || "checkout ไม่สำเร็จ");
+}
 
-    function addMsg(type, text) {
-        const w = document.getElementById("welcome"); if(w) w.remove();
-        const area = document.getElementById("chat-area");
-        const div = document.createElement("div");
-        div.className = "msg-text " + (type === "user" ? "msg-user" : "msg-system");
-        div.textContent = text;
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
-    }
+async function uploadImage(){
+  const fileInput = document.getElementById("photo-file");
+  const output = document.getElementById("photo-output");
+  if(!fileInput.files.length){
+    output.textContent = "กรุณาเลือกภาพก่อน";
+    return;
+  }
+  const file = fileInput.files[0];
+  const form = new FormData();
+  form.append("file", file);
+  form.append("email", document.getElementById("payment-email").value.trim() || "guest");
 
-    async function run() {
-        const inp = document.getElementById("main-input");
-        const t = inp.value.trim(); if(!t) return;
-        addMsg("user", t); inp.value = ""; inp.style.height = "auto";
-        try {
-            const res = await fetch("/run", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({input: t, route: R}) });
-            const data = await res.json();
-            addMsg("system", data.ai_response || JSON.stringify(data));
-            if(data.governance) updateLyla(data);
-        } catch(e) { addMsg("system", "ERROR: " + e); }
+  try{
+    const res = await fetch("/upload-image", {method:"POST", body: form});
+    const data = await res.json();
+    if(data.error){
+      output.textContent = "❌ " + data.error;
+      return;
     }
-
-    function updateLyla(d) {
-        const hs = d.governance?.human_state || d.pattern;
-        if(hs) {
-            document.getElementById("wl-entropy").style.width = hs.entropy + "%";
-            document.getElementById("wl-val").textContent = hs.entropy.toFixed(1);
-            document.getElementById("dr-val").textContent = (hs.entropy * 0.1).toFixed(2) + "%";
-        }
-    }
-
-    async function simulate() {
-        const paths = [...document.querySelectorAll("#sim-paths input")].map(i => i.value);
-        const res = await fetch("/simulate", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({input: "Simulation", paths}) });
-        const d = await res.json();
-        alert(d.simulation || "Sim Complete");
-    }
-
-    async function uploadImage() {
-        const f = document.getElementById("photo-file").files[0]; if(!f) return;
-        const form = new FormData(); form.append("file", f);
-        const res = await fetch("/upload-image", { method: "POST", body: form });
-        const d = await res.json();
-        document.getElementById("photo-output").textContent = d.message + "\n" + d.recommendation;
-    }
-
-    async function stripeCheckout() {
-        const res = await fetch("/payment/create-checkout", { method: "POST", body: JSON.stringify({plan: "basic"}) });
-        const d = await res.json(); if(d.url) window.location.href = d.url;
-    }
+    output.textContent = data.message + "\n\n" + JSON.stringify(data.timeline, null, 2) + "\n\n" + data.recommendation;
+  }catch(e){
+    output.textContent = "ERROR: " + e;
+  }
+}
+async function post(u,b){try{const r=await fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});return await r.json();}catch(e){return{error:String(e)};}}
+if("serviceWorker"in navigator)navigator.serviceWorker.register("/static/service-worker.js").catch(()=>{});
 </script>
 </body>
 </html>
