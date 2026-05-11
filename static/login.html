@@ -2,213 +2,90 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Login - King Diadem</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login — KING DIADEM</title>
 <style>
-
-/* 🌌 BASE SPACE */
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    color: #e0f7ff;
-    background: radial-gradient(circle at center, #020617, #000);
-    overflow: hidden;
-}
-
-/* ⭐ STAR LAYERS */
-.stars, .stars2, .stars3 {
-    position: fixed;
-    width: 200%;
-    height: 200%;
-    background-repeat: repeat;
-    animation: moveStars linear infinite;
-}
-
-/* ⭐ layer 1 (ใกล้) */
-.stars {
-    background-image:
-    radial-gradient(2px 2px at 20px 30px, white, transparent),
-    radial-gradient(2px 2px at 100px 150px, white, transparent),
-    radial-gradient(1px 1px at 200px 80px, white, transparent);
-    animation-duration: 60s;
-}
-
-/* ⭐ layer 2 */
-.stars2 {
-    background-image:
-    radial-gradient(1px 1px at 50px 60px, #aaa, transparent),
-    radial-gradient(1px 1px at 150px 120px, #ddd, transparent);
-    animation-duration: 120s;
-}
-
-/* ⭐ layer 3 (ไกล) */
-.stars3 {
-    background-image:
-    radial-gradient(1px 1px at 80px 40px, #888, transparent),
-    radial-gradient(1px 1px at 180px 200px, #bbb, transparent);
-    animation-duration: 200s;
-}
-
-@keyframes moveStars {
-    from { transform: translateY(0); }
-    to { transform: translateY(-500px); }
-}
-
-/* 🌫 overlay glow */
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at center,
-        rgba(0,255,255,0.05),
-        rgba(0,0,0,0.9)
-    );
-}
-
-/* 🧊 container */
-.container {
-    position: relative;
-    max-width: 400px;
-    margin: 120px auto;
-    padding: 30px;
-
-    background: rgba(10, 20, 30, 0.85);
-    backdrop-filter: blur(20px);
-
-    border-radius: 20px;
-    border: 1px solid rgba(0,255,255,0.2);
-
-    box-shadow: 0 0 40px rgba(0,255,255,0.15);
-    z-index: 10;
-}
-
-/* 🔷 logo */
-.logo {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 60px;
-}
-
-/* 🧠 title */
-h1 {
-    text-align: center;
-    color: #00eaff;
-}
-
-/* ✍️ input */
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-
-    background: rgba(0,20,30,0.7);
-    border: 1px solid rgba(0,255,255,0.3);
-    border-radius: 10px;
-
-    color: #ccfaff;
-}
-
-/* 🔘 button */
-button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 10px;
-
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-
-    background: linear-gradient(135deg, #00cfff, #0066ff);
-    color: white;
-}
-
-button:hover {
-    transform: scale(1.02);
-}
-
-/* 🔗 link */
-.link {
-    text-align: center;
-    margin-top: 10px;
-}
-
-.link a {
-    color: #00eaff;
-    text-decoration: none;
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#000510;color:#a8d4e8;font-family:'Share Tech Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.nebula{position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 50%,rgba(255,80,0,0.08),transparent 60%),radial-gradient(ellipse 50% 60% at 80% 40%,rgba(0,100,255,0.10),transparent 60%);pointer-events:none;}
+.scanline{position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,0.01) 2px,rgba(0,212,255,0.01) 4px);pointer-events:none;}
+.card{position:relative;z-index:10;width:380px;padding:36px;border-radius:6px;background:rgba(0,8,20,0.92);border:1px solid rgba(0,212,255,0.15);box-shadow:0 0 60px rgba(0,212,255,0.1);}
+.logo-wrap{display:flex;justify-content:center;margin-bottom:20px;}
+.logo-wrap img{width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 16px rgba(0,212,255,0.5));}
+.title{font-family:'Cinzel',serif;font-size:18px;letter-spacing:4px;text-align:center;background:linear-gradient(90deg,#c8a96e,#ffd27f,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.sub{font-size:9px;letter-spacing:2px;color:rgba(0,212,255,0.3);text-align:center;margin-bottom:28px;}
+.field{margin-bottom:14px;}
+.field label{font-size:8px;letter-spacing:2px;color:rgba(0,212,255,0.4);display:block;margin-bottom:6px;}
+.field input{width:100%;padding:10px 14px;background:rgba(0,8,20,0.9);border:1px solid rgba(0,212,255,0.15);border-radius:3px;color:#cdefff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;}
+.field input:focus{border-color:rgba(0,212,255,0.4);}
+.btn{width:100%;padding:12px;border:none;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.btn-primary{background:linear-gradient(135deg,rgba(200,169,110,0.2),rgba(255,210,127,0.1));border:1px solid rgba(200,169,110,0.3);color:#ffd27f;}
+.btn-primary:hover{border-color:#c8a96e;box-shadow:0 0 20px rgba(200,169,110,0.2);}
+.btn-google{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#cdefff;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-google:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);}
+.btn-google img{width:16px;height:16px;}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:8px;color:rgba(0,212,255,0.2);letter-spacing:2px;}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:rgba(0,212,255,0.1);}
+.back{text-align:center;margin-top:16px;font-size:9px;color:rgba(0,212,255,0.3);}
+.back a{color:rgba(0,212,255,0.5);text-decoration:none;}
+.back a:hover{color:#00d4ff;}
+.msg{font-size:10px;padding:8px;border-radius:3px;margin-bottom:12px;display:none;}
+.msg.err{background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.2);color:#ff8f8f;}
+.msg.ok{background:rgba(0,255,120,0.08);border:1px solid rgba(0,255,120,0.2);color:#00ff88;}
 </style>
 </head>
-
 <body>
-
-<!-- 🌌 layers -->
-<div class="stars"></div>
-<div class="stars2"></div>
-<div class="stars3"></div>
-<div class="overlay"></div>
-
-<img src="/static/logo.png" class="logo">
-
-<div class="container">
-
-<h1>Login</h1>
-
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-
-<button onclick="login()">Login</button>
-<button onclick="register()">Register</button>
-
-<div class="link">
-<a href="/">← กลับหน้าหลัก</a>
+<div class="nebula"></div>
+<div class="scanline"></div>
+<div class="card">
+  <div class="logo-wrap"><img src="/static/logo.png" alt="KD"></div>
+  <div class="title">KING DIADEM</div>
+  <div class="sub">GOVERNANCE OS · ACCESS PORTAL</div>
+  <div class="msg" id="msg"></div>
+  <div class="field"><label>EMAIL</label><input type="email" id="email" placeholder="your@email.com"></div>
+  <div class="field"><label>PASSWORD</label><input type="password" id="password" placeholder="••••••••"></div>
+  <button class="btn btn-primary" onclick="login()">▶ LOGIN</button>
+  <button class="btn btn-primary" style="opacity:.7" onclick="register()">+ REGISTER</button>
+  <div class="divider">OR</div>
+  <button class="btn btn-google" onclick="googleLogin()">
+    <img src="https://www.google.com/favicon.ico" alt="G">
+    CONTINUE WITH GOOGLE
+  </button>
+  <div class="back"><a href="/">← กลับหน้าหลัก</a></div>
 </div>
-
-</div>
-
 <script>
+const urlParams=new URLSearchParams(location.search);
+if(urlParams.get("error")){showMsg("เกิดข้อผิดพลาด: "+urlParams.get("error"),"err");}
+
+function showMsg(txt,type){
+  const el=document.getElementById("msg");
+  el.textContent=txt;el.className="msg "+type;el.style.display="block";
+}
 
 async function login(){
-
-    const email = document.getElementById("email").value
-    const password = document.getElementById("password").value
-
-    const res = await fetch("/login",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({email,password})
-    })
-
-    const data = await res.json()
-
-    if(data.status==="ok"){
-        localStorage.setItem("email", email)
-        alert("Login สำเร็จ | เครดิต: " + data.credit)
-        window.location.href = "/"
-    }else{
-        alert("Login ไม่สำเร็จ")
-    }
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+  if(!email){showMsg("กรุณากรอก Email","err");return;}
+  const res=await fetch("/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+  const data=await res.json();
+  if(data.status==="ok"){showMsg("เข้าสู่ระบบสำเร็จ ✓","ok");setTimeout(()=>location.href="/",800);}
+  else showMsg("Email หรือ Password ไม่ถูกต้อง","err");
 }
 
 async function register(){
-
-    const email = document.getElementById("email").value
-    const password = document.getElementById("password").value
-
-    const res = await fetch("/register",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({email,password})
-    })
-
-    const data = await res.json()
-
-    alert("สมัครแล้ว: " + JSON.stringify(data))
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+  if(!email){showMsg("กรุณากรอก Email","err");return;}
+  const res=await fetch("/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+  const data=await res.json();
+  if(data.status==="ok"){showMsg("สมัครสำเร็จ ✓ ได้รับ 10 credits ฟรี","ok");setTimeout(()=>location.href="/",1000);}
+  else showMsg("สมัครไม่สำเร็จ","err");
 }
 
-</script>
+function googleLogin(){location.href="/login/google";}
 
+document.addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+</script>
 </body>
 </html>
