@@ -1,249 +1,148 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#000510">
-<link rel="manifest" href="/static/manifest.json">
-<link rel="icon" href="/static/favicon.ico">
-<title>KING DIADEM — DriftZero OS 3D</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#000510">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/favicon.ico">
+    <title>KING DIADEM — Adaptive DriftZero OS</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;600&display=swap');
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@400;600;900&family=Rajdhani:wght@300;400;600&display=swap');
+        :root {
+            --gold: #c8a96e;
+            --gold-bright: #ffd27f;
+            --cyan: #00d4ff;
+            --bg: #000510;
+            --border: rgba(0,212,255,0.12);
+            --text: #a8d4e8;
+            --text-bright: #cdefff;
+            --panel-bg: rgba(0, 5, 16, 0.85);
+        }
 
-:root {
-    --gold: #c8a96e;
-    --gold-bright: #ffd27f;
-    --cyan: #00d4ff;
-    --bg: #000510;
-    --border: rgba(0,212,255,0.12);
-    --text: #a8d4e8;
-    --text-bright: #cdefff;
-}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html, body { 
+            width: 100%; height: 100%; 
+            background: #000; 
+            font-family: 'Rajdhani', sans-serif; 
+            color: var(--text); 
+            overflow: hidden; 
+        }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+        /* --- BACKGROUND LAYER --- */
+        #galaxy-3d { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .nebula { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, rgba(0,100,255,0.05) 0%, transparent 80%); }
+        .scanline { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.01) 2px, rgba(0,212,255,0.01) 4px); }
 
-html, body {
-    width: 100%;
-    height: 100%;
-    background: #000;
-    font-family: 'Rajdhani', sans-serif;
-    color: var(--text);
-    overflow: hidden;
-}
+        /* --- CORE APP GRID --- */
+        #app {
+            position: relative; z-index: 10;
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            grid-template-rows: 60px 1fr 40px;
+            height: 100vh;
+        }
 
-/* Background & Layering */
-#galaxy-3d {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-}
+        /* --- TOPBAR --- */
+        #topbar {
+            grid-column: 1/-1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+        }
 
-.nebula {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: radial-gradient(ellipse 60% 40% at 15% 50%, rgba(255,80,0,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 60% at 85% 40%, rgba(0,100,255,0.10) 0%, transparent 60%);
-}
+        .logo-text {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-bright), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.scanline {
-    position: fixed;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.012) 2px, rgba(0,212,255,0.012) 4px);
-}
+        .sys-badge {
+            font-family: 'Share Tech Mono'; font-size: 9px; padding: 2px 8px; border: 1px solid; border-radius: 2px;
+        }
+        .sys-badge.ok { border-color: #00ff88; color: #00ff88; }
+        .sys-badge.off { border-color: #ff5e5e; color: #ff5e5e; }
 
-/* UI Overlay Style จากโค้ด Three.js */
-#ui-overlay {
-    position: absolute;
-    top: 75px;
-    left: 245px;
-    color: var(--cyan);
-    text-shadow: 0 0 10px var(--cyan);
-    z-index: 10;
-    pointer-events: none;
-    font-family: 'Share Tech Mono', monospace;
-}
+        /* --- SIDE PANELS (Desktop Default) --- */
+        #left-panel, #right-panel {
+            background: rgba(0,5,16,0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
 
-#app {
-    position: relative;
-    z-index: 20;
-    width: 100%;
-    height: 100vh;
-    display: grid;
-    grid-template-columns: 220px 1fr 280px;
-    grid-template-rows: 60px 1fr 50px;
-}
+        .engine-btn {
+            display: flex; align-items: center; gap: 10px; width: 100%;
+            padding: 12px; background: transparent; border: none;
+            color: var(--text); border-left: 2px solid transparent;
+            cursor: pointer; transition: 0.2s; font-family: inherit;
+        }
+        .engine-btn.active { background: rgba(0,212,255,0.05); border-left-color: var(--gold); color: var(--gold-bright); }
 
-/* Header */
-#topbar {
-    grid-column: 1/-1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(0,5,16,0.9);
-    backdrop-filter: blur(10px);
-}
+        /* --- CENTER: GEMINI STYLE CHAT --- */
+        #center { display: flex; flex-direction: column; overflow: hidden; }
+        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
 
-.topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+        .msg-text {
+            max-width: 85%; padding: 12px 18px; border-radius: 18px;
+            font-size: 14px; line-height: 1.6;
+            background: rgba(0, 8, 20, 0.8); border: 1px solid rgba(0, 212, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .msg-user { align-self: flex-end; border-color: var(--gold); color: var(--gold-bright); }
+        .msg-system { align-self: flex-start; }
 
-.logo-text {
-    font-family: 'Cinzel', serif;
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    background: linear-gradient(90deg, var(--gold), var(--gold-bright), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+        /* --- ADAPTIVE MOBILE OVERRIDE --- */
+        @media (max-width: 768px) {
+            #app { grid-template-columns: 1fr; grid-template-rows: 60px 1fr auto; }
+            #left-panel, #right-panel {
+                position: fixed; top: 60px; height: calc(100% - 110px);
+                width: 80%; left: -100%; z-index: 100; transition: 0.4s ease;
+            }
+            #left-panel.active { left: 0; }
+            #right-panel.active { right: 0; left: auto; }
+            
+            #input-area {
+                position: sticky; bottom: 0; width: 100%;
+                background: linear-gradient(to top, var(--bg) 80%, transparent);
+                padding: 10px 15px 30px; z-index: 50;
+            }
+            .mobile-btn { display: block !important; }
+        }
 
-.topbar-right {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
+        .mobile-btn { display: none; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 5px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; }
 
-.sys-badge {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
-    padding: 3px 10px;
-    border-radius: 2px;
-    border: 1px solid;
-    letter-spacing: 2px;
-}
+        /* --- INPUT INTERFACE --- */
+        .input-box {
+            display: flex; align-items: flex-end; gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 24px; padding: 8px 16px; border: 1px solid var(--border);
+        }
+        #main-input {
+            flex: 1; background: transparent; border: none; color: #fff;
+            padding: 10px 0; outline: none; font-size: 15px; resize: none;
+            max-height: 120px;
+        }
+        #run-btn {
+            background: var(--gold); border: none; width: 36px; height: 36px;
+            border-radius: 50%; color: #000; cursor: pointer; flex-shrink: 0; font-weight: bold;
+        }
 
-.sys-badge.ok { border-color: rgba(0,255,120,0.4); color: #00ff88; background: rgba(0,255,120,0.05); }
-.sys-badge.off { border-color: rgba(255,60,60,0.4); color: #ff5e5e; background: rgba(255,60,60,0.05); }
-
-/* Sidebar Left */
-#left-panel {
-    border-right: 1px solid var(--border);
-    background: rgba(0,5,16,0.7);
-    padding: 20px 0;
-    overflow-y: auto;
-}
-
-.panel-label {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 8px;
-    letter-spacing: 3px;
-    color: rgba(0,212,255,0.3);
-    padding: 8px 20px 4px;
-}
-
-.engine-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 20px;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    width: 100%;
-    text-align: left;
-    border-left: 2px solid transparent;
-    transition: all 0.2s;
-}
-
-.engine-btn.active {
-    background: rgba(0,212,255,0.08);
-    border-left-color: var(--gold);
-    color: var(--gold-bright);
-}
-
-/* Waterline Meter */
-.waterline-bar { padding: 12px 20px; }
-.wl-meter { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; margin: 6px 0; overflow: hidden; }
-.wl-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
-.wl-fill.safe { background: linear-gradient(90deg, #00ff88, #00ccff); }
-
-/* Center Area */
-#center { display: flex; flex-direction: column; overflow: hidden; }
-#chat-area { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; }
-
-.msg-text {
-    padding: 12px 16px;
-    border-radius: 4px;
-    font-size: 13px;
-    line-height: 1.7;
-    background: rgba(0,8,20,0.8);
-    border: 1px solid rgba(0,212,255,0.1);
-    color: var(--text-bright);
-    backdrop-filter: blur(5px);
-}
-
-#input-area {
-    border-top: 1px solid var(--border);
-    background: rgba(0,5,16,0.9);
-    padding: 16px 24px;
-}
-
-#main-input {
-    flex: 1;
-    background: rgba(0,8,20,0.9);
-    border: 1px solid rgba(0,212,255,0.15);
-    border-radius: 4px;
-    padding: 12px 16px;
-    color: var(--text-bright);
-    font-family: inherit;
-    resize: none;
-    outline: none;
-}
-
-/* Sidebar Right */
-#right-panel {
-    border-left: 1px solid var(--border);
-    background: rgba(0,5,16,0.7);
-    padding: 20px 16px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.rp-section {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: rgba(0,8,20,0.5);
-    margin-bottom: 12px;
-}
-
-.rp-header {
-    padding: 8px 14px;
-    border-bottom: 1px solid var(--border);
-    font-size: 8px;
-    font-family: 'Share Tech Mono';
-    color: rgba(0,212,255,0.4);
-}
-
-#bottombar {
-    grid-column: 1/-1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    border-top: 1px solid var(--border);
-    background: rgba(0,5,16,0.9);
-    font-family: 'Share Tech Mono';
-    font-size: 9px;
-    opacity: 0.5;
-}
-</style>
+        /* --- WATERLINE METER --- */
+        .wl-meter { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+        .wl-fill { height: 100%; background: var(--cyan); transition: width 0.8s; }
+    </style>
 </head>
 <body>
 
@@ -251,273 +150,180 @@ html, body {
 <div class="nebula"></div>
 <div class="scanline"></div>
 
-<div id="ui-overlay">
-    <div style="font-weight: bold; letter-spacing: 2px;">LYLA KERNEL : ACTIVE</div>
-    <div style="font-size: 0.7rem; opacity: 0.7;">STABILITY MONITORING... 100,000 LIGHT YEARS</div>
-</div>
-
 <div id="app">
     <header id="topbar">
-        <div class="topbar-left">
-            <img src="/static/logo.png" style="width:30px; height:30px;" alt="KD">
-            <div class="logo-text">KING DIADEM</div>
-        </div>
-        <div class="topbar-right">
+        <button class="mobile-btn" onclick="toggleP('left')">ROUTES</button>
+        <div class="logo-text">KING DIADEM</div>
+        <button class="mobile-btn" onclick="toggleP('right')">STATS ❯</button>
+        <div class="topbar-right" id="desktop-health" style="display: flex; gap: 5px;">
             <span class="sys-badge off" id="b-ai">AI —</span>
             <span class="sys-badge off" id="b-eng">ENG —</span>
             <span class="sys-badge off" id="b-lyla">LYLA —</span>
-            <div id="sys-time">00:00:00</div>
         </div>
     </header>
 
     <nav id="left-panel">
-        <div class="panel-label">GOVERNANCE ROUTES</div>
-        <button class="engine-btn active" id="btn-general" onclick="setRoute('general')">◈ Choice Engine</button>
-        <button class="engine-btn" id="btn-risk" onclick="setRoute('risk')">⊘ Risk Engine</button>
-        <button class="engine-btn" id="btn-survival" onclick="setRoute('survival')">◉ Survival Engine</button>
-        <button class="engine-btn" id="btn-vega" onclick="setRoute('vega')">★ Vega Engine</button>
-
-        <div class="panel-label" style="margin-top:20px">WATERLINE STATUS</div>
-        <div class="waterline-bar">
-            <div style="font-size:8px; opacity:0.5;">ENTROPY</div>
-            <div class="wl-meter"><div id="wl-entropy" class="wl-fill safe" style="width:40%;"></div></div>
-            <div id="wl-entropy-val" style="font-size:9px;">40.0</div>
+        <h3 style="font-size: 10px; color: var(--cyan); margin-bottom: 15px;">GOVERNANCE ROUTES</h3>
+        <button class="engine-btn active" id="btn-general" onclick="setR('general')">◈ Choice Engine</button>
+        <button class="engine-btn" id="btn-risk" onclick="setR('risk')">⊘ Risk Engine</button>
+        <button class="engine-btn" id="btn-survival" onclick="setR('survival')">◉ Survival Engine</button>
+        <button class="engine-btn" id="btn-vega" onclick="setR('vega')">★ Vega Engine</button>
+        
+        <div style="margin-top: 30px;">
+            <p style="font-size: 10px; opacity: 0.5;">ENTROPY LEVEL</p>
+            <div class="wl-meter"><div id="wl-entropy" class="wl-fill" style="width: 40%;"></div></div>
+            <p id="wl-val" style="font-size: 10px; color: var(--cyan);">40.0</p>
         </div>
     </nav>
 
     <main id="center">
         <div id="chat-area">
-            <div id="welcome" style="text-align:center; padding:100px;">
-                <h1 class="logo-text" style="font-size:32px;">KING DIADEM OS</h1>
-                <p style="opacity:0.5;">ระบบจำลองสภาวะการรอดพ้น v1.0</p>
+            <div id="welcome" style="text-align: center; margin-top: 100px; opacity: 0.4;">
+                <h2 style="font-family: 'Cinzel';">Welcome, Operator</h2>
+                <p>KING DIADEM DriftZero OS Is Active</p>
             </div>
         </div>
+
         <div id="input-area">
-            <div style="display:flex; gap:10px;">
-                <textarea id="main-input" placeholder="พิมพ์สถานการณ์ของคุณ..." rows="1"></textarea>
-                <button id="run-btn" onclick="run()" style="background:var(--gold); border:none; padding:10px 20px; font-family:'Share Tech Mono'; cursor:pointer;">ANALYZE</button>
+            <div class="input-box">
+                <textarea id="main-input" placeholder="พิมพ์สถานการณ์ของคุณ..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                <button id="run-btn" onclick="run()">↑</button>
             </div>
         </div>
     </main>
 
     <aside id="right-panel">
-        <div class="rp-section">
-            <div class="rp-header">LYLA KERNEL STATUS</div>
-            <div style="padding:15px; font-size:11px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span>STABILITY</span><span id="lyla-stability" style="color:var(--cyan);">NOMINAL</span>
+        <div class="rp-section" style="margin-bottom: 20px;">
+            <p style="font-size: 10px; color: var(--cyan);">LYLA KERNEL STATUS</p>
+            <div style="padding: 10px; background: rgba(0,0,0,0.4); margin-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                    <span>STABILITY</span><span id="st-val" style="color: #00ff88;">NOMINAL</span>
                 </div>
-                <div style="display:flex; justify-content:space-between;">
-                    <span>DRIFT</span><span id="lyla-drift" style="color:#00ff88;">0.00%</span>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px;">
+                    <span>DRIFT</span><span id="dr-val">0.00%</span>
                 </div>
             </div>
         </div>
 
         <div class="rp-section">
-            <div class="rp-header">FUTURE SIMULATION</div>
-            <div style="padding:15px;">
-                <div id="sim-paths">
-                    <input type="text" value="ดำเนินการแผนเดิม" style="width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); color:#fff; padding:6px; font-size:10px; margin-bottom:5px;">
-                </div>
-                <button id="sim-btn" onclick="simulate()" style="width:100%; background:rgba(123,47,255,0.2); border:1px solid #7b2fff; color:#fff; padding:6px; font-size:9px; cursor:pointer;">◈ SIMULATE TIMELINES</button>
-                <div id="sim-result" style="font-size:9px; margin-top:10px; color:#a8d4e8; display:none;"></div>
+            <p style="font-size: 10px; color: #7b2fff;">FUTURE SIMULATION</p>
+            <div id="sim-paths" style="margin-top: 8px;">
+                <input type="text" value="ดำเนินการตามแผน A" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 6px; font-size: 11px; margin-bottom: 5px;">
             </div>
+            <button onclick="simulate()" style="width: 100%; background: rgba(123,47,255,0.2); border: 1px solid #7b2fff; color: #fff; padding: 6px; font-size: 9px; cursor: pointer;">◈ RUN SIMULATION</button>
         </div>
 
-        <div class="rp-section">
-            <div class="rp-header">STRIPE CREDIT</div>
-            <div style="padding:15px;">
-                <input type="text" id="payment-email" placeholder="Email" style="width:100%; background:#000; border:1px solid var(--border); color:#fff; padding:6px; font-size:10px; margin-bottom:8px;">
-                <button onclick="stripeCheckout()" style="width:100%; background:#635bff; border:none; color:#fff; padding:10px; font-size:10px; cursor:pointer;">⚡ TOP UP</button>
-            </div>
-        </div>
-
-        <div class="rp-section">
-            <div class="rp-header">EVIDENCE PHOTO</div>
-            <div style="padding:15px;">
-                <input type="file" id="photo-file" style="font-size:10px; margin-bottom:8px;">
-                <button onclick="uploadImage()" style="width:100%; background:var(--cyan); border:none; color:#000; padding:8px; font-size:10px; cursor:pointer;">📸 ANALYZE PHOTO</button>
-                <pre id="photo-output" style="font-size:8px; white-space:pre-wrap; margin-top:10px; opacity:0.8;"></pre>
-            </div>
+        <div class="rp-section" style="margin-top: 20px;">
+            <p style="font-size: 10px; color: var(--gold);">CREDIT & ANALYTICS</p>
+            <button onclick="stripeCheckout()" style="width: 100%; background: #635bff; color: #fff; border: none; padding: 8px; font-size: 10px; margin-top: 5px; cursor: pointer;">⚡ TOP UP STRIPE</button>
+            <input type="file" id="photo-file" style="font-size: 10px; margin-top: 10px; width: 100%;">
+            <button onclick="uploadImage()" style="width: 100%; background: var(--cyan); color: #000; border: none; padding: 6px; font-size: 10px; margin-top: 5px; cursor: pointer;">📸 ANALYZE PHOTO</button>
+            <pre id="photo-output" style="font-size: 8px; color: #fff; margin-top: 10px; white-space: pre-wrap;"></pre>
         </div>
     </aside>
 
     <footer id="bottombar">
         <span>FAIL LESS · HARM LESS · RESTORE MORE</span>
-        <span>KING DIADEM OPERATOR: NITHIKORN B.</span>
+        <span id="sys-time">00:00:00</span>
     </footer>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// --- 3D Galaxy Engine ---
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.getElementById('galaxy-3d').appendChild(renderer.domElement);
-
-const starGeometry = new THREE.BufferGeometry();
-const starCount = 15000;
-const posArray = new Float32Array(starCount * 3);
-for(let i=0; i < starCount * 3; i++) {
-    posArray[i] = (Math.random() - 0.5) * (Math.random() * 12);
-}
-starGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-const starMaterial = new THREE.PointsMaterial({
-    size: 0.006, color: 0x00f2ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending
-});
-const starMesh = new THREE.Points(starGeometry, starMaterial);
-scene.add(starMesh);
-camera.position.z = 4;
-
-function animate() {
-    requestAnimationFrame(animate);
-    starMesh.rotation.y += 0.0008;
-    starMesh.rotation.z += 0.0003;
-    renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    // --- 1. GALAXY ENGINE (3D) ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-});
+    document.getElementById('galaxy-3d').appendChild(renderer.domElement);
 
-// --- Kernel OS Logic ---
-let R = "general";
+    const starGeom = new THREE.BufferGeometry();
+    const starCount = 15000;
+    const posArr = new Float32Array(starCount * 3);
+    for(let i=0; i < starCount * 3; i++) { posArr[i] = (Math.random() - 0.5) * 12; }
+    starGeom.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+    const starMat = new THREE.PointsMaterial({ size: 0.006, color: 0x00f2ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+    const starMesh = new THREE.Points(starGeom, starMat);
+    scene.add(starMesh); camera.position.z = 4;
 
-function tick() {
-    document.getElementById("sys-time").textContent = new Date().toTimeString().slice(0, 8);
-}
-setInterval(tick, 1000);
+    function animate() { requestAnimationFrame(animate); starMesh.rotation.y += 0.0008; renderer.render(scene, camera); }
+    animate();
 
-async function checkHealth() {
-    try {
-        const res = await fetch("/health");
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // --- 2. KERNEL SYSTEM LOGIC ---
+    let R = "general";
+    function toggleP(s) { document.getElementById(s + '-panel').classList.toggle('active'); }
+    function setR(r) { R = r; document.querySelectorAll(".engine-btn").forEach(b => b.classList.remove("active")); document.getElementById("btn-" + r).classList.add("active"); }
+
+    setInterval(() => { document.getElementById("sys-time").textContent = new Date().toTimeString().slice(0, 8); }, 1000);
+
+    async function checkHealth() {
+        try {
+            const res = await fetch("/health");
+            const d = await res.json();
+            sB("b-ai", d.llm_loaded, "AI OK", "AI OFF");
+            sB("b-eng", d.engine_loaded, "ENG OK", "ENG OFF");
+            sB("b-lyla", d.lyla_loaded, "LYLA OK", "LYLA OFF");
+        } catch(e) { sB("b-ai", false, "", "NO CONN"); }
+    }
+    function sB(id, ok, a, b) { const el = document.getElementById(id); el.textContent = ok ? a : b; el.className = "sys-badge " + (ok ? "ok" : "off"); }
+    checkHealth();
+
+    function addMsg(type, text) {
+        const w = document.getElementById("welcome"); if(w) w.remove();
+        const area = document.getElementById("chat-area");
+        const div = document.createElement("div");
+        div.className = "msg-text " + (type === "user" ? "msg-user" : "msg-system");
+        div.textContent = text;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    async function run() {
+        const inp = document.getElementById("main-input");
+        const t = inp.value.trim(); if(!t) return;
+        addMsg("user", t); inp.value = ""; inp.style.height = "auto";
+        try {
+            const res = await fetch("/run", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({input: t, route: R}) });
+            const data = await res.json();
+            addMsg("system", data.ai_response || JSON.stringify(data));
+            if(data.governance) updateLyla(data);
+        } catch(e) { addMsg("system", "ERROR: " + e); }
+    }
+
+    function updateLyla(d) {
+        const hs = d.governance?.human_state || d.pattern;
+        if(hs) {
+            document.getElementById("wl-entropy").style.width = hs.entropy + "%";
+            document.getElementById("wl-val").textContent = hs.entropy.toFixed(1);
+            document.getElementById("dr-val").textContent = (hs.entropy * 0.1).toFixed(2) + "%";
+        }
+    }
+
+    async function simulate() {
+        const paths = [...document.querySelectorAll("#sim-paths input")].map(i => i.value);
+        const res = await fetch("/simulate", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({input: "Simulation", paths}) });
         const d = await res.json();
-        sB("b-ai", d.llm_loaded, "AI OK", "AI OFF");
-        sB("b-eng", d.engine_loaded, "ENG OK", "ENG OFF");
-        sB("b-lyla", d.lyla_loaded, "LYLA OK", "LYLA OFF");
-    } catch(e) {
-        sB("b-ai", false, "", "NO CONN");
+        alert(d.simulation || "Sim Complete");
     }
-}
-function sB(id, ok, a, b) {
-    const el = document.getElementById(id);
-    el.textContent = ok ? a : b;
-    el.className = "sys-badge " + (ok ? "ok" : "off");
-}
-checkHealth();
 
-function setRoute(r) {
-    R = r;
-    document.querySelectorAll(".engine-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById("btn-" + r).classList.add("active");
-}
-
-function addMsg(type, text) {
-    const w = document.getElementById("welcome");
-    if(w) w.remove();
-    const area = document.getElementById("chat-area");
-    const div = document.createElement("div");
-    div.style.marginBottom = "15px";
-    div.style.textAlign = type === "user" ? "right" : "left";
-    div.innerHTML = `<div class="msg-text" style="display:inline-block; border-color:${type==='user'?'var(--gold)':'rgba(0,212,255,0.1)'}">${text}</div>`;
-    area.appendChild(div);
-    area.scrollTop = area.scrollHeight;
-}
-
-async function run() {
-    const inp = document.getElementById("main-input");
-    const text = inp.value.trim();
-    if(!text) return;
-    addMsg("user", text);
-    inp.value = "";
-    try {
-        const res = await fetch("/run", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ input: text, route: R })
-        });
-        const data = await res.json();
-        addMsg("system", data.ai_response || JSON.stringify(data));
-        if(data.governance) updateLyla(data);
-    } catch(e) {
-        addMsg("system", "SYSTEM ERROR: " + e);
-    }
-}
-
-function updateLyla(data) {
-    const hs = data.governance?.human_state || data.pattern;
-    if(hs) {
-        document.getElementById("wl-entropy").style.width = hs.entropy + "%";
-        document.getElementById("wl-entropy-val").textContent = hs.entropy.toFixed(1);
-        document.getElementById("lyla-drift").textContent = (hs.entropy * 0.1).toFixed(2) + "%";
-    }
-    if(data.lyla) {
-        document.getElementById("lyla-stability").textContent = data.lyla.stability || "NOMINAL";
-    }
-}
-
-async function simulate() {
-    const inp = document.getElementById("main-input").value.trim() || "Simulation Request";
-    const paths = [...document.querySelectorAll("#sim-paths input")].map(i => i.value);
-    const btn = document.getElementById("sim-btn");
-    const resDiv = document.getElementById("sim-result");
-    
-    btn.disabled = true;
-    resDiv.style.display = "block";
-    resDiv.textContent = "⟳ จำลองความเป็นไปได้...";
-    
-    try {
-        const res = await fetch("/simulate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ input: inp, paths: paths })
-        });
-        const d = await res.json();
-        resDiv.textContent = d.simulation || "จำลองสำเร็จ";
-    } catch(e) {
-        resDiv.textContent = "Simulation Error: " + e;
-    }
-    btn.disabled = false;
-}
-
-async function uploadImage() {
-    const fileInput = document.getElementById("photo-file");
-    const output = document.getElementById("photo-output");
-    if(!fileInput.files.length) return;
-    
-    output.textContent = "⚡ วิเคราะห์ภาพ...";
-    const form = new FormData();
-    form.append("file", fileInput.files[0]);
-    
-    try {
+    async function uploadImage() {
+        const f = document.getElementById("photo-file").files[0]; if(!f) return;
+        const form = new FormData(); form.append("file", f);
         const res = await fetch("/upload-image", { method: "POST", body: form });
         const d = await res.json();
-        output.textContent = (d.message || "วิเคราะห์เสร็จสิ้น") + "\n" + (d.recommendation || "");
-    } catch(e) {
-        output.textContent = "Upload Error: " + e;
+        document.getElementById("photo-output").textContent = d.message + "\n" + d.recommendation;
     }
-}
 
-async function stripeCheckout() {
-    const email = document.getElementById("payment-email").value;
-    const res = await fetch("/payment/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "basic", email: email })
-    });
-    const d = await res.json();
-    if(d.url) window.location.href = d.url;
-}
-
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/static/service-worker.js").catch(() => {});
-}
+    async function stripeCheckout() {
+        const res = await fetch("/payment/create-checkout", { method: "POST", body: JSON.stringify({plan: "basic"}) });
+        const d = await res.json(); if(d.url) window.location.href = d.url;
+    }
 </script>
 </body>
 </html>
