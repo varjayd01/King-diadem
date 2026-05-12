@@ -1,5 +1,19 @@
 # ENGINE/consensus_engine.py
 
+
+def resolve(pattern):
+    """ใช้เมื่อ route = uncertain — คืนคำแนะนำลดความไม่แน่นอนโดยไม่บังคับตัดสินใจทันที"""
+    pattern = pattern if isinstance(pattern, dict) else {}
+    return {
+        "route": "uncertain",
+        "resolution": "defer_commit",
+        "notes": "ยังไม่ควรฟันธง — รวบรวมข้อมูลอีกนิด หรือปรึกษาคนที่ไว้ใจได้ เพื่อลดความคลุมเครือ",
+        "entropy": pattern.get("entropy"),
+        "resource": pattern.get("resource"),
+        "stability": pattern.get("stability"),
+    }
+
+
 def consensus_engine(council_result, state=None):
     state = state or {}
     decision = council_result.get("decision", {})
