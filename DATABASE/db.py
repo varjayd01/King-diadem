@@ -38,6 +38,11 @@ def init_db():
             status TEXT DEFAULT 'pending',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS user_chat_state (
+            user_email TEXT PRIMARY KEY,
+            payload TEXT NOT NULL,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
     """)
     conn.commit()
     conn.close()
@@ -61,6 +66,38 @@ def add_credits(user_email, amount):
     conn.execute("INSERT INTO credits (user_email,amount) VALUES (?,?)", (user_email, amount))
     conn.commit()
     conn.close()
+
+def ensure_user(email: str):
+    if not email or email == "anonymous":
+        return
+    conn = get_conn()
+    conn.execute("INSERT OR IGNORE INTO users (email) VALUES (?)", (email,))
+    conn.commit()
+    conn.close()
+
+
+def save_chat_state(user_email: str, payload_json: str):
+    conn = get_conn()
+    conn.execute(
+        """INSERT INTO user_chat_state (user_email, payload, updated_at)
+           VALUES (?,?,CURRENT_TIMESTAMP)
+           ON CONFLICT(user_email) DO UPDATE SET
+             payload=excluded.payload, updated_at=CURRENT_TIMESTAMP""",
+        (user_email, payload_json),
+    )
+    conn.commit()
+    conn.close()
+
+
+def load_chat_state(user_email: str):
+    conn = get_conn()
+    row = conn.execute(
+        "SELECT payload FROM user_chat_state WHERE user_email=?",
+        (user_email,),
+    ).fetchone()
+    conn.close()
+    return row["payload"] if row else None
+
 
 def record_payment(user_email, amount_usd, session_id):
     conn = get_conn()
