@@ -6,14 +6,20 @@ def run_engine(text: str):
 
     result = text
 
-    # 🔥 decision (ต้องมี)
+    # 🔥 decision (ต้องมี) — ไฟล์จริงชื่อ dicision.py
+    think_fn = None
     try:
-        from ENGINE.decision import think
-    except:
-        from engine.decision import think
+        from ENGINE.dicision import think as think_fn
+    except Exception:
+        try:
+            from engine.dicision import think as think_fn
+        except Exception:
+            pass
+    if think_fn is None:
+        return "decision error: cannot import ENGINE.dicision.think"
 
     try:
-        result = think(result)
+        result = think_fn(result)
     except Exception as e:
         return f"decision error: {str(e)}"
 
