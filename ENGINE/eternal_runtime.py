@@ -55,3 +55,61 @@ def eternal_runtime(system_state):
         print("\nCycle complete — waiting...\n")
 
         time.sleep(10)
+
+
+def eternal_snapshot(system_state):
+    """
+    รอบเดียวของ eternal loop — สำหรับเชื่อมกับ decision / API โดยไม่ while True
+    คืนสรุปสถานะเชิงกลยุทธ์แบบอ่านได้ (ไม่บล็อก worker)
+    """
+    if not isinstance(system_state, dict):
+        system_state = {}
+
+    state = dict(system_state)
+
+    try:
+        state = dependent_cycle(state)
+    except Exception as e:
+        state["_dependent_cycle_error"] = str(e)
+
+    try:
+        state = evolve_system(state)
+    except Exception as e:
+        state["_evolve_error"] = str(e)
+
+    future = None
+    try:
+        future = simulate_future(state, 3)
+    except Exception as e:
+        future = {"error": str(e)}
+
+    drift = None
+    try:
+        drift = detect_drift(state)
+    except Exception as e:
+        drift = {"error": str(e)}
+
+    guard = None
+    try:
+        guard = entropy_guard(state)
+    except Exception as e:
+        guard = {"error": str(e)}
+
+    vigilance = None
+    try:
+        vigilance = vigilance_check()
+    except Exception as e:
+        vigilance = {"error": str(e)}
+
+    try:
+        sync_state(state)
+    except Exception as e:
+        state["_sync_state_error"] = str(e)
+
+    return {
+        "state_after_cycle": state,
+        "future_hint": future,
+        "drift": drift,
+        "entropy_guard": guard,
+        "vigilance": vigilance,
+    }
