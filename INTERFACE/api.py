@@ -10,9 +10,9 @@ from ENGINE.decision_engine import run_decision
 # DATABASE
 from DATABASE.credit_store import use_credit, get_credits
 
-# PAYMENTS
-from PAYMENTS.create_checkout import create_checkout
-from PAYMENTS.stripe_webhook import handle_webhook
+# PAYMENT (โฟลเดอร์จริงชื่อ PAYMENT)
+from PAYMENT.create_checkout import create_checkout
+from PAYMENT.stripe_webhook import handle_webhook
 
 
 # =========================
