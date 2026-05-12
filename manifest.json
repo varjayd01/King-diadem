@@ -1,24 +1,20 @@
 {
-"name": "KING DIADEM",
-"short_name": "Diadem",
-"start_url": "/",
-"display": "standalone",
-"background_color": "#000000",
-"theme_color": "#000000",
-"icons": [
-
-{
-"src": "/icon-192.png",
-"sizes": "192x192",
-"type": "image/png"
-},
-
-{
-"src": "/icon-512.png",
-"sizes": "512x512",
-"type": "image/png"
-}
-
-]
-
+  "name": "KING DIADEM",
+  "short_name": "DIADEM",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050208",
+  "theme_color": "#050208",
+  "icons": [
+    {
+      "src": "/static/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
