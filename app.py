@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 import os, json, stripe
+from urllib.parse import quote, unquote
 
 try:
     from ENGINE.decision_engine import DecisionEngine, run_decision as full_run_decision
@@ -34,12 +35,21 @@ except Exception as e:
     llm = lyla = None
 
 try:
-    from DATABASE.db import init_db, log_decision, get_credits, add_credits
+    from DATABASE.db import (
+        init_db,
+        log_decision,
+        get_credits,
+        add_credits,
+        ensure_user,
+        save_chat_state,
+        load_chat_state,
+    )
     init_db()
     print("✅ Database initialized")
 except Exception as e:
     print(f"⚠ DB ERROR: {e}")
     init_db = log_decision = get_credits = add_credits = None
+    ensure_user = save_chat_state = load_chat_state = None
 
 try:
     from AI.planetary_dashboard import planetary_status
@@ -142,6 +152,13 @@ async def google_login(request: Request):
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
+def _cookie_ascii(value: str) -> str:
+    """คุกกี้ต้องส่งผ่าน HTTP header (latin-1) — quote UTF-8 เป็น ASCII ปลอดภัย"""
+    if value is None:
+        return ""
+    return quote(str(value), safe="")
+
+
 @app.get("/auth/google/callback")
 async def google_callback(request: Request):
     if not oauth:
@@ -151,26 +168,77 @@ async def google_callback(request: Request):
         user = token.get("userinfo")
         email = user.get("email", "unknown")
         name = user.get("name", email)
+        if ensure_user:
+            ensure_user(email)
         if get_credits and add_credits:
             credits = get_credits(email)
             if credits == 0:
                 add_credits(email, 10)
+        try:
+            sess = getattr(request, "session", None)
+            if sess is not None:
+                for k in list(sess.keys()):
+                    if isinstance(k, str) and (
+                        k.startswith("_state")
+                        or "oauth" in k.lower()
+                        or k.endswith("_token")
+                    ):
+                        sess.pop(k, None)
+        except Exception:
+            pass
         response = RedirectResponse("/")
-        response.set_cookie("kd_email", email, max_age=86400 * 30)
-        response.set_cookie("kd_name", name, max_age=86400 * 30)
+        response.set_cookie("kd_email", _cookie_ascii(email), max_age=86400 * 30)
+        response.set_cookie("kd_name", _cookie_ascii(name), max_age=86400 * 30)
         return response
     except Exception as e:
-        return RedirectResponse(f"/static/login.html?error={str(e)[:50]}")
+        print("google_callback:", repr(e))
+        return RedirectResponse("/static/login.html?error=oauth_error")
 
 
 @app.get("/me")
 async def me(request: Request):
-    email = request.cookies.get("kd_email")
-    name = request.cookies.get("kd_name")
+    email = unquote(request.cookies.get("kd_email") or "")
+    name = unquote(request.cookies.get("kd_name") or "")
     if not email:
         return {"logged_in": False}
     credits = get_credits(email) if get_credits else 0
     return {"logged_in": True, "email": email, "name": name, "credits": credits}
+
+
+@app.get("/api/chat-state")
+async def get_chat_state(request: Request):
+    email = unquote(request.cookies.get("kd_email") or "").strip()
+    if not email or not load_chat_state:
+        return {"state": None}
+    import json
+
+    raw = load_chat_state(email)
+    if not raw:
+        return {"state": None}
+    try:
+        return {"state": json.loads(raw)}
+    except Exception:
+        return {"state": None}
+
+
+@app.put("/api/chat-state")
+async def put_chat_state(request: Request, data: dict):
+    email = unquote(request.cookies.get("kd_email") or "").strip()
+    if not email or not save_chat_state:
+        return JSONResponse({"ok": False, "error": "unauthorized"}, status_code=401)
+    import json
+
+    state = data.get("state") if isinstance(data.get("state"), dict) else data
+    if not isinstance(state, dict):
+        return JSONResponse({"ok": False, "error": "invalid"}, status_code=400)
+    save_chat_state(email, json.dumps(state, ensure_ascii=False))
+    return {"ok": True}
+
+
+@app.post("/api/chat-state")
+async def post_chat_state(request: Request, data: dict):
+    """รองรับ sendBeacon / fetch keepalive ตอนปิดแท็บ (บางเบราว์เซอร์ไม่ส่ง PUT)"""
+    return await put_chat_state(request, data)
 
 
 @app.post("/logout")
@@ -183,23 +251,32 @@ async def logout():
 
 @app.post("/register")
 async def register(data: dict):
-    email = data.get("email", "")
+    email = (data.get("email") or "").strip()
     if not email:
         return {"status": "error", "message": "กรุณากรอก email"}
-    if add_credits and get_credits:
-        if get_credits(email) == 0:
-            add_credits(email, 10)
-    return {"status": "ok", "email": email, "credits": 10}
+    if ensure_user:
+        ensure_user(email)
+    if add_credits and get_credits and get_credits(email) == 0:
+        add_credits(email, 10)
+    credits = get_credits(email) if get_credits else 0
+    response = JSONResponse({"status": "ok", "email": email, "credits": credits})
+    response.set_cookie("kd_email", _cookie_ascii(email), max_age=86400 * 30)
+    response.set_cookie("kd_name", _cookie_ascii(email), max_age=86400 * 30)
+    return response
 
 
 @app.post("/login")
 async def login_email(data: dict):
-    email = data.get("email", "")
+    email = (data.get("email") or "").strip()
     if not email:
         return {"status": "error"}
+    if ensure_user:
+        ensure_user(email)
     credits = get_credits(email) if get_credits else 0
     response = JSONResponse({"status": "ok", "email": email, "credit": credits})
-    response.set_cookie("kd_email", email, max_age=86400 * 30)
+    response.set_cookie("kd_email", _cookie_ascii(email), max_age=86400 * 30)
+    nm = (data.get("name") or email).strip()
+    response.set_cookie("kd_name", _cookie_ascii(nm), max_age=86400 * 30)
     return response
 
 
