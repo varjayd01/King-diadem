@@ -19,30 +19,116 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:var(--text);
   font-family:'Rajdhani',system-ui,sans-serif;overflow-x:hidden;}
-#galaxy{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#galaxy{position:fixed;inset:0;z-index:0;pointer-events:none;display:block;width:100%;height:100%;filter:saturate(1.06) contrast(1.04);}
+.tone-pill{font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 8px;border-radius:999px;border:1px solid rgba(45,212,191,.25);color:rgba(45,212,191,.55);letter-spacing:.08em;}
+.tone-pill.crisis{border-color:rgba(255,90,120,.45);color:#ff9a9a;}
+.tone-pill.vega{border-color:rgba(255,210,140,.4);color:var(--gold-hot);}
+.tone-pill.lyla{border-color:rgba(45,212,191,.35);color:#7ee0d0;}
+.kd-diag{font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.45;color:rgba(184,212,232,.55);white-space:pre-wrap;word-break:break-word;min-height:2.5em;}
 /* Nebula must stay translucent — a solid base gradient was fully hiding the #galaxy canvas. */
 .nebula{
   position:fixed;inset:0;z-index:1;pointer-events:none;
   background:
-    linear-gradient(115deg,transparent 0%,rgba(120,60,180,.12) 22%,rgba(35,200,190,.1) 38%,rgba(255,160,70,.12) 52%,rgba(255,210,140,.08) 62%,transparent 78%),
-    radial-gradient(ellipse 140% 90% at 70% 20%,rgba(255,120,50,.14) 0%,transparent 45%),
-    radial-gradient(ellipse 100% 70% at 20% 75%,rgba(45,212,191,.12) 0%,transparent 50%),
-    radial-gradient(ellipse 90% 55% at 85% 40%,rgba(160,100,255,.1) 0%,transparent 48%),
-    radial-gradient(ellipse 120% 80% at 50% 100%,rgba(45,212,191,.08) 0%,transparent 55%),
-    radial-gradient(ellipse 100% 50% at 50% 0%,rgba(255,200,120,.08) 0%,transparent 42%),
-    linear-gradient(180deg,rgba(2,1,8,.42) 0%,rgba(6,4,24,.36) 40%,rgba(3,2,12,.48) 100%);
+    radial-gradient(ellipse 70% 90% at 12% 45%,rgba(30,80,180,.22) 0%,transparent 55%),
+    radial-gradient(ellipse 65% 85% at 88% 38%,rgba(255,100,40,.2) 0%,transparent 52%),
+    radial-gradient(ellipse 120% 55% at 50% 100%,rgba(255,255,255,.12) 0%,transparent 45%),
+    radial-gradient(ellipse 120% 85% at 58% 36%,rgba(255,90,40,.07) 0%,transparent 52%),
+    linear-gradient(115deg,transparent 0%,rgba(120,60,180,.1) 22%,rgba(35,200,190,.09) 38%,rgba(255,160,70,.1) 52%,rgba(255,210,140,.06) 62%,transparent 78%),
+    radial-gradient(ellipse 140% 90% at 70% 18%,rgba(255,120,50,.12) 0%,transparent 46%),
+    radial-gradient(ellipse 100% 72% at 18% 72%,rgba(45,212,191,.11) 0%,transparent 50%),
+    radial-gradient(ellipse 92% 58% at 86% 42%,rgba(160,100,255,.09) 0%,transparent 48%),
+    radial-gradient(ellipse 130% 85% at 48% 102%,rgba(45,212,191,.07) 0%,transparent 56%),
+    radial-gradient(ellipse 105% 52% at 50% -2%,rgba(255,200,120,.07) 0%,transparent 40%),
+    linear-gradient(180deg,rgba(2,1,8,.38) 0%,rgba(6,4,24,.32) 40%,rgba(3,2,12,.46) 100%);
 }
 .scanline{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.22;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(45,212,191,.02) 2px,rgba(45,212,191,.02) 4px);}
-#app{position:relative;z-index:10;display:flex;flex-direction:column;height:100dvh;max-height:100dvh;width:100%;}
+/* Cockpit glass: darkens edges so the centre solar system reads like a viewport */
+body::after{
+  content:'';position:fixed;inset:0;z-index:3;pointer-events:none;
+  background:
+    radial-gradient(ellipse 92% 88% at 52% 38%,transparent 0%,transparent 38%,rgba(0,2,12,.25) 72%,rgba(0,0,8,.82) 100%),
+    linear-gradient(105deg,rgba(0,0,0,.35) 0%,transparent 14%,transparent 86%,rgba(0,0,0,.35) 100%),
+    linear-gradient(180deg,rgba(2,4,14,.4) 0%,transparent 12%,transparent 88%,rgba(1,1,8,.55) 100%);
+  mix-blend-mode:multiply;
+}
+#app{position:relative;z-index:10;display:flex;flex-direction:row;height:100dvh;max-height:100dvh;width:100%;align-items:stretch;}
+#main-wrap{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;}
+#rail-scrim{display:none;position:fixed;inset:0;z-index:11;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);cursor:pointer;}
+#rail-scrim.on{display:block;}
+#rail{
+  width:min(280px,86vw);flex-shrink:0;display:flex;flex-direction:column;gap:6px;
+  padding:calc(10px + var(--safe-top)) 10px 12px;border-right:1px solid rgba(232,192,120,.12);
+  background:linear-gradient(180deg,rgba(6,8,22,.94),rgba(4,6,16,.88));backdrop-filter:blur(16px);
+  z-index:12;overflow:hidden;
+}
+.rail-brand{display:flex;align-items:center;gap:10px;padding:6px 4px 12px;border-bottom:1px solid rgba(255,255,255,.06);}
+.rail-brand .logo-text{font-size:clamp(13px,3.2vw,16px);}
+.rail-brand .logo-sub{font-size:7px;}
+.rail-new{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 12px;border-radius:10px;
+  border:1px solid rgba(45,212,191,.28);background:rgba(45,212,191,.08);color:var(--teal);
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.06em;cursor:pointer;
+}
+.rail-new:hover{background:rgba(45,212,191,.14);}
+.rail-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.14em;color:rgba(232,192,120,.35);margin:12px 4px 4px;}
+.rail-btn{
+  display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;text-align:left;
+  border:1px solid transparent;background:transparent;color:var(--text-bright);
+  font-family:'Rajdhani',system-ui,sans-serif;font-size:14px;font-weight:500;cursor:pointer;
+}
+.rail-btn:hover{background:rgba(255,255,255,.05);}
+.rail-btn.active{border-color:rgba(232,192,120,.35);background:rgba(232,192,120,.08);color:var(--gold-hot);}
+.rail-btn .sym{font-family:'Share Tech Mono',monospace;font-size:13px;width:1.4em;opacity:.75;}
+#session-list{flex:1;min-height:0;overflow-y:auto;margin:4px 0;padding-right:2px;}
+.session-item{
+  padding:9px 10px;border-radius:8px;margin-bottom:4px;cursor:pointer;border:1px solid transparent;
+  font-size:13px;color:rgba(184,212,232,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.session-item:hover{background:rgba(255,255,255,.04);}
+.session-item.on{border-color:rgba(232,192,120,.25);background:rgba(232,192,120,.06);color:var(--gold-hot);}
+.rail-footer{margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);}
+.rail-google{
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:10px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--text-bright);
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.04em;text-decoration:none;
+}
+.rail-google:hover{background:rgba(255,255,255,.1);}
+.rail-link{display:block;text-align:center;margin-top:8px;font-size:11px;color:rgba(45,212,191,.55);text-decoration:none;}
+.rail-link:hover{color:var(--teal);}
+#rail-auth-user{display:none;flex-direction:column;gap:8px;}
+#rail-auth-user.on{display:flex;}
+#rail-auth-guest.hide{display:none;}
+#user-email-pill{font-size:10px;font-family:'Share Tech Mono',monospace;color:rgba(232,192,120,.6);word-break:break-all;}
+.btn-rail-out{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,90,90,.25);background:transparent;color:#ff9a9a;font-size:11px;cursor:pointer;}
+.kd-logo-css{position:relative;width:40px;height:40px;flex-shrink:0;transform-style:preserve-3d;perspective:100px;}
+.kd-logo-css .kd-crown{
+  position:absolute;left:50%;top:6px;transform:translateX(-50%);
+  width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid #e8c078;
+  filter:drop-shadow(0 0 8px rgba(255,180,80,.6));
+}
+.kd-logo-css .kd-crown::after{
+  content:'';position:absolute;left:-6px;top:10px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid #ffd98a;
+}
+.kd-logo-css .kd-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:2px solid transparent;pointer-events:none;}
+.kd-logo-css .kd-ring-a{width:34px;height:34px;margin:-17px 0 0 -17px;border-color:rgba(45,212,191,.55);transform:rotateX(68deg) rotate(18deg);box-shadow:0 0 12px rgba(45,212,191,.25);}
+.kd-logo-css .kd-ring-b{width:40px;height:40px;margin:-20px 0 0 -20px;border-color:rgba(255,140,60,.45);transform:rotateX(62deg) rotate(-22deg);box-shadow:0 0 14px rgba(255,120,60,.2);}
+.icon-btn{display:none;border:1px solid rgba(232,192,120,.25);background:rgba(0,0,0,.35);color:var(--gold-hot);border-radius:8px;width:40px;height:40px;cursor:pointer;font-size:18px;}
+@media(max-width:899px){
+  #rail{position:fixed;left:0;top:0;bottom:0;transform:translateX(-102%);transition:transform .22s ease;box-shadow:8px 0 40px rgba(0,0,0,.5);}
+  #rail.open{transform:translateX(0);}
+  .icon-btn{display:inline-flex;align-items:center;justify-content:center;}
+}
+@media(min-width:900px){
+  #tabbar{display:none;}
+}
 
 /* header */
 #topbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:calc(8px + var(--safe-top)) 12px 8px;border-bottom:1px solid var(--border);
   background:rgba(5,4,12,.72);backdrop-filter:blur(14px);}
 .topbar-left{display:flex;align-items:center;gap:10px;min-width:0;}
-.topbar-logo{width:32px;height:32px;object-fit:contain;flex-shrink:0;
-  filter:drop-shadow(0 0 10px rgba(255,120,60,.5));}
+.topbar-left .kd-logo-css{flex-shrink:0;filter:drop-shadow(0 0 10px rgba(255,120,60,.45));}
 .logo-text{font-family:'Cinzel',serif;font-size:clamp(14px,4vw,18px);font-weight:600;letter-spacing:.12em;
   background:linear-gradient(90deg,var(--gold),var(--gold-hot),var(--teal));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
@@ -65,8 +151,8 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
 .welcome-card{max-width:min(100%,22rem);padding:18px 20px;border-radius:18px;border:1px solid rgba(255,255,255,.07);
   background:rgba(6,8,20,.38);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   box-shadow:0 12px 40px rgba(0,0,0,.28);}
-.welcome-logo{width:72px;height:72px;object-fit:contain;
-  filter:drop-shadow(0 0 24px rgba(255,100,40,.55));animation:float 5s ease-in-out infinite;}
+.welcome-card .kd-logo-css{margin:0 auto;transform:scale(1.65);transform-origin:center top;
+  filter:drop-shadow(0 0 22px rgba(255,100,40,.5));animation:float 5s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .welcome-title{font-family:'Cinzel',serif;font-size:clamp(20px,5.5vw,26px);letter-spacing:.2em;font-weight:600;
   background:linear-gradient(135deg,var(--gold),var(--gold-hot),var(--teal));
@@ -84,6 +170,10 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
   font-size:9px;font-family:'Share Tech Mono',monospace;font-weight:bold;}
 .msg.user .msg-avatar{background:rgba(232,192,120,.12);border:1px solid rgba(232,192,120,.25);color:var(--gold);}
 .msg.system .msg-avatar{background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.2);}
+.msg.system .msg-avatar.kd-msg-mark{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.06em;line-height:1;
+  background:linear-gradient(135deg,var(--gold),var(--gold-hot),var(--teal));color:transparent;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  border-color:rgba(232,192,120,.28);background-color:rgba(6,10,24,.6);}
 .msg-logo{width:100%;height:100%;object-fit:contain;padding:2px;}
 .msg-body{max-width:min(92%,34rem);}
 .msg-sender{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.15em;color:rgba(45,212,191,.3);margin-bottom:4px;}
@@ -166,9 +256,42 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
 <div class="scanline"></div>
 
 <div id="app">
+  <div id="rail-scrim" onclick="closeRailMobile()"></div>
+  <aside id="rail" aria-label="เมนูหลัก">
+    <div class="rail-brand">
+      <div class="kd-logo-css" aria-hidden="true"><div class="kd-crown"></div><div class="kd-ring kd-ring-a"></div><div class="kd-ring kd-ring-b"></div></div>
+      <div style="min-width:0">
+        <div class="logo-text">KING DIADEM</div>
+        <div class="logo-sub">DRIFTZERO · MILKY SCOPE</div>
+      </div>
+    </div>
+    <button type="button" class="rail-new" onclick="newChatSession()">+ แชทใหม่</button>
+    <div class="rail-label">บทสนทนา</div>
+    <div id="session-list"></div>
+    <div class="rail-label">มุมมอง</div>
+    <button type="button" class="rail-btn rail-tab active" data-tab="chat" onclick="setTab('chat');closeRailMobile();"><span class="sym">◈</span>แชท</button>
+    <button type="button" class="rail-btn rail-tab" data-tab="tools" onclick="setTab('tools');closeRailMobile();"><span class="sym">⚙</span>เครื่องมือ</button>
+    <button type="button" class="rail-btn rail-tab" data-tab="gov" onclick="setTab('gov');closeRailMobile();"><span class="sym">◎</span>กำกับดูแล</button>
+    <div class="rail-label">เครื่องมือด่วน</div>
+    <button type="button" class="rail-btn" onclick="setTab('tools');scrollToTool('section-simulate');closeRailMobile();"><span class="sym">◇</span>จำลองอนาคต</button>
+    <button type="button" class="rail-btn" onclick="setTab('tools');scrollToTool('section-photo');closeRailMobile();"><span class="sym">▣</span>วิเคราะห์ภาพ</button>
+    <button type="button" class="rail-btn" onclick="setTab('tools');scrollToTool('section-stripe');closeRailMobile();"><span class="sym">$</span>Stripe / เครดิต</button>
+    <div class="rail-footer">
+      <div id="rail-auth-guest">
+        <a href="/login/google" class="rail-google" id="rail-google-btn">ลงชื่อเข้าใช้ Google</a>
+        <a href="/static/login.html" class="rail-link">หรือเข้าด้วยอีเมล</a>
+      </div>
+      <div id="rail-auth-user">
+        <div id="user-email-pill"></div>
+        <button type="button" class="btn-rail-out" onclick="doLogout()">ออกจากระบบ</button>
+      </div>
+    </div>
+  </aside>
+  <div id="main-wrap">
   <header id="topbar">
     <div class="topbar-left">
-      <img src="/static/logo.png" alt="" class="topbar-logo" width="32" height="32">
+      <button type="button" class="icon-btn" id="rail-open" aria-label="เปิดเมนู" onclick="openRailMobile()">☰</button>
+      <div class="kd-logo-css" aria-hidden="true"><div class="kd-crown"></div><div class="kd-ring kd-ring-a"></div><div class="kd-ring kd-ring-b"></div></div>
       <div style="min-width:0">
         <div class="logo-text">KING DIADEM</div>
         <div class="logo-sub">DRIFTZERO · MILKY SCOPE</div>
@@ -180,6 +303,7 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
       <span class="sys-badge off" id="b-lyla">LYLA</span>
       <span class="sys-badge off" id="b-stripe">$</span>
       <span id="credits-pill" style="font-size:9px;color:rgba(232,192,120,.5);font-family:'Share Tech Mono',monospace;">—</span>
+      <span class="tone-pill lyla" id="tone-pill" title="โทนที่ client ตรวจจากข้อความ">LYLA</span>
       <div id="sys-time">--:--:--</div>
     </div>
   </header>
@@ -189,7 +313,7 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
       <div id="chat-scroll">
         <div id="welcome">
           <div class="welcome-card">
-          <img src="/static/logo.png" alt="" class="welcome-logo" width="72" height="72">
+          <div class="kd-logo-css" aria-hidden="true"><div class="kd-crown"></div><div class="kd-ring kd-ring-a"></div><div class="kd-ring kd-ring-b"></div></div>
           <div class="welcome-title">KING DIADEM</div>
           <div class="welcome-sub">LYLA KERNEL · GOVERNANCE OS</div>
           <p class="welcome-desc">ระบบไม่คิดแทนคุณ — ช่วยให้เห็นทางเลือกชัดขึ้น<br>การตัดสินใจสุดท้ายเป็นของคุณเสมอ</p>
@@ -206,7 +330,7 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
 
     <div id="view-tools" class="view">
       <div class="tools-pad">
-        <div class="section">
+        <div class="section" id="section-simulate">
           <div class="sec-head">FUTURE SIMULATION</div>
           <div class="sec-body">
             <div id="sim-paths">
@@ -219,7 +343,7 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
             <pre id="sim-result" class="photo-out" style="display:none;margin-top:10px;max-height:200px;overflow-y:auto;"></pre>
           </div>
         </div>
-        <div class="section">
+        <div class="section" id="section-stripe">
           <div class="sec-head">STRIPE · CREDITS</div>
           <div class="sec-body">
             <input type="email" id="payment-email" class="stripe-input" placeholder="อีเมล (ใบเสร็จ / ระบุตัวตน)" autocomplete="email">
@@ -231,7 +355,7 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
             <button type="button" class="btn btn-gold" onclick="stripeCheckout()">ชำระเงิน Stripe</button>
           </div>
         </div>
-        <div class="section">
+        <div class="section" id="section-photo">
           <div class="sec-head">PHOTO · GOVERNANCE SCAN</div>
           <div class="sec-body">
             <input type="file" id="photo-file" class="stripe-input" accept="image/*">
@@ -276,6 +400,14 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
             <div class="lyla-item"><span class="lyla-key">CHOICES</span><span class="lyla-val safe" id="lyla-choices">≥1</span></div>
           </div>
         </div>
+        <div class="section">
+          <div class="sec-head">GALAXY · DECISION TRACE</div>
+          <div class="sec-body"><div id="summary" class="kd-diag">—</div></div>
+        </div>
+        <div class="section">
+          <div class="sec-head">COUNCIL · NODES</div>
+          <div class="sec-body"><div id="council" class="kd-diag">Waiting…</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -302,58 +434,86 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
     <button type="button" class="tab-btn" data-tab="gov" onclick="setTab('gov')"><span class="ti">◎</span>กำกับดูแล</button>
   </nav>
   <div id="bottom-note">FAIL LESS · HARM LESS · RESTORE CHOICE</div>
+  </div>
 </div>
 
+<script>window.KD={byId:function(id){return document.getElementById(id);}};</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/static/galaxy_scene.js"></script>
+<script src="/static/app.js"></script>
+<script src="/static/galaxy_decision.js"></script>
+<script src="/static/galaxy_council.js"></script>
 <script>
 (function(){
+  if(typeof THREE!=='undefined')return;
   const canvas=document.getElementById('galaxy'); if(!canvas) return;
-  const ctx=canvas.getContext('2d');
-  let W,H,cx,cy;
+  const ctx=canvas.getContext('2d',{alpha:false});
+  let W,H,cx,cy,S;
   function resize(){
     W=canvas.width=innerWidth; H=canvas.height=innerHeight;
-    cx=W*.52; cy=H*.38;
+    cx=W*0.52; cy=H*0.38;
+    S=Math.min(W,H)*0.48;
   }
   resize(); addEventListener('resize',resize);
 
-  const STAR_N=4200;
-  const stars=Array.from({length:STAR_N},()=>({
-    x:Math.random(), y:Math.random(),
-    z:.12+Math.random()*.88,
-    s:.5+Math.pow(Math.random(),1.4)*2.8,
-    tw:Math.random()*Math.PI*2,
-    sp:.015+Math.random()*.055,
-    warm:Math.random()>.42
-  }));
+  const STAR_N=Math.min(5200,3200+Math.floor((W*H)/3500));
+  const stars=Array.from({length:STAR_N},()=>{
+    const z=0.08+Math.random()*0.92;
+    const layer=z<0.35?0:(z<0.7?1:2);
+    return{
+      x:Math.random(),y:Math.random(),z,
+      layer,
+      s:0.35+Math.pow(Math.random(),1.35)*2.6,
+      tw:Math.random()*Math.PI*2,
+      sp:0.012+Math.random()*0.05,
+      warm:Math.random()>0.44,
+      vx:(Math.random()-0.5)*0.00006
+    };
+  });
 
+  /* Kepler: T ∝ a^1.5 — ดาวอ้างอิง (ดัชนี refIdx) ใช้เวลา 60 วินาทีต่อรอบโคจรพอดี */
+  const ORBIT_REF_MS=60000;
+  const refIdx=2;
   const planets=[
-    {a:0.42,b:0.22,sp:.00085,r:5.2,col:'#7ec8ff',ring:false},
-    {a:0.55,b:0.30,sp:.0006,r:4,col:'#d4a8ff',ring:false},
-    {a:0.68,b:0.36,sp:.00048,r:6.5,col:'#e8b878',ring:true},
-    {a:0.78,b:0.28,sp:.00036,r:3.6,col:'#ff9a6e',ring:false},
-    {a:0.9,b:0.4,sp:.00026,r:4.2,col:'#9ff5dc',ring:false},
-    {a:1.05,b:0.33,sp:.0002,r:3,col:'#c8c8ff',ring:false},
+    {a:0.19,b:0.165,orn:0.11,r:4.2,rgb:[200,210,255],ring:0,phase:Math.random()*6.283},
+    {a:0.27,b:0.225,orn:0.04,r:4.8,rgb:[255,120,85],ring:0,phase:Math.random()*6.283},
+    {a:0.34,b:0.30,orn:0.12,r:6.8,rgb:[210,175,120],ring:1,phase:Math.random()*6.283},
+    {a:0.44,b:0.36,orn:0.06,r:5.6,rgb:[70,130,255],ring:0,phase:Math.random()*6.283},
+    {a:0.56,b:0.42,orn:0.03,r:4.1,rgb:[200,110,200],ring:0,phase:Math.random()*6.283},
+    {a:0.70,b:0.50,orn:0.14,r:3.4,rgb:[150,210,255],ring:0,phase:Math.random()*6.283},
+    {a:0.86,b:0.58,orn:0.07,r:2.9,rgb:[175,185,215],ring:0,phase:Math.random()*6.283}
   ];
-  let ang=planets.map(()=>Math.random()*Math.PI*2);
+  const refMean=(planets[refIdx].a+planets[refIdx].b)*0.5;
+  for(const p of planets){
+    const mean=(p.a+p.b)*0.5;
+    p.periodMs=ORBIT_REF_MS*Math.pow(Math.max(0.08,mean)/Math.max(0.08,refMean),1.5);
+  }
 
-  function drawMilkyBand(){
+  const beltN=420;
+  const belt=Array.from({length:beltN},()=>{
+    const g=0.48+Math.random()*0.14;
+    return{g,ph:Math.random()*6.283,sp:0.00004+Math.random()*0.00007,a:0.02+Math.random()*0.055};
+  });
+
+  function drawMilkyBand(tt){
     ctx.save();
     ctx.translate(W*0.22,H*0.08);
-    ctx.rotate(-0.42);
-    const bw=Math.max(W,H)*1.8;
-    const bh=H*0.55;
+    ctx.rotate(-0.42+Math.sin(tt*0.00002)*0.012);
+    const bw=Math.max(W,H)*1.85;
+    const bh=H*0.56;
     const g=ctx.createLinearGradient(0,-bh*0.5,0,bh*0.5);
     g.addColorStop(0,'rgba(255,240,220,0)');
-    g.addColorStop(0.35,'rgba(140,90,200,0.09)');
-    g.addColorStop(0.5,'rgba(30,200,185,0.14)');
-    g.addColorStop(0.62,'rgba(255,170,90,0.11)');
-    g.addColorStop(0.78,'rgba(255,220,180,0.06)');
+    g.addColorStop(0.32,'rgba(140,90,200,0.085)');
+    g.addColorStop(0.5,'rgba(30,200,185,0.12)');
+    g.addColorStop(0.62,'rgba(255,170,90,0.095)');
+    g.addColorStop(0.78,'rgba(255,220,180,0.05)');
     g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g;
     ctx.fillRect(-bw*0.2,-bh,bw,bh*2);
     ctx.globalCompositeOperation='lighter';
-    const g2=ctx.createLinearGradient(bw*0.3,0,bw*0.7,0);
+    const g2=ctx.createLinearGradient(bw*0.28,0,bw*0.72,0);
     g2.addColorStop(0,'rgba(255,200,120,0)');
-    g2.addColorStop(0.5,'rgba(255,255,255,0.04)');
+    g2.addColorStop(0.5,'rgba(255,255,255,0.035)');
     g2.addColorStop(1,'rgba(100,220,255,0)');
     ctx.fillStyle=g2;
     ctx.fillRect(-bw*0.2,-bh,bw,bh*2);
@@ -363,140 +523,404 @@ html,body{width:100%;height:100%;min-height:100dvh;background:var(--bg);color:va
 
   function drawNebulaClouds(){
     const blobs=[
-      {ox:0.35,oy:0.62,r:0.55,c1:'rgba(45,210,190,0.16)',c2:'rgba(20,40,80,0)'},
-      {ox:0.72,oy:0.28,r:0.42,c1:'rgba(255,130,60,0.14)',c2:'rgba(80,20,40,0)'},
-      {ox:0.5,oy:0.45,r:0.9,c1:'rgba(140,80,200,0.08)',c2:'rgba(0,0,0,0)'},
-      {ox:0.12,oy:0.35,r:0.35,c1:'rgba(255,200,140,0.1)',c2:'rgba(0,0,0,0)'},
+      {ox:0.35,oy:0.62,r:0.52,c1:'rgba(45,210,190,0.14)',c2:'rgba(20,40,80,0)'},
+      {ox:0.72,oy:0.28,r:0.4,c1:'rgba(255,130,60,0.12)',c2:'rgba(80,20,40,0)'},
+      {ox:0.5,oy:0.45,r:0.88,c1:'rgba(140,80,200,0.07)',c2:'rgba(0,0,0,0)'},
+      {ox:0.12,oy:0.35,r:0.32,c1:'rgba(255,200,140,0.09)',c2:'rgba(0,0,0,0)'}
     ];
     ctx.globalCompositeOperation='screen';
     for(const b of blobs){
-      const nx=b.ox*W, ny=b.oy*H, rad=Math.max(W,H)*b.r;
+      const nx=b.ox*W,ny=b.oy*H,rad=Math.max(W,H)*b.r;
       const gr=ctx.createRadialGradient(nx,ny,0,nx,ny,rad);
       gr.addColorStop(0,b.c1);
       gr.addColorStop(1,b.c2);
       ctx.fillStyle=gr;
       ctx.beginPath();
-      ctx.ellipse(nx,ny,rad*0.85,rad*0.55,0.5,0,Math.PI*2);
+      ctx.ellipse(nx,ny,rad*0.86,rad*0.54,0.48,0,Math.PI*2);
       ctx.fill();
     }
     ctx.globalCompositeOperation='source-over';
   }
 
-  function drawStars(t){
+  function drawStars(tt){
+    const drift=tt*0.000018;
     for(const s of stars){
-      const tw=.5+.5*Math.sin(t*s.sp+s.tw);
-      const px=s.x*W, py=s.y*H;
-      const sc=Math.max(0.55,s.s*s.z*tw);
-      const a=Math.min(1,.12+.62*s.z*tw);
+      const par=s.layer===0?0.012:s.layer===1?0.026:0.042;
+      const px=((s.x+drift*par+s.vx*tt)%1+1)%1*W;
+      const py=s.y*H;
+      const tw=0.5+0.5*Math.sin(tt*s.sp+s.tw);
+      const sc=Math.max(0.35,s.s*s.z*tw*(0.85+s.layer*0.08));
+      const a=Math.min(1,0.1+0.58*s.z*tw);
       let r,g,b;
-      if(s.warm){ r=255; g=230-Math.floor(40*s.z); b=190-Math.floor(80*s.z); }
-      else { r=210-Math.floor(30*s.z); g=235-Math.floor(20*s.z); b=255; }
+      if(s.warm){r=255;g=228-Math.floor(42*s.z);b=188-Math.floor(85*s.z);}
+      else{r=208-Math.floor(32*s.z);g=234-Math.floor(22*s.z);b=255;}
       ctx.beginPath();
       ctx.arc(px,py,sc,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${r},${g},${b},${a})`;
+      ctx.fillStyle='rgba('+r+','+g+','+b+','+a+')';
       ctx.fill();
-      if(s.z>0.82&&tw>0.85){
-        ctx.strokeStyle=`rgba(255,250,235,${0.15*a})`;
-        ctx.lineWidth=0.6;
+      if(s.z>0.78&&tw>0.86){
+        ctx.strokeStyle='rgba(255,250,235,'+(0.12*a)+')';
+        ctx.lineWidth=0.5;
         ctx.beginPath();
-        ctx.moveTo(px-sc*2.2,py); ctx.lineTo(px+sc*2.2,py);
-        ctx.moveTo(px,py-sc*2.2); ctx.lineTo(px,py+sc*2.2);
+        ctx.moveTo(px-sc*2,py);ctx.lineTo(px+sc*2,py);
+        ctx.moveTo(px,py-sc*2);ctx.lineTo(px,py+sc*2);
         ctx.stroke();
       }
     }
   }
 
-  function drawSun(t){
-    const pulse=1+.055*Math.sin(t*.0009);
-    const R=Math.min(W,H)*0.145*pulse;
-    const cor=ctx.createRadialGradient(cx,cy,R*0.08,cx,cy,R*2.1);
-    cor.addColorStop(0,'rgba(255,255,245,0.95)');
-    cor.addColorStop(0.08,'#ffe8a8');
-    cor.addColorStop(0.22,'#ffb040');
-    cor.addColorStop(0.45,'#ff5a18');
-    cor.addColorStop(0.72,'#c41800');
-    cor.addColorStop(1,'rgba(40,0,20,0)');
+  function drawSunCorona(tt){
+    const pulse=1+0.045*Math.sin(tt*0.00085);
+    const R=Math.min(W,H)*0.142*pulse;
+    const spin=(tt/ORBIT_REF_MS)*Math.PI*2;
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(spin*0.35);
     ctx.globalCompositeOperation='lighter';
-    ctx.beginPath(); ctx.arc(cx,cy,R*2.05,0,Math.PI*2);
-    ctx.fillStyle=cor; ctx.fill();
-    ctx.globalCompositeOperation='source-over';
-
-    const core=ctx.createRadialGradient(cx,cy,0,cx,cy,R*0.65);
-    core.addColorStop(0,'#fffef5');
-    core.addColorStop(0.25,'#ffd060');
-    core.addColorStop(0.55,'#ff7010');
-    core.addColorStop(1,'#9a1500');
-    ctx.beginPath(); ctx.arc(cx,cy,R*0.62,0,Math.PI*2);
-    ctx.fillStyle=core; ctx.fill();
-
-    ctx.strokeStyle='rgba(255,220,160,0.35)';
-    ctx.lineWidth=1.5;
-    for(let i=1;i<=3;i++){
+    const rays=40;
+    for(let i=0;i<rays;i++){
+      const a=(i/rays)*Math.PI*2;
+      const w=R*(1.85+0.4*Math.sin(i*1.6));
+      const x0=Math.cos(a)*R*0.22;
+      const y0=Math.sin(a)*R*0.22;
+      const x1=Math.cos(a)*w;
+      const y1=Math.sin(a)*w;
+      const grd=ctx.createLinearGradient(x0,y0,x1,y1);
+      grd.addColorStop(0,'rgba(255,240,220,0.2)');
+      grd.addColorStop(0.4,'rgba(255,120,40,0.07)');
+      grd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.strokeStyle=grd;
+      ctx.lineWidth=2;
       ctx.beginPath();
-      ctx.arc(cx,cy,R*(0.9+i*0.35),0,Math.PI*2);
+      ctx.moveTo(x0,y0);
+      ctx.lineTo(x1,y1);
       ctx.stroke();
     }
+    ctx.restore();
+    ctx.globalCompositeOperation='source-over';
+
+    const cor=ctx.createRadialGradient(cx,cy,R*0.06,cx,cy,R*2.15);
+    cor.addColorStop(0,'rgba(255,255,250,0.95)');
+    cor.addColorStop(0.07,'#ffe8a8');
+    cor.addColorStop(0.2,'#ffb040');
+    cor.addColorStop(0.42,'#ff5a18');
+    cor.addColorStop(0.68,'#b01000');
+    cor.addColorStop(1,'rgba(25,0,18,0)');
+    ctx.globalCompositeOperation='lighter';
+    ctx.beginPath();
+    ctx.arc(cx,cy,R*2.02,0,Math.PI*2);
+    ctx.fillStyle=cor;
+    ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+
+    const core=ctx.createRadialGradient(cx,cy,0,cx,cy,R*0.62);
+    core.addColorStop(0,'#fffef8');
+    core.addColorStop(0.22,'#ffd060');
+    core.addColorStop(0.52,'#ff7010');
+    core.addColorStop(1,'#7a0d00');
+    ctx.beginPath();
+    ctx.arc(cx,cy,R*0.58,0,Math.PI*2);
+    ctx.fillStyle=core;
+    ctx.fill();
+
+    ctx.strokeStyle='rgba(255,230,190,0.28)';
+    ctx.lineWidth=1.2;
+    for(let i=1;i<=4;i++){
+      ctx.beginPath();
+      ctx.arc(cx,cy,R*(0.92+i*0.32),0,Math.PI*2);
+      ctx.stroke();
+    }
+  }
+
+  function planetXY(p,tt){
+    const ang=(tt/p.periodMs)*(Math.PI*2)+p.phase;
+    const xe=Math.cos(ang)*p.a*S;
+    const ye=Math.sin(ang)*p.b*S;
+    const co=Math.cos(p.orn),si=Math.sin(p.orn);
+    return{
+      x:cx+xe*co-ye*si,
+      y:cy+xe*si+ye*co,
+      ang
+    };
   }
 
   function drawOrbits(){
-    ctx.strokeStyle='rgba(255,245,230,.085)';
-    ctx.lineWidth=1;
+    ctx.lineWidth=0.9;
     for(const p of planets){
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(p.orn);
+      ctx.strokeStyle='rgba(255,245,230,0.1)';
       ctx.beginPath();
-      ctx.ellipse(cx,cy,p.a*Math.min(W,H)*.48,p.b*Math.min(W,H)*.48,0,0,Math.PI*2);
+      ctx.ellipse(0,0,p.a*S,p.b*S,0,0,Math.PI*2);
       ctx.stroke();
+      ctx.globalCompositeOperation='lighter';
+      ctx.strokeStyle='rgba(255,248,235,0.14)';
+      ctx.lineWidth=1.6;
+      ctx.globalAlpha=0.4;
+      ctx.stroke();
+      ctx.globalAlpha=1;
+      ctx.restore();
+      ctx.globalCompositeOperation='source-over';
     }
   }
 
-  function drawPlanets(){
-    const scale=Math.min(W,H)*.48;
-    planets.forEach((p,i)=>{
-      ang[i]+=p.sp;
-      const x=cx+Math.cos(ang[i])*p.a*scale;
-      const y=cy+Math.sin(ang[i])*p.b*scale;
-      const grd=ctx.createRadialGradient(x,y,0,x,y,p.r*4.5);
-      grd.addColorStop(0,p.col+'f5');
-      grd.addColorStop(1,'transparent');
-      ctx.beginPath(); ctx.arc(x,y,p.r*4.5,0,Math.PI*2);
-      ctx.fillStyle=grd; ctx.fill();
-      ctx.beginPath(); ctx.arc(x,y,p.r,0,Math.PI*2);
-      ctx.fillStyle=p.col; ctx.fill();
-      if(p.ring){
-        ctx.save();
-        ctx.translate(x,y);
-        ctx.rotate(ang[i]*.7);
-        ctx.strokeStyle='rgba(240,220,180,.4)';
-        ctx.lineWidth=1.3;
-        ctx.beginPath();
-        ctx.ellipse(0,0,p.r*2.5,p.r*0.82,0,0,Math.PI*2);
-        ctx.stroke();
-        ctx.restore();
-      }
-    });
+  function drawAsteroidBelt(tt){
+    ctx.fillStyle='rgba(230,220,255,0.35)';
+    for(const ro of belt){
+      const ang=ro.ph+tt*ro.sp;
+      const rr=ro.g*S;
+      const xe=Math.cos(ang)*rr;
+      const ye=Math.sin(ang)*rr*0.88;
+      const co=Math.cos(0.09),si=Math.sin(0.09);
+      const x=cx+xe*co-ye*si;
+      const y=cy+xe*si+ye*co;
+      ctx.fillRect(x,y,ro.a,ro.a);
+    }
   }
 
-  let t0=0;
+  function drawPlanetBody(x,y,r,rgb,tt,p,ang){
+    const dx=cx-x,dy=cy-y;
+    const dist=Math.hypot(dx,dy)||1;
+    const lx=dx/dist,ly=dy/dist;
+    const gx=x-lx*r*0.85,gy=y-ly*r*0.85;
+    const lit=ctx.createRadialGradient(gx,gy,r*0.1,x,y,r*1.15);
+    lit.addColorStop(0,'rgba(255,255,255,0.92)');
+    lit.addColorStop(0.35,'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',1)');
+    lit.addColorStop(1,'rgba('+Math.floor(rgb[0]*0.25)+','+Math.floor(rgb[1]*0.22)+','+Math.floor(rgb[2]*0.28)+',1)');
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=lit;
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(ang*0.4+p.phase);
+    ctx.globalCompositeOperation='multiply';
+    ctx.fillStyle='rgba(0,5,18,0.45)';
+    ctx.beginPath();
+    ctx.ellipse(-r*0.35,0,r*1.05,r*0.92,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+    ctx.globalCompositeOperation='source-over';
+
+    const glow=ctx.createRadialGradient(x,y,0,x,y,r*5);
+    glow.addColorStop(0,'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.35)');
+    glow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(x,y,r*5,0,Math.PI*2);
+    ctx.fillStyle=glow;
+    ctx.fill();
+  }
+
+  function drawRings(x,y,r,ang){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(ang*0.62+0.5);
+    ctx.scale(1,0.36);
+    ctx.strokeStyle='rgba(245,225,190,0.45)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    ctx.arc(0,0,r*2.55,0,Math.PI*2);
+    ctx.stroke();
+    ctx.strokeStyle='rgba(180,160,120,0.25)';
+    ctx.lineWidth=2.8;
+    ctx.beginPath();
+    ctx.arc(0,0,r*2.2,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPlanets(tt){
+    const order=planets.map((p,i)=>({i,p,y:planetXY(p,tt).y})).sort((a,b)=>a.y-b.y);
+    for(const {i,p} of order){
+      const {x,y,ang}=planetXY(p,tt);
+      if(p.ring) drawRings(x,y,p.r,ang);
+      drawPlanetBody(x,y,p.r,p.rgb,tt,p,ang);
+    }
+  }
+
+  /* ห้องนักบิน: หมุนระนาบระบบสุริยะช้าๆ 360° / 60 วิ — รู้สึกเหมือนมองผ่านช่องกระจกที่กำลัง slew */
   function frame(t){
-    if(!t0) t0=t;
-    const tt=t-t0;
-    ctx.fillStyle='#010008';
+    const tt=t;
+    ctx.fillStyle='#000008';
     ctx.fillRect(0,0,W,H);
-    drawMilkyBand();
+    drawMilkyBand(tt);
     drawNebulaClouds();
     drawStars(tt);
-    drawSun(tt);
+
+    const deck=(tt/ORBIT_REF_MS)*(Math.PI*2);
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(deck);
+    ctx.translate(-cx,-cy);
+
+    drawSunCorona(tt);
     drawOrbits();
-    drawPlanets();
+    drawAsteroidBelt(tt);
+    drawPlanets(tt);
+
+    ctx.restore();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 })();
+
+async function readJson(res){
+  const ct=(res.headers.get('content-type')||'').toLowerCase();
+  const txt=await res.text();
+  if(!res.ok){
+    const sn=txt.replace(/\s+/g,' ').slice(0,140);
+    throw new Error('HTTP '+res.status+(sn?' — '+sn:''));
+  }
+  const trim=txt.trim();
+  if(trim.startsWith('<')||(!ct.includes('json')&&trim.charAt(0)!=='{'&&trim.charAt(0)!=='[')){
+    throw new Error('เซิร์ฟเวอร์ส่ง HTML แทน JSON (มักเป็น 502/timeout บน Render)');
+  }
+  try{return JSON.parse(txt);}catch(e){throw new Error('ตอบไม่ใช่ JSON ที่อ่านได้');}
+}
+
+const SESSION_KEY='kd_sessions_v1';
+
+function buildWelcomeHtml(){
+  return '<div id="welcome"><div class="welcome-card">'+
+    '<div class="kd-logo-css" aria-hidden="true"><div class="kd-crown"></div><div class="kd-ring kd-ring-a"></div><div class="kd-ring kd-ring-b"></div></div>'+
+    '<div class="welcome-title">KING DIADEM</div>'+
+    '<div class="welcome-sub">LYLA KERNEL · GOVERNANCE OS</div>'+
+    '<p class="welcome-desc">ระบบไม่คิดแทนคุณ — ช่วยให้เห็นทางเลือกชัดขึ้น<br>การตัดสินใจสุดท้ายเป็นของคุณเสมอ</p></div>'+
+    '<div class="welcome-hint">'+
+    '<span class="hint-chip" onclick="useHint(this)">ฉันตกงาน ไม่รู้จะทำอะไร</span>'+
+    '<span class="hint-chip" onclick="useHint(this)">ธุรกิจกำลังล้มเหลว</span>'+
+    '<span class="hint-chip" onclick="useHint(this)">ต้องตัดสินใจสำคัญ</span>'+
+    '<span class="hint-chip" onclick="useHint(this)">ทรัพยากรกำลังหมด</span></div></div>';
+}
+
+function getSessionStore(){
+  try{
+    const raw=localStorage.getItem(SESSION_KEY);
+    if(raw){
+      const o=JSON.parse(raw);
+      if(o&&Array.isArray(o.items)&&o.active) return o;
+    }
+  }catch(_){}
+  return {active:'s1',items:[{id:'s1',title:'แชท 1',html:''}]};
+}
+
+function setSessionStore(s){
+  try{ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); }catch(_){}
+}
+
+function persistActiveChatHtml(){
+  const area=document.getElementById('chat-scroll');
+  if(!area) return;
+  const s=getSessionStore();
+  const cur=s.items.find(x=>x.id===s.active);
+  if(cur) cur.html=area.innerHTML;
+  setSessionStore(s);
+}
+
+function isGenericSessionTitle(t){
+  const x=String(t||'').trim();
+  return !x||/^แชทใหม่$/.test(x)||/^แชท\s*\d+$/.test(x);
+}
+
+function maybeRenameSessionFromMessage(text){
+  const s=getSessionStore();
+  const cur=s.items.find(x=>x.id===s.active);
+  if(!cur||!text) return;
+  if(!isGenericSessionTitle(cur.title)) return;
+  const one=text.replace(/\s+/g,' ').trim();
+  if(!one) return;
+  cur.title=one.slice(0,30)+(one.length>30?'…':'');
+  setSessionStore(s);
+  renderSessionList();
+}
+
+function renderSessionList(){
+  const ul=document.getElementById('session-list');
+  if(!ul) return;
+  const s=getSessionStore();
+  ul.innerHTML='';
+  for(const it of s.items){
+    const div=document.createElement('div');
+    div.className='session-item'+(it.id===s.active?' on':'');
+    div.textContent=it.title||'แชท';
+    div.onclick=function(){ selectChatSession(it.id); };
+    ul.appendChild(div);
+  }
+}
+
+function selectChatSession(id){
+  persistActiveChatHtml();
+  const s=getSessionStore();
+  s.active=id;
+  setSessionStore(s);
+  const cur=s.items.find(x=>x.id===id);
+  const area=document.getElementById('chat-scroll');
+  if(!area) return;
+  area.innerHTML=(cur&&cur.html&&cur.html.trim())?cur.html:buildWelcomeHtml();
+  renderSessionList();
+  setTab('chat');
+  closeRailMobile();
+}
+
+function newChatSession(){
+  persistActiveChatHtml();
+  const s=getSessionStore();
+  const nid='s'+Date.now();
+  s.items.unshift({id:nid,title:'แชทใหม่',html:''});
+  s.active=nid;
+  setSessionStore(s);
+  const area=document.getElementById('chat-scroll');
+  if(area) area.innerHTML=buildWelcomeHtml();
+  renderSessionList();
+  setTab('chat');
+  closeRailMobile();
+  document.getElementById('main-input')?.focus();
+}
+
+function initSessionsFromStorage(){
+  const s=getSessionStore();
+  const area=document.getElementById('chat-scroll');
+  if(!area) return;
+  const cur=s.items.find(x=>x.id===s.active);
+  if(cur&&cur.html&&cur.html.trim()) area.innerHTML=cur.html;
+  renderSessionList();
+}
+
+function openRailMobile(){
+  document.getElementById('rail')?.classList.add('open');
+  document.getElementById('rail-scrim')?.classList.add('on');
+}
+
+function closeRailMobile(){
+  document.getElementById('rail')?.classList.remove('open');
+  document.getElementById('rail-scrim')?.classList.remove('on');
+}
+
+function scrollToTool(sectionId){
+  const el=document.getElementById(sectionId);
+  const pad=document.querySelector('#view-tools .tools-pad');
+  if(!el||!pad) return;
+  const top=el.offsetTop-pad.offsetTop;
+  pad.scrollTo({top:Math.max(0,top-10),behavior:'smooth'});
+}
+
+async function doLogout(){
+  try{
+    await fetch('/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  }catch(_){}
+  location.reload();
+}
 
 let R='general',Q=0,activeTab='chat';
 
 function setTab(tab){
   activeTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.tab===tab);
+  });
+  document.querySelectorAll('.rail-btn.rail-tab').forEach(b=>{
     b.classList.toggle('active',b.dataset.tab===tab);
   });
   document.querySelectorAll('.view').forEach(v=>{
@@ -511,17 +935,32 @@ tick(); setInterval(tick,30000);
 
 async function refreshMe(){
   try{
-    const d=await (await fetch('/me')).json();
+    const d=await readJson(await fetch('/me'));
     const el=document.getElementById('credits-pill');
     if(d.logged_in) el.textContent='CR '+String(d.credits??0);
     else el.textContent='guest';
+    const g=document.getElementById('rail-auth-guest');
+    const u=document.getElementById('rail-auth-user');
+    if(d.logged_in){
+      if(g) g.classList.add('hide');
+      if(u){
+        u.classList.add('on');
+        const em=document.getElementById('user-email-pill');
+        if(em) em.textContent=d.email||d.name||'signed in';
+      }
+    }else{
+      if(g) g.classList.remove('hide');
+      if(u) u.classList.remove('on');
+    }
   }catch(e){}
 }
 refreshMe();
+initSessionsFromStorage();
+addEventListener('beforeunload',function(){ try{persistActiveChatHtml();}catch(_){} });
 
 async function checkHealth(){
   try{
-    const d=await (await fetch('/health')).json();
+    const d=await readJson(await fetch('/health'));
     sB('b-ai',d.llm_loaded,'AI','AI');
     sB('b-eng',d.engine_loaded,'ENG','ENG');
     sB('b-lyla',d.lyla_loaded,'LYLA','LYLA');
@@ -544,7 +983,7 @@ function setRoute(r){
   document.querySelectorAll('.ctx-tag').forEach(t=>t.classList.toggle('active',t.dataset.r===r));
 }
 
-function useHint(el){ const inp=document.getElementById('main-input'); inp.value=el.textContent; autoResize(inp); inp.focus(); setTab('chat'); }
+function useHint(el){ const inp=document.getElementById('main-input'); inp.value=el.textContent; autoResize(inp); inp.focus(); setTab('chat'); closeRailMobile(); }
 
 function autoResize(el){
   el.style.height='auto';
@@ -567,21 +1006,20 @@ function addMsg(type,text,meta){
   div.className='msg '+type;
   const av=type==='user'
     ?'<div class="msg-avatar">YOU</div>'
-    :'<div class="msg-avatar"><img class="msg-logo" src="/static/logo.png" alt=""></div>';
+    :'<div class="msg-avatar kd-msg-mark">KD</div>';
   const snd=type==='user'?'YOU':'KING DIADEM';
   div.innerHTML=av+'<div class="msg-body"><div class="msg-sender">'+snd+'</div><div class="msg-text">'+escH(text)+'</div>'+
     (meta?'<div class="route-tag">'+escH(meta)+'</div>':'')+'</div>';
   area.appendChild(div);
   area.scrollTop=area.scrollHeight;
+  persistActiveChatHtml();
 }
-
-function addThinking(){
   hideWelcome();
   const area=document.getElementById('chat-scroll');
   const div=document.createElement('div');
   div.className='msg system';
   div.id='thinking-msg';
-  div.innerHTML='<div class="msg-avatar"><img class="msg-logo" src="/static/logo.png" alt=""></div><div class="msg-body"><div class="msg-sender">ANALYZING</div><div class="msg-text"><div class="thinking"><span></span><span></span><span></span></div></div></div>';
+  div.innerHTML='<div class="msg-avatar kd-msg-mark">KD</div><div class="msg-body"><div class="msg-sender">ANALYZING</div><div class="msg-text"><div class="thinking"><span></span><span></span><span></span></div></div></div>';
   area.appendChild(div);
   area.scrollTop=area.scrollHeight;
 }
@@ -612,7 +1050,12 @@ async function run(){
   const inp=document.getElementById('main-input');
   const text=inp.value.trim();
   if(!text) return;
+  const mode=(window.detectConversationMode?window.detectConversationMode(text):'lyla');
+  const voiceHint=(window.buildVoiceHint?window.buildVoiceHint(text,mode):'');
+  const tp=document.getElementById('tone-pill');
+  if(tp){ tp.textContent=mode.toUpperCase(); tp.className='tone-pill '+mode; }
   addMsg('user',text);
+  maybeRenameSessionFromMessage(text);
   inp.value=''; inp.style.height='auto';
   const btn=document.getElementById('run-btn');
   btn.disabled=true;
@@ -620,20 +1063,45 @@ async function run(){
   Q++;
   try{
     const res=await fetch('/run',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({input:text,route:R})});
-    const data=await res.json();
+      body:JSON.stringify({
+        input:text,
+        route:R,
+        voice_mode:mode,
+        voice_hint:voiceHint,
+        context:{client_voice:mode,tone_notes:voiceHint,route_ui:R}
+      })});
+    const data=await readJson(res);
     removeThinking();
-    if(data.error){ addMsg('system','ข้อผิดพลาด: '+data.error,'ERROR'); btn.disabled=false; return; }
+    if(data.error){ addMsg('system','ข้อผิดพลาด: '+data.error,'ERROR'); return; }
     const reply=data.ai_response||data.message||JSON.stringify(data,null,2);
     const risk=data.risk_score!=null?' · RISK '+Math.round(data.risk_score):'';
-    addMsg('system',reply,'ROUTE '+(data.route||R).toUpperCase()+risk);
+    const prefix=mode==='crisis'?'[VEGA · SAFETY]':mode==='vega'?'[VEGA]':'[LYLA]';
+    addMsg('system',prefix+'\n\n'+reply,'ROUTE '+(data.route||R).toUpperCase()+risk+' · '+mode.toUpperCase());
     updateLyla(data);
     refreshMe();
+    try{
+      const intent=data.governance&&data.governance.intent?data.governance.intent:{};
+      const pat=data.pattern||{};
+      window.dispatchEvent(new CustomEvent('KD:response',{detail:{
+        output:{action:data.route||R,reason:voiceHint,confidence:intent.confidence,risk:data.risk_score},
+        consensus:{final_action:data.route||R,confidence:intent.confidence},
+        risk:{risk_score:data.risk_score},
+        council:{
+          votes:[
+            {member:'LYLA',role:'waterline',action:String(data.route||'observe'),score:Math.round(data.risk_score||0)},
+            {member:'VEGA',role:mode==='crisis'?'safety':'empathy',action:mode,score:Math.round(pat.entropy||40)}
+          ],
+          score:data.risk_score
+        }
+      }}));
+    }catch(_){}
   }catch(e){
     removeThinking();
     addMsg('system','เครือข่าย: '+e,'ERROR');
+  }finally{
+    btn.disabled=false;
+    persistActiveChatHtml();
   }
-  btn.disabled=false;
 }
 
 function addSimPath(){
@@ -683,7 +1151,7 @@ async function uploadImage(){
   out.textContent='กำลังวิเคราะห์…';
   try{
     const res=await fetch('/analyze-image',{method:'POST',body:fd});
-    const data=await res.json();
+    const data=await readJson(res);
     if(data.error){ out.textContent='❌ '+data.error; return; }
     out.textContent=(data.analysis||'')+'\n\n['+(data.filename||'')+']';
   }catch(e){ out.textContent='ERROR '+e; }
@@ -692,7 +1160,7 @@ async function uploadImage(){
 async function post(u,b){
   try{
     const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
-    return await r.json();
+    return await readJson(r);
   }catch(e){ return {error:String(e)}; }
 }
 
