@@ -1,211 +1,208 @@
-King-diadem/ENGINE/realhuman_survivorengine.py
-
+# ENGINE/realhuman_survivorengine.py
 """
-REAL HUMAN SURVIVOR ENGINE
-— COSMIC LATTE / KING DIADEM MODULE —
-
-Purpose:
-Handle extreme real-life human conditions (stress, fatigue, emotional crash)
-and return the user to a survivable state using available resources.
-
-Core Principle:
-"Restore survival first, then restore choice."
+REAL HUMAN SURVIVOR ENGINE — KING DIADEM
+วิเคราะห์สถานะมนุษย์จริง แล้วส่ง context ให้ LYLA ตอบ
+ไม่ใช่ hardcode string — engine อ่าน state แล้วบอก LYLA ว่าควรโฟกัสอะไร
 """
 
-from dataclasses import dataclass
-from typing import Dict, Any
+from dataclasses import dataclass, field
+from typing import Optional
 
-=========================
 
-DATA STRUCTURE
-
-=========================
+# ── Data structures ───────────────────────────────────────────────
 
 @dataclass
 class HumanState:
-energy: float          # 0 - 100
-money: float           # available cash
-food_access: bool
-safe_place: bool
-mental_state: str      # "stable", "stressed", "overwhelmed"
-time_available: float  # hours
+    energy:          float = 50.0   # 0-100
+    money:           float = 0.0    # เงินที่มี (บาท หรือ arbitrary unit)
+    food_access:     bool  = True
+    safe_place:      bool  = True
+    mental_state:    str   = "stable"   # stable / stressed / overwhelmed
+    time_available:  float = 8.0    # ชั่วโมงที่มี
+    sleep_hours:     float = 6.0    # นอนล่าสุดกี่ชั่วโมง
+    days_in_crisis:  int   = 0      # ติดต่อกันกี่วันแล้ว
+
 
 @dataclass
 class SurvivalOutput:
-status: str
-actions: list
-warnings: list
-next_step: str
+    status:      str
+    priority:    str            # สิ่งที่ต้องทำก่อนทุกอย่าง
+    context_for_lyla: str       # ★ ส่งให้ LYLA ใช้เป็น context จริง
+    waterline:   float          # 0-100 (100 = ปลอดภัย)
+    can_decide:  bool           # ตอนนี้ควรตัดสินใจใหญ่ไหม
+    flags:       list = field(default_factory=list)
 
-=========================
 
-CORE ENGINE
-
-=========================
+# ── Engine ────────────────────────────────────────────────────────
 
 class RealHumanSurvivorEngine:
 
-def __init__(self):  
-    self.MIN_ENERGY = 20  
-    self.CRITICAL_ENERGY = 10  
+    ENERGY_MIN      = 20
+    ENERGY_CRITICAL = 10
+    SLEEP_MIN       = 4
+    CRISIS_LIMIT    = 7  # วัน
 
-# =========================  
-# ENTRY POINT  
-# =========================  
-def run(self, state: HumanState) -> SurvivalOutput:  
-    """  
-    Main execution flow  
-    """  
+    def run(self, state: HumanState) -> SurvivalOutput:
+        flags = self._scan_flags(state)
+        waterline = self._calc_waterline(state)
 
-    # STEP 1: RESET MENTAL STATE  
-    if state.mental_state == "overwhelmed":  
-        return self._reset_protocol(state)  
+        # ── Level 0: overwhelmed — ห้ามตัดสินใจ ──
+        if state.mental_state == "overwhelmed" or state.energy < self.ENERGY_CRITICAL:
+            return SurvivalOutput(
+                status   = "RESET_REQUIRED",
+                priority = "หยุดก่อน ร่างกายและจิตใจต้องการ reset",
+                context_for_lyla = (
+                    f"[SURVIVOR ENGINE] สถานะ: OVERWHELMED | "
+                    f"energy={state.energy:.0f} mental={state.mental_state} "
+                    f"sleep={state.sleep_hours:.1f}h days_crisis={state.days_in_crisis} | "
+                    f"ห้ามตัดสินใจใหญ่ตอนนี้ — ให้ LYLA โฟกัสที่การ stabilize ก่อน "
+                    f"ไม่ใช่ให้คำแนะนำเชิงกลยุทธ์ | flags={flags}"
+                ),
+                waterline  = waterline,
+                can_decide = False,
+                flags      = flags,
+            )
 
-    # STEP 2: CHECK SURVIVAL BASE  
-    survival_check = self._check_survival(state)  
-    if survival_check:  
-        return survival_check  
+        # ── Level 1: no food / no shelter ──
+        if not state.food_access:
+            return SurvivalOutput(
+                status   = "CRITICAL_NO_FOOD",
+                priority = "หาอาหารก่อนทุกอย่าง",
+                context_for_lyla = (
+                    f"[SURVIVOR ENGINE] ไม่มีอาหาร | energy={state.energy:.0f} money={state.money:.0f} | "
+                    f"LYLA ต้องช่วยหาทางได้อาหารทันที ไม่ใช่วางแผนระยะยาว | flags={flags}"
+                ),
+                waterline  = waterline,
+                can_decide = False,
+                flags      = flags,
+            )
 
-    # STEP 3: ENERGY MANAGEMENT  
-    if state.energy < self.MIN_ENERGY:  
-        return self._recover_energy(state)  
+        if not state.safe_place:
+            return SurvivalOutput(
+                status   = "CRITICAL_NO_SHELTER",
+                priority = "หาที่ปลอดภัยก่อน",
+                context_for_lyla = (
+                    f"[SURVIVOR ENGINE] ไม่มีที่ปลอดภัย | energy={state.energy:.0f} | "
+                    f"LYLA ต้องช่วยหาพื้นที่ปลอดภัยก่อน ทุกเรื่องอื่นรอได้ | flags={flags}"
+                ),
+                waterline  = waterline,
+                can_decide = False,
+                flags      = flags,
+            )
 
-    # STEP 4: NORMAL FUNCTION  
-    return self._stabilize_and_continue(state)  
+        # ── Level 2: low energy / sleep ──
+        if state.energy < self.ENERGY_MIN or state.sleep_hours < self.SLEEP_MIN:
+            return SurvivalOutput(
+                status   = "LOW_ENERGY",
+                priority = "พักก่อน ร่างกายไม่พร้อมทำงาน",
+                context_for_lyla = (
+                    f"[SURVIVOR ENGINE] พลังงานต่ำ | energy={state.energy:.0f} "
+                    f"sleep={state.sleep_hours:.1f}h money={state.money:.0f} | "
+                    f"LYLA แนะนำให้พักก่อน อย่าผลักดันให้ตัดสินใจใหญ่ "
+                    f"ถ้าต้องทำอะไรให้เลือกอย่างเดียวที่เล็กที่สุดก่อน | flags={flags}"
+                ),
+                waterline  = waterline,
+                can_decide = False,
+                flags      = flags,
+            )
 
-# =========================  
-# RESET PROTOCOL  
-# =========================  
-def _reset_protocol(self, state: HumanState) -> SurvivalOutput:  
-    return SurvivalOutput(  
-        status="RESET_REQUIRED",  
-        actions=[  
-            "Stop all decisions",  
-            "Drink water",  
-            "Breathing 4-4-6 x 5 cycles",  
-            "Sit down or lie down"  
-        ],  
-        warnings=[  
-            "Decision quality is compromised",  
-            "Do not make financial or emotional decisions"  
-        ],  
-        next_step="Re-run engine after stabilization"  
-    )  
+        # ── Level 3: stressed แต่ยังไหว ──
+        if state.mental_state == "stressed" or state.days_in_crisis > 3:
+            return SurvivalOutput(
+                status   = "STRESSED_FUNCTIONAL",
+                priority = "ทำได้แต่ต้องระวัง — จำกัดการตัดสินใจ",
+                context_for_lyla = (
+                    f"[SURVIVOR ENGINE] stressed แต่ยังทำได้ | "
+                    f"energy={state.energy:.0f} days_crisis={state.days_in_crisis} "
+                    f"time={state.time_available:.1f}h | "
+                    f"LYLA เสนอทางเลือกที่ใช้แรงน้อยก่อน "
+                    f"อย่าให้ list ยาว ให้โฟกัสหนึ่งอย่าง | flags={flags}"
+                ),
+                waterline  = waterline,
+                can_decide = True,
+                flags      = flags,
+            )
 
-# =========================  
-# SURVIVAL CHECK  
-# =========================  
-def _check_survival(self, state: HumanState):  
+        # ── Level 4: stable ──
+        return SurvivalOutput(
+            status   = "STABLE",
+            priority = "พร้อมทำงานปกติ",
+            context_for_lyla = (
+                f"[SURVIVOR ENGINE] stable | energy={state.energy:.0f} "
+                f"time={state.time_available:.1f}h money={state.money:.0f} | "
+                f"LYLA วิเคราะห์ได้เต็มที่ เสนอทางเลือกได้หลายทาง | flags={flags}"
+            ),
+            waterline  = waterline,
+            can_decide = True,
+            flags      = flags,
+        )
 
-    if not state.food_access:  
-        return SurvivalOutput(  
-            status="CRITICAL_NO_FOOD",  
-            actions=[  
-                "Find cheapest available food immediately",  
-                "Ask for help if necessary"  
-            ],  
-            warnings=["Hunger will degrade decision making"],  
-            next_step="Secure food first"  
-        )  
+    # ── helpers ──────────────────────────────────────────────────
 
-    if not state.safe_place:  
-        return SurvivalOutput(  
-            status="CRITICAL_NO_SHELTER",  
-            actions=[  
-                "Find safe place (friend, public area, transport hub)"  
-            ],  
-            warnings=["Safety is priority over all tasks"],  
-            next_step="Secure safety first"  
-        )  
+    def _scan_flags(self, state: HumanState) -> list:
+        flags = []
+        if state.energy < self.ENERGY_CRITICAL:
+            flags.append("CRITICAL_ENERGY")
+        if state.sleep_hours < self.SLEEP_MIN:
+            flags.append("SLEEP_DEBT")
+        if not state.food_access:
+            flags.append("NO_FOOD")
+        if not state.safe_place:
+            flags.append("NO_SHELTER")
+        if state.days_in_crisis >= self.CRISIS_LIMIT:
+            flags.append("CHRONIC_CRISIS")
+        if state.money <= 0:
+            flags.append("NO_MONEY")
+        return flags
 
-    return None  
+    def _calc_waterline(self, state: HumanState) -> float:
+        score = 100.0
+        score -= max(0, (50 - state.energy))         # energy penalty
+        score -= max(0, (6  - state.sleep_hours) * 5) # sleep penalty
+        if not state.food_access:  score -= 30
+        if not state.safe_place:   score -= 40
+        if state.mental_state == "overwhelmed": score -= 25
+        if state.mental_state == "stressed":    score -= 10
+        score -= min(20, state.days_in_crisis * 2)
+        return max(0.0, min(100.0, score))
 
-# =========================  
-# ENERGY RECOVERY  
-# =========================  
-def _recover_energy(self, state: HumanState):  
-    return SurvivalOutput(  
-        status="LOW_ENERGY",  
-        actions=[  
-            "Eat simple food",  
-            "Sleep 20-90 minutes",  
-            "Reduce workload immediately"  
-        ],  
-        warnings=[  
-            "Low energy increases error rate",  
-            "Avoid complex decisions"  
-        ],  
-        next_step="Return to task after energy recovery"  
-    )  
 
-# =========================  
-# STABLE MODE  
-# =========================  
-def _stabilize_and_continue(self, state: HumanState):  
-    return SurvivalOutput(  
-        status="STABLE",  
-        actions=[  
-            "Focus on one task only",  
-            "Avoid multitasking",  
-            "Preserve energy"  
-        ],  
-        warnings=[  
-            "Do not overload system",  
-            "Maintain resource awareness"  
-        ],  
-        next_step="Proceed with controlled execution"  
+# ── Parse text input → HumanState ────────────────────────────────
+# ให้ app.py เรียกตรงนี้แทนที่จะ construct HumanState เอง
+
+def parse_state_from_context(context: dict) -> HumanState:
+    """
+    แปลง context dict จาก frontend → HumanState
+    ใช้ค่า default ที่สมเหตุสมผลถ้าไม่มีข้อมูล
+    """
+    return HumanState(
+        energy         = float(context.get("energy",         50)),
+        money          = float(context.get("money",           0)),
+        food_access    = bool(context.get("food_access",   True)),
+        safe_place     = bool(context.get("safe_place",    True)),
+        mental_state   = str(context.get("mental_state", "stable")),
+        time_available = float(context.get("time_available",  8)),
+        sleep_hours    = float(context.get("sleep_hours",     6)),
+        days_in_crisis = int(context.get("days_in_crisis",    0)),
     )
 
-=========================
 
-MONDAY RESET EXTENSION
+# ── Monday reset (ยังเก็บไว้) ─────────────────────────────────────
 
-=========================
-
-def monday_reset(pleasure_level: float, energy: float) -> Dict[str, Any]:
-"""
-Models the reset effect after temporary pleasure (weekend effect)
-"""
-
-return {  
-    "effect": "EMOTIONAL_RESET",  
-    "insight": "Short-term pleasure does not persist into obligation cycle",  
-    "result": {  
-        "energy_drop": max(0, pleasure_level - energy),  
-        "mood": "neutral_or_low",  
-        "state": "back_to_baseline"  
-    },  
-    "recommendation": [  
-        "Do not rely on pleasure for long-term stability",  
-        "Build sustainable energy systems"  
-    ]  
-}
-
-=========================
-
-CORE PHILOSOPHY
-
-=========================
-
-"""
-Rules:
-
-1. Survival > Everything
-
-
-2. Energy = Core Resource
-
-
-3. No Energy → No Decision Quality
-
-
-4. Restore baseline before optimization
-
-
-5. Do not sacrifice system stability for short-term emotion
-
-
-
-Final Lock:
-"Stay alive. Restore energy. Continue."
-"""
+def monday_reset(pleasure_level: float, energy: float) -> dict:
+    """
+    วิเคราะห์ effect หลัง weekend — ยังคง concept เดิม
+    """
+    drop = max(0.0, pleasure_level - energy)
+    severity = "HIGH" if drop > 30 else "MODERATE" if drop > 15 else "LOW"
+    return {
+        "effect":   "EMOTIONAL_RESET",
+        "drop":     drop,
+        "severity": severity,
+        "context_for_lyla": (
+            f"[MONDAY_RESET] pleasure={pleasure_level:.0f} energy={energy:.0f} "
+            f"drop={drop:.0f} severity={severity} | "
+            f"LYLA รับรู้ว่าผู้ใช้อาจรู้สึกแย่หลังวันหยุด "
+            f"ไม่ผลักดัน ช่วยหา momentum เล็กๆ ก่อน"
+        ),
+    }
