@@ -1,5 +1,6 @@
 # ==========================================
-# 👑 KING DIADEM — ULTIMATE app.py
+# 👑 KING DIADEM — ULTIMATE app.py v2.1
+# เพิ่ม: conversation history ใน /run
 # ==========================================
 
 from fastapi import FastAPI, Request, File, UploadFile
@@ -81,7 +82,6 @@ app = FastAPI(title="KING DIADEM OS")
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "king-diadem-secret-2026"))
 engine = DecisionEngine() if DecisionEngine else None
 
-# static ก่อน route อื่นที่อาจชน path (ยกเว้น / ที่ประกาศแยก)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
@@ -153,7 +153,6 @@ async def google_login(request: Request):
 
 
 def _cookie_ascii(value: str) -> str:
-    """คุกกี้ต้องส่งผ่าน HTTP header (latin-1) — quote UTF-8 เป็น ASCII ปลอดภัย"""
     if value is None:
         return ""
     return quote(str(value), safe="")
@@ -210,8 +209,6 @@ async def get_chat_state(request: Request):
     email = unquote(request.cookies.get("kd_email") or "").strip()
     if not email or not load_chat_state:
         return {"state": None}
-    import json
-
     raw = load_chat_state(email)
     if not raw:
         return {"state": None}
@@ -226,8 +223,6 @@ async def put_chat_state(request: Request, data: dict):
     email = unquote(request.cookies.get("kd_email") or "").strip()
     if not email or not save_chat_state:
         return JSONResponse({"ok": False, "error": "unauthorized"}, status_code=401)
-    import json
-
     state = data.get("state") if isinstance(data.get("state"), dict) else data
     if not isinstance(state, dict):
         return JSONResponse({"ok": False, "error": "invalid"}, status_code=400)
@@ -237,7 +232,6 @@ async def put_chat_state(request: Request, data: dict):
 
 @app.post("/api/chat-state")
 async def post_chat_state(request: Request, data: dict):
-    """รองรับ sendBeacon / fetch keepalive ตอนปิดแท็บ (บางเบราว์เซอร์ไม่ส่ง PUT)"""
     return await put_chat_state(request, data)
 
 
@@ -280,21 +274,21 @@ async def login_email(data: dict):
     return response
 
 
+# ── helpers ───────────────────────────────────────────────────────
 def _route_bias(route: str, text: str) -> str:
     if not route or route == "general":
         return text
     tags = {
-        "risk": "[โหมด: ประเมินความเสี่ยง/ผลกระทบ]",
+        "risk":     "[โหมด: ประเมินความเสี่ยง/ผลกระทบ]",
         "survival": "[โหมด: ความอยู่รอดพื้นฐาน — อาหาร ที่พัก ความปลอดภัย]",
         "collapse": "[โหมด: ลูกโซ่ความเสียหาย/แรงกดดันสะสม]",
-        "civil": "[โหมด: งาน/พลเมือง/ความรับผิดชอบต่อส่วนรวม]",
-        "vega": "[โหมด: อนาคต/โลกกว้าง/ทางเลือกระยะยาว]",
+        "civil":    "[โหมด: งาน/พลเมือง/ความรับผิดชอบต่อส่วนรวม]",
+        "vega":     "[โหมด: อนาคต/โลกกว้าง/ทางเลือกระยะยาว]",
     }
     return f"{tags.get(route, '')} {text}".strip()
 
 
 def _voice_client_bias(data: dict, routed_text: str) -> str:
-    """นำสัญญาณโทนจาก client (voice_mode) แนบเข้า prompt ก่อนส่ง engine/LLM"""
     vm = str(data.get("voice_mode") or "").lower().strip()
     vh = str(data.get("voice_hint") or "").strip()
     head = ""
@@ -315,6 +309,23 @@ def _voice_client_bias(data: dict, routed_text: str) -> str:
         )
     tail = f"\n\n[คำแนะนำโทนเพิ่มเติมจาก client: {vh}]" if vh else ""
     return head + routed_text + tail
+
+
+def _build_history_text(history: list) -> str:
+    """แปลง history list → ข้อความบริบทก่อนหน้าสำหรับ prompt"""
+    if not history:
+        return ""
+    lines = []
+    for turn in history[-10:]:  # ใช้แค่ 10 turns ล่าสุดเพื่อประหยัด token
+        role = turn.get("role", "user")
+        content = str(turn.get("content", "")).strip()
+        if not content:
+            continue
+        label = "ผู้ใช้" if role == "user" else "LYLA"
+        lines.append(f"{label}: {content}")
+    if not lines:
+        return ""
+    return "=== บทสนทนาก่อนหน้า ===\n" + "\n".join(lines) + "\n=== สิ้นสุดบทสนทนาก่อนหน้า ===\n\n"
 
 
 # ── DECISION ENGINE ───────────────────────────────────────────────
@@ -340,6 +351,15 @@ async def run_kernel(request: Request, data: dict):
     route = data.get("route") or "general"
     routed = _route_bias(route, user_input)
     effective_input = _voice_client_bias(data, routed)
+
+    # ★ ดึง history จาก request และสร้าง context text ★
+    history = data.get("history") or []
+    history_text = _build_history_text(history)
+
+    # รวม history เข้ากับ input ก่อนส่ง engine/LLM
+    if history_text:
+        effective_input = history_text + effective_input
+
     payload = {**data, "input": effective_input}
 
     if full_run_decision:
@@ -460,7 +480,6 @@ async def analyze_image(file: UploadFile = File(...)):
 
 @app.post("/upload-image")
 async def upload_image_alias(file: UploadFile = File(...)):
-    """alias สำหรับหน้าเว็บเดิมที่เรียก /upload-image"""
     return await analyze_image(file)
 
 
@@ -476,9 +495,9 @@ async def create_checkout(request: Request):
     )
 
     plans = {
-        "basic": {"amount": 29900, "currency": "thb", "name": "KING DIADEM Basic — ฿299/เดือน"},
+        "basic":        {"amount": 29900, "currency": "thb", "name": "KING DIADEM Basic — ฿299/เดือน"},
         "civilization": {"amount": 99900, "currency": "thb", "name": "KING DIADEM Civilization — ฿999/เดือน"},
-        "topup": {"amount": 5000, "currency": "thb", "name": "KING DIADEM Credits — ฿50"},
+        "topup":        {"amount": 5000,  "currency": "thb", "name": "KING DIADEM Credits — ฿50"},
     }
     p = plans.get(plan, plans["basic"])
 
