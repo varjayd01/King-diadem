@@ -1,76 +1,120 @@
 """
-Human Wisdom Layer
-Parables used by KING DIADEM to preserve human wisdom.
-
-These stories are not predictions.
-They are structural lessons about survival, kindness, and choice.
+core/parables.py
+Human Wisdom Layer — KING DIADEM
+เรื่องเล่าที่ LYLA ดึงมาใช้ตาม context จริง ไม่ใช่แค่เก็บไว้
 """
 
-ANT_AND_DOVE = """
-The Ant and the Dove
+ANT_AND_DOVE = """มดตัวหนึ่งตกน้ำ กำลังจะจมอยู่รอดไม่ได้
+นกพิราบเห็น — หยิบใบไม้ทิ้งลงน้ำให้มดเกาะ
+มดรอดชีวิต
 
-One day a small ant fell into a river and was about to drown.
+ต่อมานายพรานเล็งปืนที่นกพิราบ
+มดจำได้ — กัดเท้านายพรานทันที
+นายพรานสะดุ้ง ยิงพลาด — นกพิราบบินหนีได้
 
-A dove sitting on a tree saw the ant struggling in the water.
-The dove picked a leaf and dropped it into the river.
+บทเรียน: แม้ตัวเล็กที่สุด ก็ปกป้องได้
+และความเมตตาไม่มีวันสูญเปล่า"""
 
-The ant climbed onto the leaf and floated safely to the shore.
+METTA_PRINCIPLE = """โลโกปตฺถมฺภิกา เมตฺตา — เมตตาค้ำจุนโลก
 
-Later, a hunter came into the forest and aimed his gun at the dove.
+ระบบที่สร้างด้วยตรรกะล้วนๆ จะเย็นชาในที่สุด
+ระบบที่มีเมตตาด้วย — รักษาชีวิตได้นานกว่า"""
 
-The ant saw this and remembered the kindness of the dove.
-The ant bit the hunter's foot.
+CHICKEN_GRILL = """หลักไก่ย่าง
 
-The hunter was startled and missed his shot.
-The dove flew away safely.
+การอยู่รอดไม่ต้องชนะทุกวัน
 
-Lesson:
-Even the smallest life can protect another.
-Kindness can preserve the future.
-"""
+บางวันขายได้ทุกชิ้น
+บางวันไม่มีใครซื้อเลย
 
-METTA_PRINCIPLE = """
-โลโกปตฺถมฺภิกา เมตฺตา
+เป้าหมายไม่ใช่ความสำเร็จสมบูรณ์แบบ
+เป้าหมายคือ — อยู่รอดให้ถึงพรุ่งนี้แล้วค่อยลองใหม่"""
 
-เมตตาเป็นสิ่งที่ค้ำจุนโลก
+BAMBOO_PRINCIPLE = """หลักไม้ไผ่
 
-Systems built only on logic may become cold.
-Systems built with compassion preserve life.
-"""
+ไม้ไผ่โค้งในพายุ แต่ไม่หัก
+ต้นไม้แข็งทื่อ — หักก่อน
 
-CHICKEN_GRILL_PRINCIPLE = """
-The Chicken Grill Principle
+ความยืดหยุ่นไม่ใช่ความอ่อนแอ
+มันคือวิธีที่ระบบรอดผ่านแรงกด"""
 
-Survival does not require winning every day.
+WATER_PRINCIPLE = """หลักน้ำ (สูญยตา)
 
-Sometimes you sell everything.
-Sometimes you sell nothing.
+น้ำไม่มีรูปทรงของตัวเอง
+แต่มันเอาชนะหินได้ด้วยความสม่ำเสมอ
 
-The goal is not perfect success.
+ไม่ต้องแข็งแกร่งที่สุด
+แค่ไหลต่อเนื่องพอ"""
 
-The goal is to survive long enough to continue tomorrow.
-"""
+# ── Selector — ดึง parable ตาม context ───────────────────────────
+
+_KEYWORD_MAP = {
+    "ant_dove": {
+        "keywords": ["คนอื่น","ช่วย","ตอบแทน","เมตตา","ทำดี","ได้รับ","ทีม","ความสัมพันธ์","เพื่อน","พันธมิตร"],
+        "text": ANT_AND_DOVE,
+        "name": "มดกับนกพิราบ",
+    },
+    "metta": {
+        "keywords": ["เย็นชา","ไม่มีใคร","โดดเดี่ยว","ระบบพัง","ความเมตตา","ใจ","รู้สึก","อ่อนโยน"],
+        "text": METTA_PRINCIPLE,
+        "name": "หลักเมตตา",
+    },
+    "chicken_grill": {
+        "keywords": ["ล้มเหลว","ขาดทุน","ไม่ได้เรื่อง","แย่มาก","พัง","ไม่มีลูกค้า","ขายไม่ได้","ธุรกิจ","เงิน"],
+        "text": CHICKEN_GRILL,
+        "name": "หลักไก่ย่าง",
+    },
+    "bamboo": {
+        "keywords": ["กดดัน","ทนไม่ไหว","แรงเกินไป","เครียด","หนักมาก","สู้","ปรับตัว","เปลี่ยน"],
+        "text": BAMBOO_PRINCIPLE,
+        "name": "หลักไม้ไผ่",
+    },
+    "water": {
+        "keywords": ["ไม่มีทาง","ตัน","หาทางออก","ไม่รู้จะไปไหน","ติด","ช้า","นาน","ยาวนาน"],
+        "text": WATER_PRINCIPLE,
+        "name": "หลักน้ำ",
+    },
+}
 
 
+def select_parable(user_text: str) -> dict | None:
+    """
+    ดึง parable ที่เหมาะกับ context
+    คืน dict หรือ None ถ้าไม่มี parable ที่เกี่ยวข้อง
+    """
+    if not user_text:
+        return None
+    t = user_text.lower()
+    best_key   = None
+    best_score = 0
+    for key, data in _KEYWORD_MAP.items():
+        score = sum(1 for kw in data["keywords"] if kw in t)
+        if score > best_score:
+            best_score = score
+            best_key   = key
+    if best_score == 0:
+        return None
+    data = _KEYWORD_MAP[best_key]
+    return {"name": data["name"], "text": data["text"]}
+
+
+def parable_context_note(user_text: str) -> str:
+    """
+    คืน string สำหรับแนบเข้า additional_context ใน generate_with_governance
+    ถ้าไม่มี parable ที่เหมาะ คืน string ว่าง
+    """
+    p = select_parable(user_text)
+    if not p:
+        return ""
+    return f"\n\n[WISDOM LAYER — {p['name']}]\n{p['text']}"
+
+
+# ── Direct accessors (backward compat) ───────────────────────────
 def get_ant_dove_story():
-    return {
-        "type": "parable",
-        "name": "The Ant and the Dove",
-        "message": ANT_AND_DOVE
-    }
-
+    return {"type": "parable", "name": "มดกับนกพิราบ", "message": ANT_AND_DOVE}
 
 def get_metta_principle():
-    return {
-        "type": "wisdom",
-        "name": "Metta Principle",
-        "message": METTA_PRINCIPLE
-    }
-
+    return {"type": "wisdom", "name": "หลักเมตตา", "message": METTA_PRINCIPLE}
 
 def get_chicken_grill_principle():
-    return {
-        "type": "wisdom",
-        "name": "Chicken Grill Principle",
-        "message": CHICKEN_GRILL_PRINCIPLE
-    }
+    return {"type": "wisdom", "name": "หลักไก่ย่าง", "message": CHICKEN_GRILL}
