@@ -1,4 +1,5 @@
 # KING DIADEM Core Axioms
+# Stability Layer for Decision Engine
 
 AXIOMS = {
 
@@ -13,3 +14,25 @@ AXIOMS = {
     "A5": "Intervene only when choice approaches zero"
 
 }
+
+
+# -----------------------------
+# DriftZero Governance Metrics
+# -----------------------------
+
+# Daily Harm Delta
+# Maximum allowed system drift per day (0.1%)
+
+DHD_MAX_THRESHOLD = 0.001
+
+
+# Choice Safety Floor
+# If choices drop below this, trigger intervention
+
+CHOICE_MIN_THRESHOLD = 1
+
+
+# Stop-the-Line Trigger
+# If harm drift exceeds threshold, system must halt actions
+
+STOP_THE_LINE = True
