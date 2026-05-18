@@ -1,7 +1,8 @@
 # =========================
 # 👑 ENGINE/decision_engine.py
-# เชื่อม Gemini + LYLA + Paticcasamuppada + EmptinessGuard
-# จำลองอนาคตหลายเส้นทาง — กลางทุกสรรพสิ่ง
+# KING DIADEM — Decision Engine
+# ตรรกะ + ความเมตตา + คืนทางเลือก
+# ไม่ตอแหล ไม่ทำทรง ไม่ลดทอนทางเลือก
 # =========================
 
 import json
@@ -10,6 +11,7 @@ import re
 from ENGINE.pattern_engine import analyze_pattern
 from core.llm_gemini import GeminiLLM
 from core.emptiness_guard import emptiness_guard
+
 
 class DecisionEngine:
 
@@ -21,7 +23,6 @@ class DecisionEngine:
             print(f"❌ DecisionEngine: GeminiLLM failed - {e}")
             self.llm = None
 
-        # LYLA Kernel (optional)
         try:
             from core.lyla_kernel import LylaKernel
             self.lyla = LylaKernel()
@@ -29,14 +30,12 @@ class DecisionEngine:
         except Exception:
             self.lyla = None
 
-        # Paticcasamuppada (dependent origination — chain of collapse)
         try:
             from ENGINE.paticcasamuppada_engine import suffering_infrastructure
             self.paticca = suffering_infrastructure
         except Exception:
             self.paticca = None
 
-        # Core loop (drift + stability monitor)
         try:
             from core.core_loop import run_core
             self.core_loop = run_core
@@ -49,11 +48,11 @@ class DecisionEngine:
         if not user_input:
             return {"observer": "KING DIADEM", "status": "ERROR", "message": "ไม่พบ input"}
 
-        # ── 1. PATTERN ANALYSIS ──────────────────────────────────
+        # 1. PATTERN
         pattern = analyze_pattern(data)
         route = pattern.get("route", "general")
 
-        # ── 2. EMPTINESS GUARD (kernel gate) ─────────────────────
+        # 2. EMPTINESS GUARD
         guarded = emptiness_guard(pattern)
         if guarded.get("blocked"):
             return {
@@ -64,7 +63,7 @@ class DecisionEngine:
                 "status": "BLOCKED"
             }
 
-        # ── 3. CORE LOOP (drift monitor) ─────────────────────────
+        # 3. CORE LOOP
         core_result = None
         if self.core_loop:
             try:
@@ -79,7 +78,7 @@ class DecisionEngine:
             except Exception:
                 pass
 
-        # ── 4. PATICCASAMUPPADA (collapse chain) ─────────────────
+        # 4. COLLAPSE CHAIN
         paticca_result = None
         if self.paticca:
             try:
@@ -87,20 +86,22 @@ class DecisionEngine:
             except Exception:
                 pass
 
-        # ── 5. SELECT + RUN ENGINE ────────────────────────────────
+        # 5. ENGINE ROUTE
         engine_result = self._run_route(route, pattern)
 
-        # ── 6. GEMINI AI LAYER ────────────────────────────────────
+        # 6. GEMINI
         ai_response = None
         if self.llm:
             try:
-                context = f"""
-สถานการณ์: {user_input}
-Route: {route}
-Entropy: {pattern.get('entropy')} | Resource: {pattern.get('resource')} | Stability: {pattern.get('stability')}
-Engine Result: {engine_result}
-Collapse Chain Root: {paticca_result.get('root_cause') if paticca_result else 'unknown'}
-"""
+                context = (
+                    f"Route: {route} | "
+                    f"Entropy: {pattern.get('entropy')} | "
+                    f"Resource: {pattern.get('resource')} | "
+                    f"Stability: {pattern.get('stability')}"
+                )
+                if paticca_result and paticca_result.get("root_cause"):
+                    context += f" | Root: {paticca_result.get('root_cause')}"
+
                 ai_response = self.llm.generate_with_governance(
                     prompt=user_input,
                     additional_context=context
@@ -108,7 +109,7 @@ Collapse Chain Root: {paticca_result.get('root_cause') if paticca_result else 'u
             except Exception as e:
                 ai_response = f"[Gemini unavailable: {e}]"
 
-        # ── 7. LYLA OBSERVATION ───────────────────────────────────
+        # 7. LYLA
         lyla_note = None
         if self.lyla:
             try:
@@ -116,7 +117,6 @@ Collapse Chain Root: {paticca_result.get('root_cause') if paticca_result else 'u
             except Exception:
                 pass
 
-        # ── 8. RETURN ─────────────────────────────────────────────
         return {
             "observer": "KING DIADEM",
             "status": "SUCCESS",
@@ -138,42 +138,31 @@ Collapse Chain Root: {paticca_result.get('root_cause') if paticca_result else 'u
         }
 
     def _run_route(self, route: str, pattern: dict) -> dict:
-        """เรียก engine ตาม route"""
         try:
             if route == "survival":
                 from ENGINE.survival_advisor import advise
                 return advise(pattern)
-
             elif route == "risk":
                 from ENGINE.risk_engine import assess
                 return assess(pattern)
-
             elif route == "collapse":
                 from ENGINE.collapse_predictor import analyze
                 return analyze(pattern)
-
             elif route == "uncertain":
                 from ENGINE.consensus_engine import resolve
                 return resolve(pattern)
-
             elif route == "civil":
                 from ENGINE.civil_work_engine import assess
                 return assess(pattern)
-
             else:
                 from ENGINE.strategy_planner import plan
                 return plan(pattern)
-
         except Exception as e:
             return {"error": f"ENGINE ROUTE FAIL [{route}]: {str(e)}"}
 
 
-# ---------------------------------------------------------------------------
-# Singleton + payload helpers (เชื่อม INTERFACE / kingdiadem / universal)
-# ---------------------------------------------------------------------------
-
+# ── Singleton ──────────────────────────────────────────────────────
 _ENGINE_SINGLETON = None
-
 
 def _engine() -> "DecisionEngine":
     global _ENGINE_SINGLETON
@@ -186,20 +175,12 @@ def _build_payload(data: dict) -> dict:
     out = dict(data) if isinstance(data, dict) else {}
     text = str(out.get("input") or out.get("text") or out.get("question") or "").strip()
     if not text:
-        loc = out.get("location", "")
-        food = out.get("food", "")
-        money = out.get("money", "")
-        risk = out.get("risk", "")
         parts = []
-        if loc not in (None, "", "unknown"):
-            parts.append(f"ที่ตั้ง: {loc}")
-        if food not in (None, ""):
-            parts.append(f"อาหาร/ทรัพยาการ: {food}")
-        if money not in (None, ""):
-            parts.append(f"เงิน/งบ: {money}")
-        if risk not in (None, ""):
-            parts.append(f"ความเสี่ยง: {risk}")
-        text = " | ".join(parts) if parts else ""
+        for k, label in [("location","ที่ตั้ง"), ("food","อาหาร"), ("money","เงิน"), ("risk","ความเสี่ยง")]:
+            v = out.get(k)
+            if v not in (None, "", "unknown"):
+                parts.append(f"{label}: {v}")
+        text = " | ".join(parts)
     out["input"] = text
 
     if "money" in out:
@@ -210,19 +191,18 @@ def _build_payload(data: dict) -> dict:
             pass
 
     risk_s = str(out.get("risk", "")).lower()
-    if "high" in risk_s or "สูง" in risk_s or "critical" in risk_s:
+    if any(w in risk_s for w in ["high", "สูง", "critical"]):
         try:
-            base_e = float(out.get("entropy", 40))
-            out["entropy"] = min(95.0, base_e + 20.0)
+            out["entropy"] = min(95.0, float(out.get("entropy", 40)) + 20.0)
         except (TypeError, ValueError):
             out["entropy"] = 65.0
 
     return out
-    
+
+
 def eternal_snapshot_for_decision(state: dict) -> dict:
     try:
         from ENGINE.eternal_runtime import eternal_snapshot
-
         return eternal_snapshot(state)
     except Exception as e:
         return {"error": str(e)}
@@ -230,8 +210,7 @@ def eternal_snapshot_for_decision(state: dict) -> dict:
 
 def run_decision(data):
     """
-    API เดียวกับที่ INTERFACE/api.py และ KING_DIADEM_core เรียกใช้
-    เชื่อม eternal snapshot (ครั้งเดียว) + learning/human placeholder + โทนอ่อนโยน
+    Entry point หลัก — ตรรกะสะอาด ไม่มี prepend ขยะ
     """
     if not isinstance(data, dict):
         data = {"input": str(data)}
@@ -241,142 +220,92 @@ def run_decision(data):
         return {
             "observer": "KING DIADEM",
             "status": "ERROR",
-            "message": "ไม่พบ input — ส่ง input/text/question หรือ location/food/money/risk",
+            "message": "ไม่พบ input",
         }
 
-    snap_basis = {
+    merged["_eternal_snapshot"] = eternal_snapshot_for_decision({
         "entropy": float(merged.get("entropy", 40)),
         "resource": float(merged.get("resource", 50)),
         "stability": float(merged.get("stability", 60)),
-    }
-    merged["_eternal_snapshot"] = eternal_snapshot_for_decision(snap_basis)
+    })
 
     try:
         from ENGINE.self_learning import analyze_patterns
-
         merged["_learning_patterns"] = analyze_patterns()
     except Exception:
         merged["_learning_patterns"] = None
 
     try:
         from ENGINE.human_engine import analyze_human
-
         merged["_human_engine"] = analyze_human(
             {"state": merged.get("input", ""), "context": merged.get("intent")}
         )
     except Exception:
         merged["_human_engine"] = None
 
+    # รัน engine — ไม่มี gentle_voice prepend
     result = _engine().run(merged)
-    gentle = _gentle_voice(merged.get("input", ""), result)
-    result["gentle_voice"] = gentle
-
-    ai = result.get("ai_response")
-    if isinstance(ai, str) and ai.strip():
-        result["ai_response"] = gentle + "\n\n———\n\n" + ai.strip()
-    elif isinstance(ai, str):
-        result["ai_response"] = gentle
-
     return result
 
 
 def decide(input=None, intent=None, risk=None, **kwargs):
-    """สำหรับ consciousness.py — รวม intent/risk เข้า prompt เดียว"""
     chunks = []
     if input is not None:
         chunks.append(str(input))
     if intent is not None:
-        if isinstance(intent, dict):
-            chunks.append("ความตั้งใจ/บริบท: " + json.dumps(intent, ensure_ascii=False))
-        else:
-            chunks.append("ความตั้งใจ/บริบท: " + str(intent))
+        chunks.append("บริบท: " + (json.dumps(intent, ensure_ascii=False) if isinstance(intent, dict) else str(intent)))
     if risk is not None:
-        if isinstance(risk, dict):
-            chunks.append("ความเสี่ยงที่ประเมิน: " + json.dumps(risk, ensure_ascii=False))
-        else:
-            chunks.append("ความเสี่ยงที่ประเมิน: " + str(risk))
+        chunks.append("ความเสี่ยง: " + (json.dumps(risk, ensure_ascii=False) if isinstance(risk, dict) else str(risk)))
     for k, v in kwargs.items():
         if v is not None:
             chunks.append(f"{k}: {v}")
-    text = "\n".join(chunks).strip()
-    return run_decision({"input": text})
+    return run_decision({"input": "\n".join(chunks).strip()})
 
 
 def generate_choices(location, food, money, risk):
-    """สำหรับ kingdiadem.py — คืนรายการตัวเลือกจากคำตอบ AI / fallback"""
     body = {
         "input": (
-            "ช่วยเสนอทางเลือกที่เป็นไปได้ 3–7 ข้อ สั้น กระชับ เป็นข้อๆ "
-            f"สำหรับการดำรงชีวิต/การตัดสินใจ โดยบริบท: ที่ตั้ง {location!s} "
-            f"อาหาร/ทรัพยาการ {food!s} เงิน/งบ {money!s} ความเสี่ยง {risk!s}"
+            f"เสนอทางเลือก 3–5 ข้อ สั้น กระชับ "
+            f"บริบท: ที่ตั้ง {location} อาหาร {food} เงิน {money} ความเสี่ยง {risk}"
         )
     }
     out = run_decision(body)
     ai = out.get("ai_response") or ""
-    lines = []
-    for raw in str(ai).splitlines():
-        s = raw.strip()
-        if not s:
-            continue
-        s = re.sub(r"^[\d\.\)\-\*•\u2022]+\s*", "", s)
-        if len(s) > 3:
-            lines.append(s)
+    lines = [re.sub(r"^[\d\.\)\-\*•]+\s*", "", s.strip())
+             for s in str(ai).splitlines() if len(s.strip()) > 3]
     if len(lines) >= 3:
         return lines[:10]
-    fb = [
-        "พักและดื่มน้ำ — ฟื้นพลังก่อนตัดสินใจใหญ่",
-        "แยกปัญหาเป็น “วันนี้ / สัปดาห์นี้ / เดือนนี้” แล้วทำแค่วันนี้ให้พอ",
-        "หาตัวเลขขั้นต่ำที่ต้องมี (อาหาร/ที่พัก/ยา) แล้วหาทางลดรายจ่ายอื่นชั่วคราว",
-        "ติดต่อคนที่ไว้ใจได้หนึ่งคน — ขอให้ช่วยฟังหรือช่วยคิดทางเลือกเพิ่ม",
-        "ถ้าเสี่ยงสูง: หลีกเลี่ยงการตัดสินใจถาวรในวันนี้ ให้เลือกแค่ “ปลอดภัยชั่วคราว”",
+    return [
+        "แยกปัญหาเป็น วันนี้ / สัปดาห์นี้ / เดือนนี้ แล้วทำแค่วันนี้ก่อน",
+        "หาตัวเลขขั้นต่ำที่ต้องมี แล้วลดรายจ่ายอื่นชั่วคราว",
+        "ถ้าเสี่ยงสูง อย่าตัดสินใจถาวรวันนี้ เลือกแค่ปลอดภัยชั่วคราว",
+        "ติดต่อคนที่ไว้ใจได้หนึ่งคน ขอให้ช่วยฟังหรือช่วยคิด",
     ]
-    return fb
 
 
 def decision_intelligence(state, risk):
-    """
-    ใช้กับ ENGINE/universal_engine.py — คืน dict ที่ council_engine อ่าน action/message
-    """
     state = state if isinstance(state, dict) else {}
     risk = risk if isinstance(risk, dict) else {}
-
     level = str(risk.get("level", "MEDIUM")).upper()
     try:
         score = float(risk.get("risk_score", 0))
     except (TypeError, ValueError):
         score = 0.0
-
     try:
         res = float(state.get("resource", 50))
     except (TypeError, ValueError):
         res = 50.0
-
     try:
         stab = float(state.get("stability", 60))
     except (TypeError, ValueError):
         stab = 60.0
 
     if level == "CRITICAL" or score >= 85 or res <= 10:
-        return {
-            "action": "stabilize",
-            "message": "ชะลอการตัดสินใจใหญ่ — ดูแลพื้นฐานก่อน (พัก อาหาร ความปลอดภัย)",
-        }
+        return {"action": "stabilize", "message": "ชะลอการตัดสินใจใหญ่ — ดูแลพื้นฐานก่อน"}
     if level == "HIGH" or score >= 60 or stab < 35:
-        return {
-            "action": "stabilize",
-            "message": "ลดความเร่ง — แยกปัญหาเป็นขั้นเล็กๆ แล้วทำทีละขั้น",
-        }
+        return {"action": "stabilize", "message": "แยกปัญหาเป็นขั้นเล็กๆ แล้วทำทีละขั้น"}
     if res < 30:
-        return {
-            "action": "recover_resource",
-            "message": "ทรัพยากรต่ำ — เลือกสิ่งจำเป็นก่อน แล้วค่อยขยายทางเลือก",
-        }
+        return {"action": "recover_resource", "message": "ทรัพยากรต่ำ — เลือกสิ่งจำเป็นก่อน"}
     if stab < 45:
-        return {
-            "action": "expand_choices",
-            "message": "หาทางเลือกเสริมอีก 2–3 แบบก่อนตัดสินใจ",
-        }
-    return {
-        "action": "maintain",
-        "message": "ไปต่อได้อย่างมีสติ — รักษาจังหวะพอประมาณ",
-    }
+        return {"action": "expand_choices", "message": "หาทางเลือกเสริม 2–3 แบบก่อนตัดสินใจ"}
+    return {"action": "maintain", "message": "ไปต่อได้ — รักษาจังหวะพอประมาณ"}
