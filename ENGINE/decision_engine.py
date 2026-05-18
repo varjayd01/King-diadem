@@ -218,40 +218,7 @@ def _build_payload(data: dict) -> dict:
             out["entropy"] = 65.0
 
     return out
-
-
-def _gentle_voice(user_input: str, result: dict) -> str:
-    """คืนสติแบบอ่อนโยน + บอกว่าปัญหาตรงหน้าคืออะไร (ภาษาไทย)"""
-    route = result.get("route", "general")
-    status = result.get("status", "")
-    eng = result.get("engine_result") or {}
-    if isinstance(eng, dict) and eng.get("error"):
-        core_issue = f"ระบบย่อยตอบสนองไม่สมบูรณ์: {eng.get('error')}"
-    elif status == "BLOCKED":
-        core_issue = result.get("reason") or "ระบบป้องกันการตัดสินใจที่อาจทำร้ายคุณในตอนนี้"
-    elif route == "survival":
-        core_issue = "โฟกัสเรื่องความอยู่รอดพื้นฐาน (พลังงาน อาหาร ที่พัก ความปลอดภัย) กำลังตึงหรือต้องการการจัดลำดับใหม่"
-    elif route == "risk":
-        core_issue = "ความไม่แน่นอน/ความเสี่ยงกำลังสูง — การตัดสินใจเร่งอาจขยายความเสียหาย"
-    elif route == "collapse":
-        core_issue = "มีสัญญาณลูกโซ่ความเสียหายหรือแรงกดดันที่สะสม — ควรชะลอและแยกเป็นขั้นเล็ก"
-    elif route == "uncertain":
-        core_issue = "ข้อมูลหรือความมั่นใจยังไม่พอ — ยังไม่จำเป็นต้องฟันธงทันที"
-    elif route == "civil":
-        core_issue = "เรื่องงาน/พลเมือง/ความรับผิดชอบต่อส่วนรวมกำลังขัดกับทรัพยากรหรือเวลา"
-    else:
-        core_issue = "สถานการณ์ยังไปต่อได้ แต่ควรไล่เรียงลำดับความสำคัญและทรัพยากรให้ชัด"
-
-    head = (
-        "หายใจเข้าลึกๆ ช้าๆ ก่อนนะ — ไม่เป็นไรที่จะชะลอสักครู่\n"
-        "คุณไม่ได้ต้องแก้ทุกอย่างในวินาทีเดียว และคุณไม่ได้อยู่คนเดียวกับความกดดันนี้\n\n"
-        "สิ่งที่อยู่ตรงหน้า (สรุปให้เห็นภาพ): "
-        f"{core_issue}\n\n"
-        f"ข้อความที่คุณนำมา: “{user_input[:400]}{'…' if len(user_input) > 400 else ''}”"
-    )
-    return head
-
-
+    
 def eternal_snapshot_for_decision(state: dict) -> dict:
     try:
         from ENGINE.eternal_runtime import eternal_snapshot
