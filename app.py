@@ -78,18 +78,30 @@ except Exception as e:
     oauth = None
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+# Orchestrator
+try:
+    from core.system_orchestrator import get_orchestrator
+    orchestrator = get_orchestrator()
+    print("✅ System Orchestrator Loaded")
+except Exception as e:
+    print(f"⚠ Orchestrator: {e}")
+    orchestrator = None
+
 app = FastAPI(title="KING DIADEM OS")
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY", "king-diadem-secret-2026"))
 engine = DecisionEngine() if DecisionEngine else None
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.get("/favicon.ico")
+def favicon():
+    return FileResponse("static/logo.png")
 
 @app.get("/")
 @app.head("/")
 def root():
     return FileResponse("static/index.html")
-
 
 @app.get("/health")
 def health():
@@ -102,7 +114,6 @@ def health():
         "freedom_score": freedom_index() if freedom_index else 0,
         "db_initialized": init_db is not None,
     }
-
 
 # ── DASHBOARD ─────────────────────────────────────────────────────
 @app.get("/dashboard")
@@ -142,7 +153,6 @@ async def dashboard():
         "sunyata_signal": "ทุกระบบว่างเปล่าจากการมีอยู่โดยตัวเอง — ทางเลือกเกิดจากความสัมพันธ์เท่านั้น",
     }
 
-
 # ── GOOGLE LOGIN ──────────────────────────────────────────────────
 @app.get("/login/google")
 async def google_login(request: Request):
@@ -151,12 +161,10 @@ async def google_login(request: Request):
     redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "https://king-diadem.onrender.com/auth/google/callback")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
-
 def _cookie_ascii(value: str) -> str:
     if value is None:
         return ""
     return quote(str(value), safe="")
-
 
 @app.get("/auth/google/callback")
 async def google_callback(request: Request):
@@ -193,7 +201,6 @@ async def google_callback(request: Request):
         print("google_callback:", repr(e))
         return RedirectResponse("/static/login.html?error=oauth_error")
 
-
 @app.get("/me")
 async def me(request: Request):
     email = unquote(request.cookies.get("kd_email") or "")
@@ -202,7 +209,6 @@ async def me(request: Request):
         return {"logged_in": False}
     credits = get_credits(email) if get_credits else 0
     return {"logged_in": True, "email": email, "name": name, "credits": credits}
-
 
 @app.get("/api/chat-state")
 async def get_chat_state(request: Request):
@@ -217,7 +223,6 @@ async def get_chat_state(request: Request):
     except Exception:
         return {"state": None}
 
-
 @app.put("/api/chat-state")
 async def put_chat_state(request: Request, data: dict):
     email = unquote(request.cookies.get("kd_email") or "").strip()
@@ -229,11 +234,9 @@ async def put_chat_state(request: Request, data: dict):
     save_chat_state(email, json.dumps(state, ensure_ascii=False))
     return {"ok": True}
 
-
 @app.post("/api/chat-state")
 async def post_chat_state(request: Request, data: dict):
     return await put_chat_state(request, data)
-
 
 @app.post("/logout")
 async def logout():
@@ -241,7 +244,6 @@ async def logout():
     response.delete_cookie("kd_email")
     response.delete_cookie("kd_name")
     return response
-
 
 @app.post("/register")
 async def register(data: dict):
@@ -258,7 +260,6 @@ async def register(data: dict):
     response.set_cookie("kd_name", _cookie_ascii(email), max_age=86400 * 30)
     return response
 
-
 @app.post("/login")
 async def login_email(data: dict):
     email = (data.get("email") or "").strip()
@@ -273,7 +274,6 @@ async def login_email(data: dict):
     response.set_cookie("kd_name", _cookie_ascii(nm), max_age=86400 * 30)
     return response
 
-
 # ── helpers ───────────────────────────────────────────────────────
 def _route_bias(route: str, text: str) -> str:
     if not route or route == "general":
@@ -286,7 +286,6 @@ def _route_bias(route: str, text: str) -> str:
         "vega":     "[โหมด: อนาคต/โลกกว้าง/ทางเลือกระยะยาว]",
     }
     return f"{tags.get(route, '')} {text}".strip()
-
 
 def _voice_client_bias(data: dict, routed_text: str) -> str:
     vm = str(data.get("voice_mode") or "").lower().strip()
@@ -310,7 +309,6 @@ def _voice_client_bias(data: dict, routed_text: str) -> str:
     tail = f"\n\n[คำแนะนำโทนเพิ่มเติมจาก client: {vh}]" if vh else ""
     return head + routed_text + tail
 
-
 def _build_history_text(history: list) -> str:
     """แปลง history list → ข้อความบริบทก่อนหน้าสำหรับ prompt"""
     if not history:
@@ -326,7 +324,6 @@ def _build_history_text(history: list) -> str:
     if not lines:
         return ""
     return "=== บทสนทนาก่อนหน้า ===\n" + "\n".join(lines) + "\n=== สิ้นสุดบทสนทนาก่อนหน้า ===\n\n"
-
 
 # ── DECISION ENGINE ───────────────────────────────────────────────
 @app.post("/run")
@@ -352,13 +349,24 @@ async def run_kernel(request: Request, data: dict):
     routed = _route_bias(route, user_input)
     effective_input = _voice_client_bias(data, routed)
 
-    # ★ ดึง history จาก request และสร้าง context text ★
+    # Survivor engine context
+    survivor_ctx = ""
+    if orchestrator:
+        try:
+            sr = orchestrator.run_with_survivor_engine(
+                user_input=user_input,
+                human_context=data.get("context", {})
+            )
+            survivor_ctx = sr.get("survivor_context", "")
+        except Exception:
+            pass
+
     history = data.get("history") or []
     history_text = _build_history_text(history)
-
-    # รวม history เข้ากับ input ก่อนส่ง engine/LLM
     if history_text:
         effective_input = history_text + effective_input
+    if survivor_ctx:
+        effective_input = survivor_ctx + "\n\n" + effective_input
 
     payload = {**data, "input": effective_input}
 
@@ -421,7 +429,6 @@ async def run_kernel(request: Request, data: dict):
 
     return result
 
-
 # ── SIMULATE ──────────────────────────────────────────────────────
 @app.post("/simulate")
 async def simulate_future(data: dict):
@@ -442,7 +449,6 @@ async def simulate_future(data: dict):
         raw = f"Simulation error: {e}"
     observation = lyla.observe(user_input) if lyla else {"stability": "NOMINAL"}
     return {"status": "SUCCESS", "simulation": raw, "lyla_observation": observation}
-
 
 # ── IMAGE ANALYSIS ────────────────────────────────────────────────
 @app.post("/analyze-image")
@@ -477,11 +483,9 @@ async def analyze_image(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-
 @app.post("/upload-image")
 async def upload_image_alias(file: UploadFile = File(...)):
     return await analyze_image(file)
-
 
 # ── PAYMENT ───────────────────────────────────────────────────────
 @app.post("/payment/create-checkout")
@@ -495,9 +499,9 @@ async def create_checkout(request: Request):
     )
 
     plans = {
-        "basic":        {"amount": 29900, "currency": "thb", "name": "KING DIADEM Basic — ฿299/เดือน"},
+        "basic":       {"amount": 29900, "currency": "thb", "name": "KING DIADEM Basic — ฿299/เดือน"},
         "civilization": {"amount": 99900, "currency": "thb", "name": "KING DIADEM Civilization — ฿999/เดือน"},
-        "topup":        {"amount": 5000,  "currency": "thb", "name": "KING DIADEM Credits — ฿50"},
+        "topup":       {"amount": 5000,  "currency": "thb", "name": "KING DIADEM Credits — ฿50"},
     }
     p = plans.get(plan, plans["basic"])
 
@@ -524,16 +528,13 @@ async def create_checkout(request: Request):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-
 @app.get("/success")
 async def success():
     return FileResponse("static/index.html")
 
-
 @app.get("/cancel")
 async def cancel():
     return FileResponse("static/index.html")
-
 
 @app.get("/credits")
 async def credits(request: Request):
