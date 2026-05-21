@@ -1,9 +1,8 @@
-# =========================
-# 👑 ENGINE/decision_engine.py
+# ENGINE/decision_engine.py
 # KING DIADEM — Decision Engine
-# ตรรกะ + ความเมตตา + คืนทางเลือก
-# ไม่ตอแหล ไม่ทำทรง ไม่ลดทอนทางเลือก
-# =========================
+# ★ FIX: BLOCKED ไม่ return raw dict แล้ว
+#         emotional_flag → route vega + Gemini ยังรัน
+#         ไม่มี early return ที่ตัด Gemini ออก
 
 import json
 import re
@@ -54,14 +53,32 @@ class DecisionEngine:
 
         # 2. EMPTINESS GUARD
         guarded = emptiness_guard(pattern)
-        if guarded.get("blocked"):
+
+        # ★ FIX: BLOCK จริงมีแค่ CHOICE_COLLAPSE และ KERNEL_IMPORT_FAIL
+        #         กรณีนั้น system พัง ไม่ใช่ผู้ใช้พูดอะไร
+        if guarded.get("blocked") and guarded.get("reason") in ("CHOICE_COLLAPSE", "KERNEL_IMPORT_FAIL", "invalid_state"):
             return {
                 "observer": "KING DIADEM",
                 "route": "BLOCKED",
                 "reason": guarded.get("reason", "GUARD_BLOCK"),
                 "action": "stabilize",
-                "status": "BLOCKED"
+                "status": "BLOCKED",
+                "ai_response": "ระบบพบปัญหาภายใน กรุณาลองใหม่อีกครั้งครับ",
+                "risk_score": guarded.get("risk_score", 0),
+                "pattern": {
+                    "entropy": pattern.get("entropy"),
+                    "resource": pattern.get("resource"),
+                    "stability": pattern.get("stability"),
+                },
             }
+
+        # ★ FIX: emotional_flag → route vega ไม่ block
+        if guarded.get("emotional_flag") or guarded.get("suggested_route") == "vega":
+            route = "vega"
+        elif guarded.get("forced_action") == "stabilize":
+            # risk สูง → route survival แต่ยัง run Gemini
+            if route not in ("survival", "collapse", "vega"):
+                route = "survival"
 
         # 3. CORE LOOP
         core_result = None
@@ -73,7 +90,7 @@ class DecisionEngine:
                     "stability": pattern.get("stability", 60),
                     "drift": 0
                 })
-                if core_result.get("status") == "HALT":
+                if core_result.get("status") == "HALT" and route not in ("vega",):
                     route = "survival"
             except Exception:
                 pass
@@ -89,7 +106,7 @@ class DecisionEngine:
         # 5. ENGINE ROUTE
         engine_result = self._run_route(route, pattern)
 
-        # 6. GEMINI
+        # 6. GEMINI — รันเสมอ ไม่มีเงื่อนไขตัดออก
         ai_response = None
         if self.llm:
             try:
@@ -99,9 +116,10 @@ class DecisionEngine:
                     f"Resource: {pattern.get('resource')} | "
                     f"Stability: {pattern.get('stability')}"
                 )
+                if guarded.get("emotional_flag"):
+                    context += " | EMOTIONAL_FLAG: true — ผู้ใช้อาจอยู่ในสถานการณ์ยาก"
                 if paticca_result and paticca_result.get("root_cause"):
                     context += f" | Root: {paticca_result.get('root_cause')}"
-
                 ai_response = self.llm.generate_with_governance(
                     prompt=user_input,
                     additional_context=context
@@ -134,7 +152,8 @@ class DecisionEngine:
             "collapse_chain": paticca_result,
             "core_loop": core_result,
             "lyla": lyla_note,
-            "risk_score": guarded.get("risk_score", 0)
+            "risk_score": guarded.get("risk_score", 0),
+            "emotional_flag": guarded.get("emotional_flag", False),
         }
 
     def _run_route(self, route: str, pattern: dict) -> dict:
@@ -154,6 +173,9 @@ class DecisionEngine:
             elif route == "civil":
                 from ENGINE.civil_work_engine import assess
                 return assess(pattern)
+            elif route == "vega":
+                # vega route — engine ไม่มีอะไรพิเศษ ปล่อย Gemini ทำงาน
+                return {"route": "vega", "status": "pass_to_llm"}
             else:
                 from ENGINE.strategy_planner import plan
                 return plan(pattern)
@@ -163,6 +185,7 @@ class DecisionEngine:
 
 # ── Singleton ──────────────────────────────────────────────────────
 _ENGINE_SINGLETON = None
+
 
 def _engine() -> "DecisionEngine":
     global _ENGINE_SINGLETON
@@ -176,7 +199,7 @@ def _build_payload(data: dict) -> dict:
     text = str(out.get("input") or out.get("text") or out.get("question") or "").strip()
     if not text:
         parts = []
-        for k, label in [("location","ที่ตั้ง"), ("food","อาหาร"), ("money","เงิน"), ("risk","ความเสี่ยง")]:
+        for k, label in [("location", "ที่ตั้ง"), ("food", "อาหาร"), ("money", "เงิน"), ("risk", "ความเสี่ยง")]:
             v = out.get(k)
             if v not in (None, "", "unknown"):
                 parts.append(f"{label}: {v}")
@@ -209,9 +232,6 @@ def eternal_snapshot_for_decision(state: dict) -> dict:
 
 
 def run_decision(data):
-    """
-    Entry point หลัก — ตรรกะสะอาด ไม่มี prepend ขยะ
-    """
     if not isinstance(data, dict):
         data = {"input": str(data)}
 
@@ -243,7 +263,6 @@ def run_decision(data):
     except Exception:
         merged["_human_engine"] = None
 
-    # รัน engine — ไม่มี gentle_voice prepend
     result = _engine().run(merged)
     return result
 
